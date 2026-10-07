@@ -1,0 +1,110 @@
+/* 
+    Created on : Oct 7, 2026, 9:32:52 AM
+    Author     : VNJ
+*/
+/* ==============================================================
+   TẬP TIN CSS TỔNG CHO TOÀN BỘ SMART IRRIGATION WEB
+   Sử dụng CSS Variables để đồng bộ màu sắc trên mọi trang
+============================================================== */
+:root {
+    --primary-color: #2E7D32;    /* Xanh lá đậm (Nút bấm chính, Header) */
+    --primary-hover: #1B5E20;    /* Xanh lá đậm hơn khi Hover */
+    --secondary-color: #4CAF50;  /* Xanh lá nhạt (Icon, Điểm nhấn) */
+    --bg-color: #f4f7f6;         /* Nền tổng của trang web */
+    --card-bg: #ffffff;          /* Nền trắng của khung form/dashboard */
+    --text-color: #333333;       /* Màu chữ chung */
+    --text-muted: #6c757d;       /* Màu chữ xám nhạt (Ghi chú) */
+    --border-color: #e0e0e0;     /* Viền chung */
+    --border-radius: 8px;        /* Bo góc khung */
+    --box-shadow: 0 4px 6px rgba(0,0,0,0.05); /* Hiệu ứng đổ bóng */
+    
+    /* Màu cảnh báo của Hệ thống tưới */
+    --alert-danger: #dc3545;     /* Đỏ (Lỗi, Thiếu nước, Bơm hỏng) */
+    --alert-warning: #ffc107;    /* Vàng (Cảnh báo nghi rò rỉ) */
+    --alert-info: #17a2b8;       /* Xanh dương (Thông tin chung) */
+}
+
+/* --- TỔNG THỂ --- */
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* --- KHUNG CHỨA (CARD) --- */
+.card {
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--box-shadow);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+/* --- TIÊU ĐỀ TRANG --- */
+.page-title {
+    color: var(--primary-color);
+    font-weight: 700;
+    margin-bottom: 20px;
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 10px;
+}
+
+/* --- NÚT BẤM (Ghi đè Bootstrap nếu có) --- */
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+.btn-primary:hover {
+    background-color: var(--primary-hover);
+    border-color: var(--primary-hover);
+}
+
+/* --- BẢNG DỮ LIỆU (DATA TABLES) --- */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+}
+.table thead th {
+    background-color: var(--primary-color);
+    color: #ffffff;
+    font-weight: 600;
+    padding: 12px;
+    border-bottom: none;
+}
+.table tbody td {
+    padding: 12px;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+}
+.table tbody tr:hover {
+    background-color: #f1f8e9; /* Hover màu xanh rất nhạt */
+}
+
+/* --- CSS BỔ SUNG RIÊNG CHO TRANG ĐĂNG NHẬP (Để dùng chung 1 file) --- */
+.login-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
+.login-card {
+    background: var(--card-bg);
+    padding: 30px 40px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    width: 100%;
+    max-width: 400px;
+    border: 1px solid var(--border-color);
+}
+.login-card h2 {
+    text-align: center;
+    color: var(--primary-color); 
+    margin-bottom: 25px;
+    font-weight: 700;
+}
