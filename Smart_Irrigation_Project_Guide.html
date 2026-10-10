@@ -1,0 +1,1689 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Smart Irrigation — Hướng dẫn dự án PRJ301</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root {
+  --primary: #10b981;
+  --primary-dark: #059669;
+  --primary-deep: #064e3b;
+  --primary-light: #ecfdf5;
+  --primary-glow: rgba(16, 185, 129, 0.15);
+  --accent: #3b82f6;
+  --accent-light: #eff6ff;
+  --amber: #f59e0b;
+  --amber-light: #fffbeb;
+  --amber-border: #fcd34d;
+  --red: #ef4444;
+  --red-light: #fef2f2;
+  --red-border: #fca5a5;
+  
+  --bg-main: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-subtle: #f1f5f9;
+  
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --text-soft: #94a3b8;
+  
+  --border-subtle: #e2e8f0;
+  --border-strong: #cbd5e1;
+  
+  --sidebar-w: 320px;
+  --header-h: 70px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.06);
+  --shadow-lg: 0 12px 28px -4px rgba(15, 23, 42, 0.08);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  display: flex;
+  min-height: 100vh;
+}
+
+/* SIDEBAR NAVIGATION */
+#sidebar {
+  width: var(--sidebar-w);
+  background: var(--bg-surface);
+  border-right: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 50;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sidebar-header {
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.brand-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, #10b981, #047857);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 20px;
+  box-shadow: 0 4px 10px rgba(16, 185, 129, 0.25);
+}
+
+.brand-info h1 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 1.25;
+}
+
+.brand-info .tagline {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.search-box {
+  margin-top: 14px;
+  position: relative;
+}
+
+.search-box i {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-soft);
+  font-size: 13px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 9px 12px 9px 34px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-main);
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text-main);
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.search-input:focus {
+  border-color: var(--primary);
+  background: #fff;
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+.sidebar-nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 12px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.nav-group-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-soft);
+  padding: 4px 10px 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nav-group-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  list-style: none;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.nav-link .item-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-soft);
+  min-width: 18px;
+}
+
+.nav-link:hover {
+  background: var(--bg-subtle);
+  color: var(--text-main);
+}
+
+.nav-link.active {
+  background: var(--primary-light);
+  color: var(--primary-dark);
+  font-weight: 600;
+}
+
+.nav-link.active .item-num {
+  color: var(--primary);
+}
+
+/* MAIN CONTENT AREA */
+#main-wrapper {
+  flex: 1;
+  margin-left: var(--sidebar-w);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* TOP BAR */
+.top-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  height: var(--header-h);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 36px;
+}
+
+.header-breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.crumb-root {
+  color: var(--text-muted);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.crumb-sep {
+  color: var(--text-soft);
+  font-size: 11px;
+}
+
+.crumb-current {
+  color: var(--primary-dark);
+  font-weight: 600;
+  background: var(--primary-light);
+  padding: 3px 9px;
+  border-radius: 999px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: #fff;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-icon:hover {
+  background: var(--bg-subtle);
+  color: var(--text-main);
+  border-color: var(--border-strong);
+}
+
+.nav-step-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-step {
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: #fff;
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-step:hover:not(:disabled) {
+  border-color: var(--primary);
+  background: var(--primary-light);
+  color: var(--primary-dark);
+}
+
+.btn-step:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.step-indicator {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 0 4px;
+}
+
+/* PROGRESS BAR */
+.progress-container {
+  height: 3px;
+  width: 100%;
+  background: transparent;
+  position: relative;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981, #059669);
+  width: 4%;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* CONTENT CONTAINER */
+.content-body {
+  flex: 1;
+  max-width: 1080px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 36px 36px 80px;
+}
+
+.panel-card {
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+
+.panel-card.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* TYPOGRAPHY & SECTIONS */
+.eyebrow-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--primary-dark);
+  background: var(--primary-light);
+  padding: 4px 10px;
+  border-radius: 999px;
+  margin-bottom: 12px;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+h2.panel-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text-main);
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+  margin-bottom: 12px;
+}
+
+.lead-text {
+  font-size: 16px;
+  color: #475569;
+  line-height: 1.7;
+  margin-bottom: 24px;
+}
+
+h3.section-subtitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 32px 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+h3.section-subtitle::before {
+  content: '';
+  width: 4px;
+  height: 18px;
+  background: var(--primary);
+  border-radius: 4px;
+  display: inline-block;
+}
+
+p {
+  margin-bottom: 14px;
+  color: #334155;
+}
+
+/* CARDS & GRIDS */
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin: 20px 0;
+}
+
+.card-item {
+  background: #fff;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.card-item:hover {
+  border-color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.card-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  margin-bottom: 14px;
+}
+
+.card-icon.green { background: #dcfce7; color: #15803d; }
+.card-icon.blue { background: #dbeafe; color: #1d4ed8; }
+.card-icon.amber { background: #fef3c7; color: #b45309; }
+.card-icon.purple { background: #f3e8ff; color: #7e22ce; }
+
+.card-item strong {
+  display: block;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 6px;
+}
+
+.card-item p {
+  font-size: 13.5px;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.55;
+}
+
+/* CALLOUTS */
+.callout {
+  padding: 16px 20px;
+  border-radius: var(--radius-md);
+  margin: 20px 0;
+  font-size: 14px;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  line-height: 1.6;
+}
+
+.callout i {
+  font-size: 17px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.callout.info {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+}
+.callout.info i { color: var(--primary); }
+
+.callout.warn {
+  background: var(--amber-light);
+  border: 1px solid var(--amber-border);
+  color: #92400e;
+}
+.callout.warn i { color: var(--amber); }
+
+.callout.danger {
+  background: var(--red-light);
+  border: 1px solid var(--red-border);
+  color: #991b1b;
+}
+.callout.danger i { color: var(--red); }
+
+/* TAGS */
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.tag-badge {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tag-badge i {
+  color: var(--primary);
+  font-size: 11px;
+}
+
+/* TABLES */
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  margin: 20px 0;
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  text-align: left;
+}
+
+th {
+  background: var(--bg-subtle);
+  color: var(--text-main);
+  font-weight: 700;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  white-space: nowrap;
+}
+
+td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  color: #334155;
+  vertical-align: top;
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+tr:hover td {
+  background-color: #fafbfc;
+}
+
+code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.88em;
+  background: #f1f5f9;
+  border: 1px solid var(--border-subtle);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: #0f766e;
+}
+
+pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 20px;
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 18px 0;
+  border: 1px solid #1e293b;
+  box-shadow: var(--shadow-md);
+}
+
+pre code {
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: inherit;
+  font-size: inherit;
+}
+
+/* STEP LIST */
+.step-list {
+  list-style: none;
+  counter-reset: custom-step;
+  margin: 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.step-list li {
+  counter-increment: custom-step;
+  position: relative;
+  background: #fff;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 16px 20px 16px 64px;
+  font-size: 14px;
+  box-shadow: var(--shadow-sm);
+}
+
+.step-list li::before {
+  content: counter(custom-step, decimal-leading-zero);
+  position: absolute;
+  left: 18px;
+  top: 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  background: var(--primary-light);
+  color: var(--primary-dark);
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+/* DIAGRAM CONTAINER */
+.diagram-container {
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  margin: 24px 0;
+  box-shadow: var(--shadow-sm);
+  overflow-x: auto;
+}
+
+.diagram-container svg {
+  display: block;
+  margin: 0 auto;
+  max-width: 100%;
+  height: auto;
+}
+
+.diagram-caption {
+  font-size: 12.5px;
+  color: var(--text-soft);
+  text-align: center;
+  margin-top: 12px;
+}
+
+/* PILLS */
+.badge-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.badge-status.success { background: #dcfce7; color: #166534; }
+.badge-status.warning { background: #fef3c7; color: #854d0e; }
+.badge-status.danger { background: #fee2e2; color: #991b1b; }
+
+/* FOOTER NAV BAR */
+.footer-nav {
+  margin-top: 50px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.footer-nav button {
+  padding: 10px 18px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: #fff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-main);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.footer-nav button:hover:not(:disabled) {
+  border-color: var(--primary);
+  background: var(--primary-light);
+  color: var(--primary-dark);
+}
+
+.footer-nav button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* MOBILE RESPONSIVE */
+.mobile-toggle {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  #sidebar {
+    transform: translateX(-100%);
+  }
+  #sidebar.open {
+    transform: translateX(0);
+    box-shadow: 0 0 40px rgba(0,0,0,0.15);
+  }
+  #main-wrapper {
+    margin-left: 0;
+  }
+  .mobile-toggle {
+    display: flex;
+  }
+  .top-header {
+    padding: 0 18px;
+  }
+  .content-body {
+    padding: 24px 18px 60px;
+  }
+  .crumb-root span {
+    display: none;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside id="sidebar">
+  <div class="sidebar-header">
+    <div class="brand-wrapper">
+      <div class="brand-icon"><i class="fa-solid fa-seedling"></i></div>
+      <div class="brand-info">
+        <h1>Smart Irrigation</h1>
+        <div class="tagline">PRJ301 · Java Servlet / JSP / SQL</div>
+      </div>
+    </div>
+    <div class="search-box">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" id="navSearch" class="search-input" placeholder="Tìm mục hoặc từ khóa...">
+    </div>
+  </div>
+
+  <div class="sidebar-nav" id="sidebarNav">
+    <!-- Group A -->
+    <div class="nav-group">
+      <div class="nav-group-title">A. Tổng quan & Dữ liệu</div>
+      <ul class="nav-group-list">
+        <li><button class="nav-link" data-i="0"><span class="item-num">01</span><span>Tổng quan dự án</span></button></li>
+        <li><button class="nav-link" data-i="1"><span class="item-num">02</span><span>Công nghệ sử dụng</span></button></li>
+        <li><button class="nav-link" data-i="2"><span class="item-num">03</span><span>Cấu trúc mã nguồn</span></button></li>
+        <li><button class="nav-link" data-i="3"><span class="item-num">04</span><span>Chuẩn bị môi trường</span></button></li>
+        <li><button class="nav-link" data-i="4"><span class="item-num">05</span><span>Cấu hình SQL Server</span></button></li>
+        <li><button class="nav-link" data-i="5"><span class="item-num">06</span><span>Bản đồ dữ liệu & ERD</span></button></li>
+        <li><button class="nav-link" data-i="6"><span class="item-num">07</span><span>Kiến trúc xử lý Request</span></button></li>
+      </ul>
+    </div>
+
+    <!-- Group B -->
+    <div class="nav-group">
+      <div class="nav-group-title">B. Chức năng hệ thống</div>
+      <ul class="nav-group-list">
+        <li><button class="nav-link" data-i="7"><span class="item-num">08</span><span>Đăng nhập & Phiên</span></button></li>
+        <li><button class="nav-link" data-i="8"><span class="item-num">09</span><span>Dashboard & Chỉ số nước</span></button></li>
+        <li><button class="nav-link" data-i="9"><span class="item-num">10</span><span>Quản lý cây trồng</span></button></li>
+        <li><button class="nav-link" data-i="10"><span class="item-num">11</span><span>Quản lý chậu & Khu vực</span></button></li>
+        <li><button class="nav-link" data-i="11"><span class="item-num">12</span><span>Giám sát cảm biến</span></button></li>
+        <li><button class="nav-link" data-i="12"><span class="item-num">13</span><span>Cấu hình lịch tưới</span></button></li>
+        <li><button class="nav-link" data-i="13"><span class="item-num">14</span><span>Nhật ký tưới</span></button></li>
+        <li><button class="nav-link" data-i="14"><span class="item-num">15</span><span>Cảnh báo hệ thống</span></button></li>
+        <li><button class="nav-link" data-i="15"><span class="item-num">16</span><span>Dự đoán đất khô</span></button></li>
+        <li><button class="nav-link" data-i="16"><span class="item-num">17</span><span>Xuất báo cáo CSV</span></button></li>
+      </ul>
+    </div>
+
+    <!-- Group C -->
+    <div class="nav-group">
+      <div class="nav-group-title">C. Đọc code & Kiểm thử</div>
+      <ul class="nav-group-list">
+        <li><button class="nav-link" data-i="17"><span class="item-num">18</span><span>Bản đồ URL Controller</span></button></li>
+        <li><button class="nav-link" data-i="18"><span class="item-num">19</span><span>Model, DAO & Service</span></button></li>
+        <li><button class="nav-link" data-i="19"><span class="item-num">20</span><span>Dữ liệu mẫu & Test</span></button></li>
+        <li><button class="nav-link" data-i="20"><span class="item-num">21</span><span>Giới hạn mã nguồn</span></button></li>
+      </ul>
+    </div>
+
+    <!-- Group D -->
+    <div class="nav-group">
+      <div class="nav-group-title">D. Vận hành & Demo</div>
+      <ul class="nav-group-list">
+        <li><button class="nav-link" data-i="21"><span class="item-num">22</span><span>Chạy trong NetBeans</span></button></li>
+        <li><button class="nav-link" data-i="22"><span class="item-num">23</span><span>Dò lỗi thường gặp</span></button></li>
+        <li><button class="nav-link" data-i="23"><span class="item-num">24</span><span>Kịch bản demo 5–7 phút</span></button></li>
+        <li><button class="nav-link" data-i="24"><span class="item-num">25</span><span>Lộ trình nâng cấp</span></button></li>
+      </ul>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN WRAPPER -->
+<div id="main-wrapper">
+  <!-- TOP HEADER -->
+  <header class="top-header">
+    <div class="header-breadcrumbs">
+      <button class="btn-icon mobile-toggle" id="menuToggle" aria-label="Toggle menu">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+      <div class="crumb-root"><i class="fa-solid fa-book"></i> <span>Tài liệu</span></div>
+      <span class="crumb-sep">/</span>
+      <span class="crumb-current" id="headerCrumbGroup">A. Tổng quan & Dữ liệu</span>
+    </div>
+
+    <div class="header-actions">
+      <div class="nav-step-controls">
+        <button id="btnPrev" class="btn-step" title="Mục trước"><i class="fa-solid fa-chevron-left"></i> Trước</button>
+        <div class="step-indicator" id="stepCounter">1 / 25</div>
+        <button id="btnNext" class="btn-step" title="Mục tiếp theo">Tiếp <i class="fa-solid fa-chevron-right"></i></button>
+      </div>
+    </div>
+  </header>
+
+  <div class="progress-container">
+    <div class="progress-bar-fill" id="progressBar"></div>
+  </div>
+
+  <!-- CONTENT PANELS -->
+  <main class="content-body">
+
+    <!-- PANEL 0 -->
+    <section class="panel-card" data-i="0">
+      <span class="eyebrow-badge"><i class="fa-solid fa-compass"></i> A. Toàn cảnh dự án</span>
+      <h2 class="panel-title">1. Smart Irrigation Monitoring System</h2>
+      <p class="lead-text">Website quản lý cây/chậu và theo dõi hoạt động tưới tiêu tự động, được xây dựng theo kiến trúc MVC cổ điển với Java Servlet + JSP + JDBC, lưu trữ trên Microsoft SQL Server.</p>
+
+      <div class="feature-grid">
+        <div class="card-item">
+          <div class="card-icon green"><i class="fa-solid fa-leaf"></i></div>
+          <strong>Quản lý vườn & chậu</strong>
+          <p>Thiết lập danh mục cây, định nghĩa ngưỡng độ ẩm lý tưởng và quản lý chậu theo vị trí (ban công, sân vườn).</p>
+        </div>
+        <div class="card-item">
+          <div class="card-icon blue"><i class="fa-solid fa-droplet"></i></div>
+          <strong>Giám sát & Lịch tưới</strong>
+          <p>Thu thập độ ẩm đất thời gian thực, lập lịch tự động, lưu nhật ký phiên và tổng hợp hao phí nước.</p>
+        </div>
+        <div class="card-item">
+          <div class="card-icon amber"><i class="fa-solid fa-bell"></i></div>
+          <strong>Cảnh báo & Dự đoán</strong>
+          <p>Bộ lọc cảnh báo ngập úng, rò rỉ, lỗi cảm biến kèm công thức heuristic dự đoán thời điểm đất khô.</p>
+        </div>
+      </div>
+
+      <h3 class="section-subtitle">Phạm vi mã nguồn thực tế</h3>
+      <p>Project sở hữu giao diện quản trị đầy đủ, các Servlet điều phối, DAO thao tác trực tiếp với SQL Server qua JDBC, và các service tính toán. Một số thành phần IoT phần cứng ở mức mô phỏng REST endpoint.</p>
+
+      <div class="callout info">
+        <i class="fa-solid fa-circle-info"></i>
+        <div>
+          <strong>Lời khuyên bảo vệ đồ án:</strong> Giới thiệu đây là <em>Hệ thống Prototype Quản lý & Giám sát Tưới Thông minh</em>. Chỉ khẳng định phần cứng ESP32 và máy bơm tự động nếu nhóm có board vật lý demo kèm theo.
+        </div>
+      </div>
+
+      <div class="tag-list">
+        <span class="tag-badge"><i class="fa-solid fa-graduation-cap"></i> PRJ301</span>
+        <span class="tag-badge"><i class="fa-solid fa-code"></i> Java Web</span>
+        <span class="tag-badge"><i class="fa-solid fa-database"></i> SQL Server</span>
+        <span class="tag-badge"><i class="fa-solid fa-gear"></i> NetBeans Ant</span>
+        <span class="tag-badge"><i class="fa-solid fa-server"></i> Apache Tomcat</span>
+      </div>
+    </section>
+
+    <!-- PANEL 1 -->
+    <section class="panel-card" data-i="1">
+      <span class="eyebrow-badge"><i class="fa-solid fa-microchip"></i> A. Toàn cảnh dự án</span>
+      <h2 class="panel-title">2. Công nghệ sử dụng</h2>
+      <p class="lead-text">Tổng hợp stack kỹ thuật và các thư viện được sử dụng trong gói mã nguồn.</p>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr><th>Thành phần</th><th>Vị trí trong dự án</th><th>Vai trò</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Java 8 Source</strong></td><td><code>nbproject/project.properties</code></td><td>Ngôn ngữ xử lý nghiệp vụ chính ở Backend.</td></tr>
+            <tr><td><strong>Servlet API</strong></td><td><code>src/java/controller/*</code></td><td>Điều phối HTTP Request GET/POST.</td></tr>
+            <tr><td><strong>JSP + JSTL</strong></td><td><code>web/WEB-INF/views/*.jsp</code></td><td>View rendering dynamic HTML từ attributes.</td></tr>
+            <tr><td><strong>JDBC Driver</strong></td><td><code>util/DBContext.java</code>, DAOs</td><td>Kết nối và thực thi truy vấn an toàn qua PreparedStatement.</td></tr>
+            <tr><td><strong>Apache Tomcat</strong></td><td>Cấu hình NetBeans</td><td>Servlet container chạy ứng dụng.</td></tr>
+            <tr><td><strong>Bootstrap 5 / Icons</strong></td><td>CDN tags trong JSP</td><td>Giao diện đáp ứng (cần Internet để load).</td></tr>
+            <tr><td><strong>Chart.js</strong></td><td><code>dashboard.jsp</code></td><td>Biểu đồ lượng nước cấp & tiêu hao.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout warn">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <div>
+          <strong>Lưu ý môi trường:</strong> Dự án được tổ chức dạng <em>NetBeans Ant Web Application</em> (không dùng Maven). Hãy đảm bảo JDK cài đặt là Java 8 (hoặc cấu hình tương thích binary 1.8).
+        </div>
+      </div>
+    </section>
+
+    <!-- PANEL 2 -->
+    <section class="panel-card" data-i="2">
+      <span class="eyebrow-badge"><i class="fa-solid fa-folder-tree"></i> A. Toàn cảnh dự án</span>
+      <h2 class="panel-title">3. Cấu trúc source code</h2>
+      <p class="lead-text">Tổ chức thư mục theo tiêu chuẩn Java Web MVC cổ điển.</p>
+
+      <pre><code>smart-irrigation-monitoring-system-main/
+├── src/java/
+│   ├── controller/   # Servlets: Dashboard, Plants, Pots, Sensor, Alerts...
+│   ├── dao/          # Database Access Objects (thực thi SQL CRUD)
+│   ├── model/        # POJOs: Plant, Pot, SensorData, Alert, User...
+│   ├── service/      # Business logic: AlertService, MLService
+│   ├── filter/       # AuthFilter (kiểm tra phân quyền & session)
+│   └── util/         # DBContext, PasswordUtil, SampleDataGenerator
+├── web/
+│   ├── WEB-INF/views/  # JSP views giao diện người dùng
+│   ├── WEB-INF/css/    # File CSS tĩnh
+│   ├── META-INF/context.xml # Cấu hình context path Tomcat
+│   └── index.html
+├── nbproject/        # Cấu hình IDE NetBeans
+└── build/ & dist/    # Thư mục build và file .WAR xuất ra</code></pre>
+
+      <div class="feature-grid">
+        <div class="card-item">
+          <strong>Controller → Service/DAO</strong>
+          <p>Nhận request, validate dữ liệu, gọi tầng DAO/Service, gán kết quả vào request scope rồi forward hoặc redirect.</p>
+        </div>
+        <div class="card-item">
+          <strong>Model & JSP View</strong>
+          <p>Model ánh xạ các record bảng SQL. JSP sử dụng Expression Language (EL) và thẻ JSTL lặp dữ liệu sạch sẽ.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- PANEL 3 -->
+    <section class="panel-card" data-i="3">
+      <span class="eyebrow-badge"><i class="fa-solid fa-screwdriver-wrench"></i> A. Toàn cảnh dự án</span>
+      <h2 class="panel-title">4. Chuẩn bị môi trường</h2>
+      <p class="lead-text">Các bước chuẩn bị môi trường chạy ứng dụng trên máy phát triển.</p>
+
+      <ol class="step-list">
+        <li>Cài đặt JDK tương thích (khuyến nghị JDK 8 hoặc JDK 11 cấu hình target 1.8) trên NetBeans.</li>
+        <li>Cài đặt và cấu hình Server Apache Tomcat (bản 8.5 hoặc 9.0) trong NetBeans Server Manager.</li>
+        <li>Cài đặt SQL Server, kích hoạt giao thức TCP/IP trên cổng <code>1433</code> trong SQL Server Configuration Manager.</li>
+        <li>Mở NetBeans: <strong>File → Open Project</strong> và chọn thư mục chứa <code>build.xml</code>.</li>
+        <li>Kiểm tra các file thư viện trong thư mục Libraries (Driver JDBC <code>mssql-jdbc</code> và JSTL core).</li>
+        <li>Tạo CSDL <code>SmartIrrigationDB</code>, cấu hình mật khẩu trong <code>DBContext.java</code> và chạy test.</li>
+      </ol>
+    </section>
+
+    <!-- PANEL 4 -->
+    <section class="panel-card" data-i="4">
+      <span class="eyebrow-badge"><i class="fa-solid fa-plug"></i> A. Toàn cảnh dự án</span>
+      <h2 class="panel-title">5. Cấu hình kết nối SQL Server</h2>
+      <p class="lead-text">Cách thiết lập kết nối JDBC trong lớp tiện ích <code>DBContext.java</code>.</p>
+
+      <pre><code>// src/java/util/DBContext.java
+public class DBContext {
+    private final String SERVER_NAME = "localhost";
+    private final String DB_NAME     = "SmartIrrigationDB";
+    private final String PORT_NUMBER = "1433";
+    private final String USER_ID     = "sa";        // Điều chỉnh tài khoản của bạn
+    private final String PASSWORD    = "your_pass";  // Mật khẩu SQL Server
+
+    public Connection getConnection() throws Exception {
+        String url = "jdbc:sqlserver://" + SERVER_NAME + ":" + PORT_NUMBER 
+                   + ";databaseName=" + DB_NAME + ";encrypt=true;trustServerCertificate=true";
+        Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+        return DriverManager.getConnection(url, USER_ID, PASSWORD);
+    }
+}</code></pre>
+
+      <div class="callout danger">
+        <i class="fa-solid fa-shield-halved"></i>
+        <div>
+          <strong>Bảo mật:</strong> Tài khoản SA hiện hardcode trong mã nguồn. Khi đưa lên GitHub hoặc môi trường công khai, cần thay thế bằng biến môi trường (Environment Variable) để tránh lộ credential.
+        </div>
+      </div>
+    </section>
+
+    <!-- PANEL 5 -->
+    <section class="panel-card" data-i="5">
+      <span class="eyebrow-badge"><i class="fa-solid fa-diagram-project"></i> A. Toàn cảnh dự án</span>
+      <h2 class="panel-title">6. Bản đồ dữ liệu & Sơ đồ quan hệ</h2>
+      <p class="lead-text">Sơ đồ thực thể được suy luận trực tiếp từ các câu lệnh SQL JOIN và INSERT trong các DAO.</p>
+
+      <div class="diagram-container">
+        <svg viewBox="0 0 960 440" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#10b981"/></marker>
+          </defs>
+          <g font-family="Plus Jakarta Sans, sans-serif" font-size="13" fill="#0f172a">
+            <!-- AppRole -->
+            <rect x="30" y="25" width="180" height="65" rx="10" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1.5"/>
+            <text x="120" y="49" text-anchor="middle" font-weight="700">AppRole</text>
+            <text x="120" y="68" text-anchor="middle" font-size="11.5" fill="#059669">role_id, role_name</text>
+            
+            <!-- AppUser -->
+            <rect x="30" y="135" width="180" height="68" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+            <text x="120" y="159" text-anchor="middle" font-weight="700">AppUser</text>
+            <text x="120" y="179" text-anchor="middle" font-size="11.5" fill="#64748b">user_id, role_id, status</text>
+            
+            <!-- Plant -->
+            <rect x="290" y="25" width="180" height="68" rx="10" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1.5"/>
+            <text x="380" y="49" text-anchor="middle" font-weight="700">Plant</text>
+            <text x="380" y="69" text-anchor="middle" font-size="11.5" fill="#059669">plant_id, ideal_moisture</text>
+            
+            <!-- Pot -->
+            <rect x="290" y="135" width="180" height="68" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+            <text x="380" y="159" text-anchor="middle" font-weight="700">Pot</text>
+            <text x="380" y="179" text-anchor="middle" font-size="11.5" fill="#64748b">pot_id, plant_id, status</text>
+            
+            <!-- Sensor -->
+            <rect x="550" y="25" width="180" height="68" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+            <text x="640" y="49" text-anchor="middle" font-weight="700">Sensor</text>
+            <text x="640" y="69" text-anchor="middle" font-size="11.5" fill="#64748b">sensor_id, pot_id</text>
+
+            <!-- SensorReading -->
+            <rect x="550" y="135" width="180" height="68" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+            <text x="640" y="159" text-anchor="middle" font-weight="700">SensorReading</text>
+            <text x="640" y="179" text-anchor="middle" font-size="11.5" fill="#64748b">moisture, recorded_at</text>
+
+            <!-- WateringSession -->
+            <rect x="290" y="260" width="180" height="68" rx="10" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1.5"/>
+            <text x="380" y="284" text-anchor="middle" font-weight="700">WateringSession</text>
+            <text x="380" y="304" text-anchor="middle" font-size="11.5" fill="#059669">pot_id, start_time</text>
+
+            <!-- WaterAnalysis -->
+            <rect x="550" y="260" width="180" height="68" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+            <text x="640" y="284" text-anchor="middle" font-weight="700">WaterAnalysis</text>
+            <text x="640" y="304" text-anchor="middle" font-size="11.5" fill="#64748b">water_ml, retain_ratio</text>
+
+            <!-- WateringSchedule -->
+            <rect x="30" y="260" width="180" height="68" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+            <text x="120" y="284" text-anchor="middle" font-weight="700">WateringSchedule</text>
+            <text x="120" y="304" text-anchor="middle" font-size="11.5" fill="#64748b">cron_expr, is_active</text>
+
+            <!-- Alert -->
+            <rect x="30" y="360" width="180" height="60" rx="10" fill="#fffbeb" stroke="#fcd34d" stroke-width="1.5"/>
+            <text x="120" y="384" text-anchor="middle" font-weight="700" fill="#b45309">Alert</text>
+            <text x="120" y="402" text-anchor="middle" font-size="11.5" fill="#92400e">pot_id, alert_type</text>
+
+            <!-- MLPrediction -->
+            <rect x="550" y="360" width="180" height="60" rx="10" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.5"/>
+            <text x="640" y="384" text-anchor="middle" font-weight="700" fill="#1d4ed8">MLPrediction</text>
+            <text x="640" y="402" text-anchor="middle" font-size="11.5" fill="#1e40af">pot_id, hours_to_dry</text>
+          </g>
+
+          <g fill="none" stroke="#10b981" stroke-width="1.8" marker-end="url(#arr)">
+            <path d="M120 90 V135"/>
+            <path d="M380 93 V135"/>
+            <path d="M470 169 H510 V59 H550"/>
+            <path d="M640 93 V135"/>
+            <path d="M380 203 V260"/>
+            <path d="M470 294 H550"/>
+            <path d="M290 169 H240 V294 H210"/>
+            <path d="M380 203 H240 V390 H210"/>
+            <path d="M470 169 H510 V390 H550"/>
+          </g>
+        </svg>
+        <div class="diagram-caption">Sơ đồ thực thể liên kết tương đối giữa các bảng quản lý vườn và số liệu tưới</div>
+      </div>
+    </section>
+
+    <!-- PANEL 6 -->
+    <section class="panel-card" data-i="6">
+      <span class="eyebrow-badge"><i class="fa-solid fa-network-wired"></i> A. Toàn cảnh dự án</span>
+      <h2 class="panel-title">7. Kiến trúc xử lý yêu cầu (Request Lifecycle)</h2>
+      <p class="lead-text">Luồng xử lý từ trình duyệt người dùng qua tầng bảo vệ AuthFilter đến Controller và Database.</p>
+
+      <div class="diagram-container">
+        <svg viewBox="0 0 940 240" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="ar2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0 0L6 3L0 6Z" fill="#10b981"/></marker>
+          </defs>
+          <g font-family="Plus Jakarta Sans, sans-serif" text-anchor="middle">
+            <rect x="20" y="60" width="140" height="90" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+            <text x="90" y="95" font-size="15" font-weight="700">1. Client / Web</text>
+            <text x="90" y="118" font-size="12" fill="#64748b">HTTP GET/POST</text>
+
+            <rect x="210" y="60" width="150" height="90" rx="12" fill="#fffbeb" stroke="#fcd34d" stroke-width="1.5"/>
+            <text x="285" y="95" font-size="15" font-weight="700">2. AuthFilter</text>
+            <text x="285" y="118" font-size="12" fill="#92400e">Check session</text>
+            <text x="285" y="135" font-size="11" fill="#b45309">LOGIN_USER</text>
+
+            <rect x="410" y="60" width="150" height="90" rx="12" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1.5"/>
+            <text x="485" y="95" font-size="15" font-weight="700">3. Servlet</text>
+            <text x="485" y="118" font-size="12" fill="#047857">Validate param</text>
+            <text x="485" y="135" font-size="11" fill="#059669">Điều phối logic</text>
+
+            <rect x="610" y="60" width="140" height="90" rx="12" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.5"/>
+            <text x="680" y="95" font-size="15" font-weight="700">4. DAO / Service</text>
+            <text x="680" y="118" font-size="12" fill="#1e40af">PreparedStatement</text>
+            <text x="680" y="135" font-size="11" fill="#2563eb">JDBC query</text>
+
+            <rect x="800" y="60" width="120" height="90" rx="12" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+            <text x="860" y="95" font-size="14" font-weight="700">5. SQL Server</text>
+            <text x="860" y="118" font-size="12" fill="#475569">Tables & Data</text>
+
+            <!-- Line forwards -->
+            <path d="M160 105 H210 M360 105 H410 M560 105 H610 M750 105 H800" stroke="#10b981" stroke-width="2" marker-end="url(#ar2)" fill="none"/>
+            <!-- Line backward forward to JSP -->
+            <path d="M485 150 V200 H90 V150" stroke="#059669" stroke-width="1.8" stroke-dasharray="5 5" marker-end="url(#ar2)" fill="none"/>
+            <text x="285" y="215" font-size="12" fill="#64748b">Forward JSP view với request attributes</text>
+          </g>
+        </svg>
+      </div>
+    </section>
+
+    <!-- PANEL 7 -->
+    <section class="panel-card" data-i="7">
+      <span class="eyebrow-badge"><i class="fa-solid fa-lock"></i> B. Chức năng hệ thống</span>
+      <h2 class="panel-title">8. Đăng nhập và phiên làm việc (Session)</h2>
+      <p class="lead-text">Luồng xác thực người dùng và cơ chế bảo vệ phiên qua <code>AuthFilter</code>.</p>
+
+      <ol class="step-list">
+        <li>Truy cập <code>/login</code>; <code>LoginServlet.doGet()</code> chuyển tiếp đến <code>login.jsp</code>.</li>
+        <li>Người dùng nhập username và password, gửi POST về <code>/login</code>.</li>
+        <li><code>UserDAO.findByUsername()</code> tìm thông tin trong bảng <code>AppUser</code> và lấy tên vai trò từ <code>AppRole</code>.</li>
+        <li>Hệ thống kiểm tra cờ khóa tài khoản (<code>is_active</code>) và dùng <code>PasswordUtil.verify()</code> so khớp mật khẩu.</li>
+        <li>Nếu hợp lệ, đối tượng User được lưu vào <code>session.setAttribute("LOGIN_USER", user)</code> và chuyển hướng đến <code>/dashboard</code>.</li>
+      </ol>
+
+      <div class="callout warn">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <div>
+          <strong>Cảnh báo API thiết bị:</strong> <code>AuthFilter</code> hiện áp dụng cho <code>/*</code> trừ <code>/login</code> và static files. Các endpoint IoT như <code>POST /sensor-data</code> khi phần cứng gọi không có Cookie Session sẽ bị đá về màn hình đăng nhập. Cần bổ sung token-based whitelist cho IoT.
+        </div>
+      </div>
+    </section>
+
+    <!-- PANEL 8 -->
+    <section class="panel-card" data-i="8">
+      <span class="eyebrow-badge"><i class="fa-solid fa-chart-pie"></i> B. Chức năng hệ thống</span>
+      <h2 class="panel-title">9. Dashboard & Chỉ số nước</h2>
+      <p class="lead-text">Bảng điều khiển trung tâm hiển thị KPI sử dụng nước, biểu đồ trực quan và trạng thái chậu cây.</p>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr><th>Chỉ số (KPI)</th><th>Công thức trong mã nguồn SQL</th><th>Đơn vị</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Tổng nước đã cấp</strong></td><td><code>SUM(water_ml) / 1000.0</code></td><td>Lít (L)</td></tr>
+            <tr><td><strong>Lượng nước đất giữ lại</strong></td><td><code>SUM(water_ml * retain_ratio) / 1000.0</code></td><td>Lít (L)</td></tr>
+            <tr><td><strong>Lượng nước hao phí / thoát sàn</strong></td><td><code>Nước đã cấp - Nước giữ lại</code></td><td>Lít (L)</td></tr>
+            <tr><td><strong>Cảnh báo đang mở</strong></td><td><code>COUNT(*) WHERE is_resolved = 0</code></td><td>Số sự vụ</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout info">
+        <i class="fa-solid fa-lightbulb"></i>
+        <div>
+          Dashboard tích hợp <strong>Chart.js</strong> vẽ biểu đồ cột/đường so sánh lượng nước cấp và giữ lại theo từng ngày.
+        </div>
+      </div>
+    </section>
+
+    <!-- PANEL 9 -->
+    <section class="panel-card" data-i="9">
+      <span class="eyebrow-badge"><i class="fa-solid fa-seedling"></i> B. Chức năng hệ thống</span>
+      <h2 class="panel-title">10. Quản lý danh mục cây trồng</h2>
+      <p class="lead-text">Quản lý định nghĩa các giống cây trồng và ngưỡng độ ẩm tiêu chuẩn.</p>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr><th>Thao tác</th><th>Endpoint & Tham số</th><th>Kết quả</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Danh sách</strong></td><td><code>GET /plants?keyword=...&page=1</code></td><td>Hiển thị danh sách, tìm kiếm và phân trang</td></tr>
+            <tr><td><strong>Thêm mới</strong></td><td><code>GET /plants?action=new</code> → <code>POST /plants</code></td><td>Tạo giống cây mới với ngưỡng ẩm min/max</td></tr>
+            <tr><td><strong>Chỉnh sửa</strong></td><td><code>GET /plants?action=edit&id=...</code></td><td>Điền dữ liệu cũ vào biểu mẫu cập nhật</td></tr>
+            <tr><td><strong>Xóa</strong></td><td><code>GET /plants?action=delete&id=...</code></td><td>Xóa bản ghi cây trồng khỏi hệ thống</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout warn">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <div>
+          <strong>Lưu ý bảo mật:</strong> Thao tác xóa đang nhận qua HTTP GET. Đối với môi trường thực tế nên chuyển thành phương thức POST hoặc DELETE để chống các đòn tấn công CSRF.
+        </div>
+      </div>
+    </section>
+
+    <!-- PANEL 10 -->
+    <section class="panel-card" data-i="10">
+      <span class="eyebrow-badge"><i class="fa-solid fa-mountain-sun"></i> B. Chức năng hệ thống</span>
+      <h2 class="panel-title">11. Quản lý chậu & Khu vực tưới</h2>
+      <p class="lead-text">Gán giống cây vào từng chậu vật lý tại các vị trí khác nhau trong khuôn viên.</p>
+
+      <div class="feature-grid">
+        <div class="card-item">
+          <strong>Thông số cấu hình chậu</strong>
+          <p>Tên định danh chậu, vị trí đặt (ví dụ: Ban công tầng 2, Giàn lan trước sân), loại cây được gán và trạng thái hoạt động.</p>
+        </div>
+        <div class="card-item">
+          <strong>Liên kết dữ liệu</strong>
+          <p>Từ danh sách chậu có thể điều hướng nhanh sang: Biểu đồ cảm biến của chậu, lịch sử các lần tưới hoặc đổi lịch tưới.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- PANEL 11 -->
+    <section class="panel-card" data-i="11">
+      <span class="eyebrow-badge"><i class="fa-solid fa-wave-square"></i> B. Chức năng hệ thống</span>
+      <h2 class="panel-title">12. Giám sát dữ liệu cảm biến</h2>
+      <p class="lead-text">Thu thập và hiển thị 50 bản ghi độ ẩm gần nhất gửi từ cảm biến đất.</p>
+
+      <pre><code>POST /sensor-data
+Content-Type: application/x-www-form-urlencoded
+
+potId=1&moisture=36.5
+
+# Thành công: HTTP 200 "OK"
+# Dữ liệu sai định dạng: HTTP 400 "Bad Request"
+# Lỗi kết nối DB: HTTP 500 "Internal Server Error"</code></pre>
+
+      <p>Bảng <code>SensorReading</code> lưu trữ lịch sử độ ẩm theo thời gian thực (timestamp), phục vụ vẽ biểu đồ và phân tích độ khô.</p>
+    </section>
+
+    <!-- PANEL 12 -->
+    <section class="panel-card" data-i="12">
+      <span class="eyebrow-badge"><i class="fa-solid fa-clock"></i> B. Chức năng hệ thống</span>
+      <h2 class="panel-title">13. Cấu hình lịch tưới</h2>
+      <p class="lead-text">Quản lý lịch bơm tự động theo từng chậu cây thông qua <code>ScheduleController</code>.</p>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr><th>Hành động</th><th>Tham số POST</th><th>Tác vụ thực thi</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Thêm lịch</strong></td><td><code>action=add, cronExpression, durationSeconds, potId</code></td><td>Tạo bản ghi trong <code>WateringSchedule</code></td></tr>
+            <tr><td><strong>Bật / Tắt</strong></td><td><code>action=toggle, scheduleId, isActive</code></td><td>Chuyển trạng thái kích hoạt của lịch</td></tr>
+            <tr><td><strong>Xóa lịch</strong></td><td><code>action=delete, scheduleId</code></td><td>Xóa lịch hẹn tưới</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout info">
+        <i class="fa-solid fa-circle-info"></i>
+        <div>
+          Role <code>VIEWER</code> bị Controller ngăn chặn thực hiện các thao tác thay đổi lịch (chỉ cho phép xem).
+        </div>
+      </div>
+    </section>
+
+    <!-- PANEL 13 -->
+    <section class="panel-card" data-i="13">
+      <span class="eyebrow-badge"><i class="fa-solid fa-book-open"></i> B. Chức năng hệ thống</span>
+      <h2 class="panel-title">14. Nhật ký tưới (Irrigation History)</h2>
+      <p class="lead-text">Lưu vết mọi phiên bơm nước đã diễn ra: thời lượng bơm, nguồn kích hoạt và lượng nước tiêu thụ.</p>
+
+      <pre><code>POST /history
+Content-Type: application/x-www-form-urlencoded
+
+potId=1&duration=45&waterAmount=1.2
+
+# Phản hồi: "OK"</code></pre>
+
+      <p>Hệ thống ghi nhận vào bảng <code>WateringSession</code> (nguồn <code>DEVICE</code>) và tính toán bổ sung vào bảng phân tích <code>WaterAnalysis</code>.</p>
+    </section>
+
+    <!-- PANEL 14 -->
+    <section class="panel-card" data-i="14">
+      <span class="eyebrow-badge"><i class="fa-solid fa-triangle-exclamation"></i> B. Chức năng hệ thống</span>
+      <h2 class="panel-title">15. Cảnh báo hệ thống (Alert Rules)</h2>
+      <p class="lead-text">Các quy tắc phát hiện bất thường được cài đặt trong <code>AlertService.java</code>.</p>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr><th>Mã cảnh báo</th><th>Điều kiện logic kích hoạt</th><th>Ý nghĩa thực tế</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><span class="badge-status danger">OVERWATER</span></td><td><code>waterMl >= 1000 && retainRatio < 0.5</code></td><td>Tưới nhiều nước nhưng đất không giữ được (nguy cơ úng rễ)</td></tr>
+            <tr><td><span class="badge-status warning">SENSOR_FAULT</span></td><td><code>waterMl > 0 && ẩm_sau <= ẩm_trước</code></td><td>Đã bơm nước nhưng độ ẩm không tăng (cảm biến hỏng hoặc tuột)</td></tr>
+            <tr><td><span class="badge-status warning">DRY_STRESS</span></td><td><code>currentMoisture < 30%</code></td><td>Đất quá khô, cần bổ sung nước khẩn cấp</td></tr>
+            <tr><td><span class="badge-status danger">LEAK</span></td><td><code>dryRate > 5.0</code></td><td>Tốc độ mất nước nhanh bất thường (nghi rò rỉ chậu)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout warn">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <div>
+          <strong>Khoảng cách mã nguồn:</strong> Trong phiên bản hiện tại, <code>AlertService</code> đã định nghĩa đầy đủ 4 hàm logic trên nhưng chưa thấy được gọi tự động (trigger) trong luồng nhận <code>/sensor-data</code>. Cần nối thêm sự kiện để cảnh báo tự sinh.
+        </div>
+      </div>
+    </section>
+
+    <!-- PANEL 15 -->
+    <section class="panel-card" data-i="15">
+      <span class="eyebrow-badge"><i class="fa-solid fa-wand-magic-sparkles"></i> B. Chức năng hệ thống</span>
+      <h2 class="panel-title">16. Dự đoán thời điểm đất khô</h2>
+      <p class="lead-text">Thuật toán ước tính số giờ còn lại trước khi đất đạt trạng thái cần tưới.</p>
+
+      <pre><code>// src/java/service/MLService.java
+double baseDryHours   = 12.0;
+double moistureFactor = currentMoisture * 0.2;
+double waterFactor    = (recentWaterMl / 100.0) * 0.5;
+double lightFactor    = (lightLux / 1000.0) * 1.5;
+
+double totalHoursToDry = baseDryHours + moistureFactor + waterFactor - lightFactor;
+if (totalHoursToDry < 1.0) totalHoursToDry = 1.0;
+
+// Confidence hiện được sinh ngẫu nhiên 75% - 95%</code></pre>
+
+      <div class="callout info">
+        <i class="fa-solid fa-circle-info"></i>
+        <div>
+          <strong>Lưu ý học thuật:</strong> Công thức trên là một mô hình <em>Heuristic tuyến tính</em> có tính toán ánh sáng và độ ẩm, chưa phải là Model Machine Learning (như Random Forest hay LSTM) huấn luyện trên dataset thật. Hãy trình bày trung thực trước hội đồng.
+        </div>
+      </div>
+    </section>
+
+    <!-- PANEL 16 -->
+    <section class="panel-card" data-i="16">
+      <span class="eyebrow-badge"><i class="fa-solid fa-file-csv"></i> B. Chức năng hệ thống</span>
+      <h2 class="panel-title">17. Xuất báo cáo CSV</h2>
+      <p class="lead-text">Tính năng trích xuất toàn bộ nhật ký tưới phục vụ thống kê bên ngoài qua Microsoft Excel.</p>
+
+      <div class="feature-grid">
+        <div class="card-item">
+          <strong>Thông số file xuất</strong>
+          <p>Tên file: <code>Bao_Cao_Lich_Su_Tuoi.csv</code>, giới hạn tối đa 1.000 dòng mới nhất, mã hóa ký tự UTF-8 kèm tiền tố BOM để Excel mở tiếng Việt không bị lỗi font.</p>
+        </div>
+        <div class="card-item">
+          <strong>Các cột dữ liệu</strong>
+          <p>Mã phiên, Tên chậu cây, Giống cây, Thời điểm bắt đầu tưới, Thời lượng bơm (giây), Lượng nước thực tế (lít).</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- PANEL 17 -->
+    <section class="panel-card" data-i="17">
+      <span class="eyebrow-badge"><i class="fa-solid fa-route"></i> C. Đọc & Kiểm thử code</span>
+      <h2 class="panel-title">18. Bản đồ URL Controllers</h2>
+      <p class="lead-text">Danh sách tất cả các Servlet được khai báo <code>@WebServlet</code> trong project.</p>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr><th>URL Pattern</th><th>Lớp Controller</th><th>Chức năng chính</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>/login</code></td><td><code>LoginServlet</code></td><td>Xác thực đăng nhập và điều hướng session</td></tr>
+            <tr><td><code>/logout</code></td><td><code>LogoutServlet</code></td><td>Hủy bỏ session người dùng</td></tr>
+            <tr><td><code>/dashboard</code></td><td><code>DashboardController</code></td><td>Tổng quan vườn, số liệu KPI nước</td></tr>
+            <tr><td><code>/plants</code></td><td><code>PlantController</code></td><td>CRUD danh mục giống cây trồng</td></tr>
+            <tr><td><code>/pots</code></td><td><code>PotController</code></td><td>CRUD danh sách chậu và trạng thái</td></tr>
+            <tr><td><code>/sensor-data</code></td><td><code>SensorController</code></td><td>Nhận POST cảm biến & hiển thị log độ ẩm</td></tr>
+            <tr><td><code>/schedules</code></td><td><code>ScheduleController</code></td><td>Cấu hình lịch tự động bật/tắt bơm</td></tr>
+            <tr><td><code>/history</code></td><td><code>HistoryController</code></td><td>Theo dõi các phiên tưới đã thực hiện</td></tr>
+            <tr><td><code>/alerts</code></td><td><code>AlertController</code></td><td>Xem danh sách sự cố và đánh dấu xử lý</td></tr>
+            <tr><td><code>/predict</code></td><td><code>MLController</code></td><td>Dự đoán thời gian đất khô</td></tr>
+            <tr><td><code>/export-history</code></td><td><code>ExportCSVController</code></td><td>Tải file CSV lịch sử tưới</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- PANEL 18 -->
+    <section class="panel-card" data-i="18">
+      <span class="eyebrow-badge"><i class="fa-solid fa-cubes"></i> C. Đọc & Kiểm thử code</span>
+      <h2 class="panel-title">19. Vai trò của Model, DAO & Service</h2>
+      <p class="lead-text">Cách phân tách các tầng kiến trúc trong mã nguồn.</p>
+
+      <div class="feature-grid">
+        <div class="card-item">
+          <strong>1. Model (POJO)</strong>
+          <p>Chứa các trường dữ liệu getter/setter tương ứng với bảng DB: <code>Plant</code>, <code>Pot</code>, <code>SensorData</code>, <code>WateringSchedule</code>, <code>Alert</code>, <code>AppUser</code>.</p>
+        </div>
+        <div class="card-item">
+          <strong>2. DAO (Database Access)</strong>
+          <p>Mở kết nối JDBC, chuẩn bị câu lệnh <code>PreparedStatement</code>, mapping <code>ResultSet</code> sang Model và đóng kết nối an toàn.</p>
+        </div>
+        <div class="card-item">
+          <strong>3. Service Layer</strong>
+          <p>Chứa các giải thuật nghiệp vụ độc lập như <code>AlertService</code> (luật cảnh báo) và <code>MLService</code> (ước lượng đất khô).</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- PANEL 19 -->
+    <section class="panel-card" data-i="19">
+      <span class="eyebrow-badge"><i class="fa-solid fa-vial"></i> C. Đọc & Kiểm thử code</span>
+      <h2 class="panel-title">20. Dữ liệu mẫu & Kịch bản Test</h2>
+      <p class="lead-text">Công cụ sinh dữ liệu thử nghiệm <code>SampleDataGenerator.java</code>.</p>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr><th>Tập dữ liệu</th><th>Khoảng giá trị mô phỏng</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Độ ẩm đất</strong></td><td>30.0% – 85.0%</td></tr>
+            <tr><td><strong>Khối lượng chậu</strong></td><td>5.0 kg – 6.5 kg</td></tr>
+            <tr><td><strong>Cường độ ánh sáng</strong></td><td>0 – 9,999 Lux</td></tr>
+            <tr><td><strong>Thời lượng tưới</strong></td><td>30 – 89 giây</td></tr>
+            <tr><td><strong>Lượng nước tưới</strong></td><td>500 – 1,999 ml</td></tr>
+            <tr><td><strong>Tỷ lệ giữ nước</strong></td><td>0.4 – 0.9</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout danger">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <div>
+          <strong>Cảnh báo:</strong> <code>SampleDataGenerator</code> giả định các bảng đã có ID pot và sensor bằng 1. Hãy kiểm tra khóa ngoại (Foreign Key) trước khi chạy hàm <code>main()</code> của class này để tránh lỗi vi phạm ràng buộc.
+        </div>
+      </div>
+    </section>
+
+    <!-- PANEL 20 -->
+    <section class="panel-card" data-i="20">
+      <span class="eyebrow-badge"><i class="fa-solid fa-circle-exclamation"></i> C. Đọc & Kiểm thử code</span>
+      <h2 class="panel-title">21. Giới hạn & Điểm chưa nối hoàn chỉnh</h2>
+      <p class="lead-text">Bảng tổng hợp các hạn chế kỹ thuật hiện hữu trong gói mã nguồn gốc.</p>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr><th>Vấn đề tồn tại</th><th>Hiện trạng trong mã nguồn</th><th>Hướng xử lý đề xuất</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Thiếu script SQL DDL</td><td>Gói ZIP không có sẵn file <code>.sql</code> tạo database ban đầu</td><td>Tạo script <code>create_schema.sql</code> chuẩn từ DAO</td></tr>
+            <tr><td>Luật Alert chưa kích hoạt</td><td>2 hàm trong <code>AlertService</code> chưa được gọi tự động</td><td>Gắn trigger vào <code>SensorController.doPost()</code></td></tr>
+            <tr><td>Dự đoán chưa phải AI</td><td>Dùng công thức heuristic, confidence random</td><td>Ghi nhận trung thực là luật tính toán quy tắc</td></tr>
+            <tr><td>Chưa có Background Scheduler</td><td>Lịch tưới mới chỉ lưu bảng DB, chưa có Timer bắn lệnh bơm</td><td>Tích hợp <code>ScheduledExecutorService</code> hoặc Quartz</td></tr>
+            <tr><td>Thiết bị bị chặn bởi AuthFilter</td><td>Yêu cầu session cookie ở mọi endpoint</td><td>Thêm Token Header hoặc whitelist cho IoT</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- PANEL 21 -->
+    <section class="panel-card" data-i="21">
+      <span class="eyebrow-badge"><i class="fa-solid fa-play"></i> D. Vận hành & Demo</span>
+      <h2 class="panel-title">22. Chạy project trong NetBeans</h2>
+      <p class="lead-text">Hướng dẫn từng bước khởi chạy ứng dụng web trên máy tính cá nhân.</p>
+
+      <ol class="step-list">
+        <li>Mở NetBeans, chọn <strong>File → Open Project</strong>, trỏ đến thư mục source code.</li>
+        <li>Chuột phải vào Project → <strong>Properties → Run</strong>: Đảm bảo Server là Tomcat và Java Platform là JDK tương thích.</li>
+        <li>Tạo CSDL <code>SmartIrrigationDB</code> trong SQL Server Management Studio (SSMS).</li>
+        <li>Chỉnh sửa user/password kết nối trong <code>src/java/util/DBContext.java</code>.</li>
+        <li>Chuột phải vào Project → <strong>Clean and Build</strong> để biên dịch lại file .WAR.</li>
+        <li>Chuột phải vào Project → <strong>Run</strong> để khởi động Tomcat và mở trình duyệt tự động.</li>
+      </ol>
+    </section>
+
+    <!-- PANEL 22 -->
+    <section class="panel-card" data-i="22">
+      <span class="eyebrow-badge"><i class="fa-solid fa-bug"></i> D. Vận hành & Demo</span>
+      <h2 class="panel-title">23. Dò lỗi thường gặp (Troubleshooting)</h2>
+      <p class="lead-text">Bảng tra cứu nhanh nguyên nhân và cách khắc phục sự cố runtime.</p>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr><th>Hiện tượng lỗi</th><th>Nguyên nhân khả dĩ</th><th>Cách giải quyết</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Lỗi Driver / Không kết nối DB</td><td>SQL Server chưa bật TCP/IP, cổng 1433 bị chặn hoặc mật khẩu sai</td><td>Mở SQL Server Configuration Manager → Bật TCP/IP → Restart SQL Service</td></tr>
+            <tr><td>Invalid object name '...'</td><td>Chưa tạo bảng trong database hoặc kết nối sai tên DB</td><td>Kiểm tra danh sách bảng trong SSMS so với câu truy vấn DAO</td></tr>
+            <tr><td>Đăng nhập luôn báo sai</td><td>Mật khẩu băm không khớp format của <code>PasswordUtil</code></td><td>Dùng tiện ích <code>PasswordUtil.hash()</code> để tạo chuỗi băm chuẩn trong DB</td></tr>
+            <tr><td>Bị redirect liên tục về <code>/login</code></td><td>Mất cookie session JSESSIONID hoặc context path lệch</td><td>Kiểm tra thiết lập Cookie trên trình duyệt và file <code>context.xml</code></td></tr>
+            <tr><td>Dashboard hiển thị số 0</td><td>Bảng <code>WaterAnalysis</code> chưa có dữ liệu mẫu</td><td>Thêm dữ liệu giả lập từ <code>SampleDataGenerator</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- PANEL 23 -->
+    <section class="panel-card" data-i="23">
+      <span class="eyebrow-badge"><i class="fa-solid fa-stopwatch"></i> D. Vận hành & Demo</span>
+      <h2 class="panel-title">24. Kịch bản demo 5–7 phút trước hội đồng</h2>
+      <p class="lead-text">Khung kịch bản trình diễn súc tích và chuyên nghiệp dành cho sinh viên.</p>
+
+      <ol class="step-list">
+        <li><strong>0:00 - 0:30 (Mở đầu):</strong> Giới thiệu bài toán giám sát tưới cây thông minh và kiến trúc tổng quan Java Web Servlet + SQL Server.</li>
+        <li><strong>0:30 - 1:00 (Đăng nhập):</strong> Đăng nhập với tài khoản Admin, trình bày cơ chế mã hóa mật khẩu và phân quyền với AuthFilter.</li>
+        <li><strong>1:00 - 2:00 (Quản lý vườn & chậu):</strong> Thao tác thêm một cây mới với ngưỡng ẩm lý tưởng, sau đó gán vào chậu ở khu vực cụ thể.</li>
+        <li><strong>2:00 - 3:00 (Giám sát cảm biến):</strong> Trình diễn bảng theo dõi độ ẩm thời gian thực của chậu và thao tác gửi dữ liệu thử nghiệm.</li>
+        <li><strong>3:00 - 4:00 (Dashboard & Nước):</strong> Giải thích các KPI lượng nước đã cấp, nước giữ lại, hao phí và biểu đồ Chart.js.</li>
+        <li><strong>4:00 - 5:00 (Cảnh báo & Dự đoán):</strong> Trình bày bộ luật phát hiện úng/rò rỉ trong AlertService và công thức dự đoán thời điểm khô đất.</li>
+        <li><strong>5:00 - 5:30 (Tổng kết & Hướng phát triển):</strong> Xuất báo cáo CSV, nêu trung thực các điểm đang ở mức prototype và kế hoạch kết nối mạch ESP32 thực tế.</li>
+      </ol>
+    </section>
+
+    <!-- PANEL 24 -->
+    <section class="panel-card" data-i="24">
+      <span class="eyebrow-badge"><i class="fa-solid fa-arrow-trend-up"></i> D. Vận hành & Demo</span>
+      <h2 class="panel-title">25. Lộ trình nâng cấp hợp lý</h2>
+      <p class="lead-text">Các bước cải tiến để đưa sản phẩm từ đồ án môn học lên hệ thống thực tế hoàn chỉnh.</p>
+
+      <div class="feature-grid">
+        <div class="card-item">
+          <span class="badge-status success" style="margin-bottom:8px;">Ưu tiên 1</span>
+          <strong>Hoàn thiện CSDL & Bảo mật</strong>
+          <p>Tạo script migration chính thức với Flyway, đưa mật khẩu DB ra biến môi trường, bổ sung CSRF token.</p>
+        </div>
+        <div class="card-item">
+          <span class="badge-status warning" style="margin-bottom:8px;">Ưu tiên 2</span>
+          <strong>Tách RESTful API & Token</strong>
+          <p>Tách các endpoint <code>/api/*</code> cho ESP32 sử dụng API Key/JWT thay vì dùng Session Web thông thường.</p>
+        </div>
+        <div class="card-item">
+          <span class="badge-status danger" style="margin-bottom:8px;">Ưu tiên 3</span>
+          <strong>Tích hợp Scheduler Thực tế</strong>
+          <p>Tích hợp Quartz Scheduler để quét lịch hẹn và kích hoạt rơ-le bơm nước thông qua giao thức MQTT.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER NAV -->
+    <div class="footer-nav">
+      <button id="footerPrev"><i class="fa-solid fa-arrow-left"></i> Mục trước</button>
+      <div style="font-size:12px; color:var(--text-muted); text-align:center;">
+        Smart Irrigation Project Guide · PRJ301<br>
+        <span style="color:var(--text-soft);">Sử dụng phím mũi tên ← / → để chuyển nhanh</span>
+      </div>
+      <button id="footerNext">Mục tiếp theo <i class="fa-solid fa-arrow-right"></i></button>
+    </div>
+
+  </main>
+</div>
+
+<script>
+(() => {
+  const panels = Array.from(document.querySelectorAll('.panel-card'));
+  const navLinks = Array.from(document.querySelectorAll('.nav-link'));
+  const btnPrev = document.getElementById('btnPrev');
+  const btnNext = document.getElementById('btnNext');
+  const footerPrev = document.getElementById('footerPrev');
+  const footerNext = document.getElementById('footerNext');
+  const stepCounter = document.getElementById('stepCounter');
+  const progressBar = document.getElementById('progressBar');
+  const headerCrumbGroup = document.getElementById('headerCrumbGroup');
+  const navSearch = document.getElementById('navSearch');
+  const menuToggle = document.getElementById('menuToggle');
+  const sidebar = document.getElementById('sidebar');
+
+  let currentIndex = 0;
+
+  function updateView(index, smoothScroll = true) {
+    currentIndex = Math.max(0, Math.min(panels.length - 1, index));
+
+    // Update panels
+    panels.forEach((p, idx) => {
+      p.classList.toggle('active', idx === currentIndex);
+    });
+
+    // Update nav links
+    navLinks.forEach((link, idx) => {
+      const isActive = idx === currentIndex;
+      link.classList.toggle('active', isActive);
+      if (isActive) {
+        link.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }
+    });
+
+    // Update controls
+    const isFirst = currentIndex === 0;
+    const isLast = currentIndex === panels.length - 1;
+
+    btnPrev.disabled = isFirst;
+    footerPrev.disabled = isFirst;
+    btnNext.disabled = isLast;
+    footerNext.disabled = isLast;
+
+    // Update counter & progress
+    stepCounter.textContent = `${currentIndex + 1} / ${panels.length}`;
+    const progressPercent = ((currentIndex + 1) / panels.length) * 100;
+    progressBar.style.width = `${progressPercent}%`;
+
+    // Update group crumb
+    const activeBadge = panels[currentIndex].querySelector('.eyebrow-badge');
+    if (activeBadge) {
+      headerCrumbGroup.textContent = activeBadge.textContent.trim();
+    }
+
+    if (smoothScroll) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Close mobile sidebar if open
+    if (window.innerWidth <= 900) {
+      sidebar.classList.remove('open');
+    }
+  }
+
+  // Event listeners
+  navLinks.forEach((link) => {
+    link.addEventListener('click', () => {
+      const idx = parseInt(link.getAttribute('data-i'), 10);
+      updateView(idx);
+    });
+  });
+
+  btnPrev.addEventListener('click', () => updateView(currentIndex - 1));
+  footerPrev.addEventListener('click', () => updateView(currentIndex - 1));
+  btnNext.addEventListener('click', () => updateView(currentIndex + 1));
+  footerNext.addEventListener('click', () => updateView(currentIndex + 1));
+
+  // Search filter
+  navSearch.addEventListener('input', (e) => {
+    const val = e.target.value.toLowerCase().trim();
+    navLinks.forEach(link => {
+      const text = link.textContent.toLowerCase();
+      const parentLi = link.closest('li');
+      if (parentLi) {
+        parentLi.style.display = text.includes(val) ? '' : 'none';
+      }
+    });
+  });
+
+  // Mobile drawer toggle
+  if (menuToggle) {
+    menuToggle.addEventListener('click', () => {
+      sidebar.classList.toggle('open');
+    });
+  }
+
+  // Keyboard navigation
+  document.addEventListener('keydown', (e) => {
+    if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      updateView(currentIndex - 1);
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      updateView(currentIndex + 1);
+    }
+  });
+
+  // Initial render
+  updateView(0, false);
+})();
+</script>
+</body>
+</html>
