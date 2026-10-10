@@ -1,7 +1,7 @@
 <%-- 
     Document   : navbar 
     Created on : Oct 8, 2026, 11:20:42 AM 
-    Author     : VNJ - Grouped & Clean Eco-Tech SaaS Navbar 
+    Author     : VNJ - Grouped & Clean Eco-Tech SaaS Navbar (RBAC - Tiếng Việt)
 --%>
 <%@page pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
@@ -118,81 +118,151 @@
         
         <div class="collapse navbar-collapse" id="navbarNav">
             
-            <!-- MENU ĐIỀU HƯỚNG GOM CỤM CHÍNH -->
+            <!-- MENU ĐIỀU HƯỚNG GOM CỤM CHÍNH (ĐÃ PHÂN QUYỀN) -->
             <ul class="navbar-nav me-auto ms-lg-4 mt-3 mt-lg-0 align-items-lg-center">
                 
-                <!-- 1. Tổng quan -->
+                <!-- 1. Tổng quan (Ai đăng nhập cũng thấy) -->
                 <li class="nav-item">
                     <a class="nav-link saas-nav-link" href="${pageContext.request.contextPath}/dashboard">
                         <i class="bi bi-grid-1x2-fill"></i> <span>Tổng quan</span>
                     </a>
                 </li>
                 
-                <!-- 2. Nhóm Canh tác: Cây trồng & Chậu -->
-                <li class="nav-item dropdown">
-                    <a class="nav-link saas-nav-link dropdown-toggle" href="#" id="farmDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-tree-fill"></i> <span>Khu vườn</span>
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-saas" aria-labelledby="farmDropdown">
-                        <li>
-                            <a class="dropdown-item dropdown-item-saas" href="${pageContext.request.contextPath}/plants">
-                                <i class="bi bi-flower1 text-success"></i> <span>Quản lý Cây trồng</span>
+                <c:choose>
+                    <%-- ADMIN: Thấy toàn bộ chức năng --%>
+                    <c:when test="${sessionScope.LOGIN_USER.roleName == 'ADMIN'}">
+                        <!-- Nhóm Canh tác: Cây trồng & Chậu -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link saas-nav-link dropdown-toggle" href="#" id="farmDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-tree-fill"></i> <span>Khu vườn</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-saas" aria-labelledby="farmDropdown">
+                                <li>
+                                    <a class="dropdown-item dropdown-item-saas" href="${pageContext.request.contextPath}/plants">
+                                        <i class="bi bi-flower1 text-success"></i> <span>Quản lý Cây trồng</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item dropdown-item-saas" href="${pageContext.request.contextPath}/pots">
+                                        <i class="bi bi-box-seam text-primary"></i> <span>Chậu & Khu vực tưới</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <!-- Nhóm Vận hành IoT: Cảm biến, Lịch tưới & Nhật ký -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link saas-nav-link dropdown-toggle" href="#" id="iotDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-cpu-fill"></i> <span>Vận hành IoT</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-saas" aria-labelledby="iotDropdown">
+                                <li>
+                                    <a class="dropdown-item dropdown-item-saas" href="${pageContext.request.contextPath}/sensor-data">
+                                        <i class="bi bi-moisture text-info"></i> <span>Dữ liệu Cảm biến</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item dropdown-item-saas" href="${pageContext.request.contextPath}/schedules">
+                                        <i class="bi bi-calendar-check text-warning"></i> <span>Lịch tưới tự động</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item dropdown-item-saas" href="${pageContext.request.contextPath}/manual-water">
+                                        <i class="bi bi-cloud-rain text-primary"></i> <span>Tưới thủ công</span>
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider my-1"></li>
+                                <li>
+                                    <a class="dropdown-item dropdown-item-saas" href="${pageContext.request.contextPath}/history">
+                                        <i class="bi bi-clock-history text-secondary"></i> <span>Nhật ký bơm nước</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    </c:when>
+
+                    <%-- MANAGER: Thấy Khu vườn và Lịch tưới --%>
+                    <c:when test="${sessionScope.LOGIN_USER.roleName == 'MANAGER'}">
+                        <li class="nav-item dropdown">
+                            <a class="nav-link saas-nav-link dropdown-toggle" href="#" id="farmDropdownManager" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-tree-fill"></i> <span>Khu vườn</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-saas" aria-labelledby="farmDropdownManager">
+                                <li>
+                                    <a class="dropdown-item dropdown-item-saas" href="${pageContext.request.contextPath}/plants">
+                                        <i class="bi bi-flower1 text-success"></i> <span>Quản lý Cây trồng</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item dropdown-item-saas" href="${pageContext.request.contextPath}/pots">
+                                        <i class="bi bi-box-seam text-primary"></i> <span>Chậu & Khu vực tưới</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link saas-nav-link" href="${pageContext.request.contextPath}/schedules">
+                                <i class="bi bi-calendar-check"></i> <span>Lịch tưới tự động</span>
                             </a>
                         </li>
-                        <li>
-                            <a class="dropdown-item dropdown-item-saas" href="${pageContext.request.contextPath}/pots">
-                                <i class="bi bi-box-seam text-primary"></i> <span>Chậu & Khu vực tưới</span>
+                    </c:when>
+
+                    <%-- TECHNICIAN: Thấy Cảm biến và Nhật ký --%>
+                    <c:when test="${sessionScope.LOGIN_USER.roleName == 'TECHNICIAN'}">
+                        <li class="nav-item dropdown">
+                            <a class="nav-link saas-nav-link dropdown-toggle" href="#" id="techDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-cpu-fill"></i> <span>Quản lý Thiết bị</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-saas" aria-labelledby="techDropdown">
+                                <li>
+                                    <a class="dropdown-item dropdown-item-saas" href="${pageContext.request.contextPath}/sensor-data">
+                                        <i class="bi bi-moisture text-info"></i> <span>Dữ liệu Cảm biến</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item dropdown-item-saas" href="${pageContext.request.contextPath}/history">
+                                        <i class="bi bi-clock-history text-secondary"></i> <span>Nhật ký bơm nước</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    </c:when>
+
+                    <%-- STAFF: Chỉ thấy Tưới thủ công --%>
+                    <c:when test="${sessionScope.LOGIN_USER.roleName == 'STAFF'}">
+                        <li class="nav-item">
+                            <a class="nav-link saas-nav-link" href="${pageContext.request.contextPath}/manual-water">
+                                <i class="bi bi-cloud-rain"></i> <span>Tưới thủ công</span>
                             </a>
                         </li>
-                    </ul>
-                </li>
-                
-                <!-- 3. Nhóm Vận hành IoT: Cảm biến, Lịch tưới & Nhật ký -->
-                <li class="nav-item dropdown">
-                    <a class="nav-link saas-nav-link dropdown-toggle" href="#" id="iotDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-cpu-fill"></i> <span>Vận hành IoT</span>
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-saas" aria-labelledby="iotDropdown">
-                        <li>
-                            <a class="dropdown-item dropdown-item-saas" href="${pageContext.request.contextPath}/sensor-data">
-                                <i class="bi bi-moisture text-info"></i> <span>Dữ liệu Cảm biến</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item dropdown-item-saas" href="${pageContext.request.contextPath}/schedules">
-                                <i class="bi bi-calendar-check text-warning"></i> <span>Lịch tưới tự động</span>
-                            </a>
-                        </li>
-                        <li><hr class="dropdown-divider my-1"></li>
-                        <li>
-                            <a class="dropdown-item dropdown-item-saas" href="${pageContext.request.contextPath}/history">
-                                <i class="bi bi-clock-history text-secondary"></i> <span>Nhật ký bơm nước</span>
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-                
-                <!-- 4. AI Phân tích & Dự đoán -->
-                <li class="nav-item">
-                    <a class="nav-link saas-nav-link" href="${pageContext.request.contextPath}/predict">
-                        <i class="bi bi-stars text-primary"></i> <span>AI Dự đoán</span> <span class="badge-ai ms-1">PRO</span>
-                    </a>
-                </li>
+                    </c:when>
+                </c:choose>
+
+                <!-- AI Phân tích & Dự đoán (Chỉ Admin và Manager thấy) -->
+                <c:if test="${sessionScope.LOGIN_USER.roleName == 'ADMIN' || sessionScope.LOGIN_USER.roleName == 'MANAGER'}">
+                    <li class="nav-item">
+                        <a class="nav-link saas-nav-link" href="${pageContext.request.contextPath}/predict">
+                            <i class="bi bi-stars text-primary"></i> <span>AI Dự đoán</span> <span class="badge-ai ms-1">PRO</span>
+                        </a>
+                    </li>
+                </c:if>
                 
             </ul>
             
             <!-- TOOLBAR GÓC PHẢI: Chuông Cảnh báo & Profile Người dùng -->
             <ul class="navbar-nav align-items-lg-center gap-2 mt-2 mt-lg-0">
                 
-                <!-- Nút Chuông cảnh báo dạng icon tròn có chấm đỏ nổi bật -->
-                <li class="nav-item">
-                    <a class="btn-nav-icon position-relative" href="${pageContext.request.contextPath}/alerts" title="Cảnh báo hệ thống">
-                        <i class="bi bi-bell-fill"></i>
-                        <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle">
-                            <span class="visually-hidden">New alerts</span>
-                        </span>
-                    </a>
-                </li>
+                <!-- Nút Chuông cảnh báo (Ẩn với Viewer) -->
+                <c:if test="${sessionScope.LOGIN_USER.roleName != 'VIEWER'}">
+                    <li class="nav-item">
+                        <a class="btn-nav-icon position-relative" href="${pageContext.request.contextPath}/alerts" title="Cảnh báo hệ thống">
+                            <i class="bi bi-bell-fill"></i>
+                            <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle">
+                                <span class="visually-hidden">New alerts</span>
+                            </span>
+                        </a>
+                    </li>
+                </c:if>
                 
                 <!-- Dropdown Thông tin tài khoản -->
                 <li class="nav-item dropdown">
@@ -230,7 +300,7 @@
     </div>
 </nav>
 
-<!-- Tự động Active menu đang xem (hỗ trợ cả Dropdown cha khi đang ở trang con) -->
+<!-- Tự động Active menu đang xem -->
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const currentPath = window.location.pathname;
@@ -238,7 +308,7 @@
         
         navLinks.forEach(link => {
             const href = link.getAttribute('href');
-            if (href && currentPath.endsWith(href.split('/').pop())) {
+            if (href && href !== '#' && currentPath.endsWith(href.split('/').pop())) {
                 link.classList.add('active');
                 
                 const parentDropdown = link.closest('.dropdown');
