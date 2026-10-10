@@ -1,4 +1,8 @@
-
+<%-- 
+    Document   : pots-list 
+    Created on : Oct 7, 2026, 11:27:43 AM 
+    Author     : VNJ - Refactored to Modern Eco-Tech SaaS Dashboard 
+--%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <!DOCTYPE html>
@@ -6,18 +10,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pot / Irrigation Zone Management - Smart Irrigation System</title>
-
+    <title>Quản lý Khu vực tưới / Chậu - Smart Irrigation System</title>
     
+    <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
-
+    <!-- Bootstrap 5 & Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     
-
+    <!-- CSS tổng thể của dự án -->
     <link href="${pageContext.request.contextPath}/css/app.css" rel="stylesheet">
     
     <style>
@@ -295,61 +299,61 @@
     </style>
 </head>
 <body>
-
+    <!-- Navbar chung của hệ thống -->
     <jsp:include page="navbar.jsp" />
     
     <main class="container py-4">
-
+        <!-- Main SaaS Card -->
         <div class="saas-card">
             
-
+            <!-- Header Section: Title & Actions -->
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4 pb-2 border-bottom border-light">
                 <div>
                     <div class="d-flex align-items-center gap-2 mb-1">
-                        <h3 class="mb-0 fw-bold text-dark tracking-tight" style="letter-spacing: -0.02em;">Pot / Irrigation Zone List</h3>
+                        <h3 class="mb-0 fw-bold text-dark tracking-tight" style="letter-spacing: -0.02em;">Danh sách Chậu / Khu vực tưới</h3>
                         <span class="page-badge-pots">
-                            <span class="pulse-green-dot"></span> Device Management
+                            <span class="pulse-green-dot"></span> Quản lý thiết bị
                         </span>
                     </div>
                     <p class="text-secondary small mb-0 d-flex align-items-center gap-1">
                         <i class="bi bi-geo-alt text-primary"></i> 
-                        <span>Monitor irrigation valve status, physical location, and plant link on each smart pot</span>
+                        <span>Giám sát trạng thái van tưới, vị trí vật lý và liên kết cây trồng trên từng chậu thông minh</span>
                     </p>
                 </div>
                 
-
+                <!-- Nút Thêm mới gọi về Servlet -->
                 <div>
                     <a href="${pageContext.request.contextPath}/pots?action=new" class="btn-create-pot">
-                        <i class="bi bi-plus-lg"></i> <span>Add New Pot</span>
+                        <i class="bi bi-plus-lg"></i> <span>Thêm Chậu Mới</span>
                     </a>
                 </div>
             </div>
             
-
+            <!-- Bảng Dữ liệu Hiện đại -->
             <div class="table-saas-container">
                 <table class="table-saas">
                     <thead>
                         <tr>
                             <th style="width: 8%;" class="text-center">ID</th>
-                            <th style="width: 23%;">Pot Name / Zone</th>
-                            <th style="width: 20%;">Location</th>
-                            <th style="width: 17%;">Currently growing</th>
-                            <th style="width: 12%;" class="text-center">Status</th>
-                            <th style="width: 20%;" class="text-center">Actions</th>
+                            <th style="width: 23%;">Tên Chậu / Khu vực</th>
+                            <th style="width: 20%;">Vị trí đặt</th>
+                            <th style="width: 17%;">Đang trồng cây</th>
+                            <th style="width: 12%;" class="text-center">Trạng thái</th>
+                            <th style="width: 20%;" class="text-center">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
-
+                        <!-- Vòng lặp in danh sách chậu cây -->
                         <c:forEach var="p" items="${listPot}">
                             <tr>
-
+                                <!-- ID -->
                                 <td class="text-center">
                                     <span class="badge bg-light text-secondary border px-2 py-1 rounded-pill fw-semibold small">
                                         #${p.potId}
                                     </span>
                                 </td>
                                 
-
+                                <!-- Tên Chậu -->
                                 <td>
                                     <div class="pot-title-box">
                                         <div class="pot-avatar-icon"><i class="bi bi-flower1"></i></div>
@@ -360,56 +364,56 @@
                                     </div>
                                 </td>
                                 
-
+                                <!-- Vị trí -->
                                 <td>
                                     <span class="location-text">
                                         <i class="bi bi-geo-alt-fill text-danger"></i> <span>${p.location}</span>
                                     </span>
                                 </td>
                                 
-
+                                <!-- Cây trồng liên kết -->
                                 <td>
                                     <span class="plant-badge">
                                         <i class="bi bi-tree-fill"></i> <span>${p.plantName}</span>
                                     </span>
                                 </td>
                                 
-
+                                <!-- Trạng thái -->
                                 <td class="text-center">
                                     <c:choose>
                                         <c:when test="${p.status}">
-                                            <span class="status-pill-active" title="Automatic mode is on">
-                                                <span class="pulse-green-dot"></span> Watering
+                                            <span class="status-pill-active" title="Chế độ tự động đang bật">
+                                                <span class="pulse-green-dot"></span> Đang tưới
                                             </span>
                                         </c:when>
                                         <c:otherwise>
-                                            <span class="status-pill-inactive" title="Automatic mode is off">
-                                                <i class="bi bi-pause-circle-fill"></i> Paused
+                                            <span class="status-pill-inactive" title="Chế độ tự động đã tắt">
+                                                <i class="bi bi-pause-circle-fill"></i> Tạm ngưng
                                             </span>
                                         </c:otherwise>
                                     </c:choose>
                                 </td>
                                 
-
+                                <!-- Nhóm thao tác -->
                                 <td class="text-center">
                                     <div class="action-group-wrapper">
-
-                                        <a href="${pageContext.request.contextPath}/sensor-data?potId=${p.potId}" class="btn-iot-monitor" title="View real-time moisture and sensor parameters">
-                                            <i class="bi bi-droplet-half"></i> <span>Monitor</span>
+                                        <!-- Liên kết dữ liệu IoT: Giám sát -->
+                                        <a href="${pageContext.request.contextPath}/sensor-data?potId=${p.potId}" class="btn-iot-monitor" title="Xem độ ẩm và thông số cảm biến thời gian thực">
+                                            <i class="bi bi-droplet-half"></i> <span>Giám sát</span>
                                         </a>
                                         
-
-                                        <a href="${pageContext.request.contextPath}/history?potId=${p.potId}" class="btn-iot-history" title="View pump activation history log">
-                                            <i class="bi bi-clock-history"></i> <span>History</span>
+                                        <!-- Liên kết dữ liệu IoT: Lịch sử -->
+                                        <a href="${pageContext.request.contextPath}/history?potId=${p.potId}" class="btn-iot-history" title="Xem nhật ký lịch sử kích hoạt bơm nước">
+                                            <i class="bi bi-clock-history"></i> <span>Lịch sử</span>
                                         </a>
                                         
-
-                                        <a href="${pageContext.request.contextPath}/pots?action=edit&id=${p.potId}" class="btn-saas-edit" title="Edit pot information">
+                                        <!-- Nút Sửa -->
+                                        <a href="${pageContext.request.contextPath}/pots?action=edit&id=${p.potId}" class="btn-saas-edit" title="Chỉnh sửa thông tin chậu">
                                             <i class="bi bi-pencil-square"></i>
                                         </a>
                                         
-
-                                        <a href="${pageContext.request.contextPath}/pots?action=delete&id=${p.potId}" class="btn-saas-delete" title="Delete this pot" onclick="return confirm('Are you sure you want to delete this pot?');">
+                                        <!-- Nút Xóa -->
+                                        <a href="${pageContext.request.contextPath}/pots?action=delete&id=${p.potId}" class="btn-saas-delete" title="Xóa chậu này" onclick="return confirm('Bạn có chắc chắn muốn xóa chậu này không?');">
                                             <i class="bi bi-trash3-fill"></i>
                                         </a>
                                     </div>
@@ -417,18 +421,18 @@
                             </tr>
                         </c:forEach>
                         
-
+                        <!-- Trạng thái trống nếu chưa có chậu nào -->
                         <c:if test="${empty listPot}">
                             <tr>
                                 <td colspan="6" class="p-0">
                                     <div class="empty-state-card">
                                         <div class="empty-state-icon-box"><i class="bi bi-flower1"></i></div>
-                                        <h5 class="fw-bold text-dark mb-1">No plant pots have been created</h5>
+                                        <h5 class="fw-bold text-dark mb-1">Chưa có chậu cây nào được tạo</h5>
                                         <p class="text-muted small mb-3 max-w-sm mx-auto">
-                                            Start managing your smart garden by adding a new plant pot and assigning a moisture sensor.
+                                            Bắt đầu quản lý khu vườn thông minh của bạn bằng cách thêm mới chậu cây và gán cảm biến đo độ ẩm.
                                         </p>
                                         <a href="${pageContext.request.contextPath}/pots?action=new" class="btn-create-pot d-inline-flex">
-                                            <i class="bi bi-plus-lg"></i> <span>Add First Pot</span>
+                                            <i class="bi bi-plus-lg"></i> <span>Thêm Chậu Đầu Tiên</span>
                                         </a>
                                     </div>
                                 </td>
@@ -438,16 +442,16 @@
                 </table>
             </div>
             
-
+            <!-- Footer chú giải nhanh dưới bảng -->
             <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2 mt-3 pt-2 text-muted small">
-                <span><i class="bi bi-cpu me-1"></i> NodeMCU/ESP32 microcontrollers will automatically recognize pot IDs when connected to the Mesh network.</span>
+                <span><i class="bi bi-cpu me-1"></i> Các vi điều khiển NodeMCU/ESP32 sẽ tự động nhận diện ID chậu khi kết nối vào mạng Mesh.</span>
                 <span>Smart Irrigation Zone Manager &bull; v2.4</span>
             </div>
             
         </div>
     </main>
 
-
+    <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -1,4 +1,8 @@
-
+<%-- 
+    Document   : schedule 
+    Created on : Oct 8, 2026, 11:14:08 AM 
+    Author     : VNJ - Refactored to Modern Eco-Tech SaaS Schedule Management 
+--%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <!DOCTYPE html>
@@ -6,18 +10,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Automated Schedules - Smart Irrigation System</title>
-
+    <title>Lịch tưới tự động - Smart Irrigation System</title>
     
+    <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
-
+    <!-- Bootstrap 5 & Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     
-
+    <!-- CSS tổng của dự án -->
     <link href="${pageContext.request.contextPath}/css/app.css" rel="stylesheet">
     
     <style>
@@ -53,7 +57,7 @@
             margin-bottom: 2rem;
         }
         
-        /* Feature Card (Add new column) */
+        /* Feature Card (Cột Thêm mới) */
         .feature-box {
             background: #ffffff;
             border-radius: 16px;
@@ -269,106 +273,106 @@
     </style>
 </head>
 <body>
-
+    <!-- Navbar chung của hệ thống -->
     <jsp:include page="navbar.jsp" />
     
     <main class="container py-4">
-
+        <!-- Main Card Wrapper -->
         <div class="saas-card">
             
-
+            <!-- Page Header -->
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4 pb-2 border-bottom border-light">
                 <div>
                     <div class="d-flex align-items-center gap-2 mb-1">
                         <h3 class="mb-0 fw-bold text-dark tracking-tight" style="letter-spacing: -0.02em;">
-                            Manage Automated Schedules
+                            Quản lý Lịch tưới tự động
                         </h3>
                         <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1 rounded-pill small fw-bold">
-                            <i class="bi bi-flower1 me-1"></i> Pot ID: ${potId}
+                            <i class="bi bi-flower1 me-1"></i> Chậu ID: ${potId}
                         </span>
                     </div>
                     <p class="text-secondary small mb-0 d-flex align-items-center gap-1">
                         <i class="bi bi-clock-history text-primary"></i> 
-                        <span>Configure pump relay activation time by periodic schedule or Cron expression</span>
+                        <span>Cấu hình thời gian kích hoạt rơ-le máy bơm theo lịch định kỳ hoặc biểu thức Cron</span>
                     </p>
                 </div>
                 
                 <div class="d-flex align-items-center gap-2">
                     <a href="${pageContext.request.contextPath}/pots" class="btn btn-sm btn-outline-secondary rounded-pill px-3 fw-medium">
-                        <i class="bi bi-arrow-left me-1"></i> Pot List
+                        <i class="bi bi-arrow-left me-1"></i> Danh sách Chậu
                     </a>
                 </div>
             </div>
             
-
+            <!-- Layout 2 Cột: Thêm lịch & Danh sách lịch -->
             <div class="row g-4 align-items-stretch">
                 
-
+                <!-- Cột Trái: Khu vực Thêm lịch mới -->
                 <div class="col-lg-4">
                     <div class="feature-box">
                         <div class="feature-box-header">
                             <span class="fw-bold text-dark small text-uppercase tracking-wider d-flex align-items-center gap-2">
-                                <i class="bi bi-plus-circle-fill text-success fs-6"></i> Add New Schedule
+                                <i class="bi bi-plus-circle-fill text-success fs-6"></i> Thêm Lịch Tưới Mới
                             </span>
                             <span class="badge bg-light text-muted border rounded-pill small">Auto-Sync</span>
                         </div>
                         
                         <div class="p-3 p-md-4">
-
+                            <!-- Form POST thêm lịch tưới -->
                             <form action="${pageContext.request.contextPath}/schedules" method="POST">
                                 <input type="hidden" name="action" value="add">
                                 <input type="hidden" name="potId" value="${potId}">
                                 
-
+                                <!-- Trường 1: Thời gian (Cron/Giờ) -->
                                 <div class="mb-3">
                                     <label class="form-label-modern">
                                         <i class="bi bi-alarm text-primary"></i> 
-                                        <span>Time (Cron / Hours) <span class="text-danger">*</span></span>
+                                        <span>Thời gian (Cron / Giờ) <span class="text-danger">*</span></span>
                                     </label>
                                     <div class="input-group-modern">
-                                        <input type="text" name="cronExpression" class="form-control" placeholder="Ex: 07:30 Daily" required>
+                                        <input type="text" name="cronExpression" class="form-control" placeholder="VD: 07:30 Hàng ngày" required>
                                         <i class="bi bi-calendar2-week input-icon"></i>
                                     </div>
                                     <small class="text-muted d-block mt-1" style="font-size: 0.76rem;">
-                                        Enter runtime (ex: <code>06:30</code>) or predefined cycle.
+                                        Nhập giờ chạy (vd: <code>06:30</code>) hoặc chu kỳ định sẵn.
                                     </small>
                                 </div>
                                 
-
+                                <!-- Trường 2: Thời lượng bơm (Giây) -->
                                 <div class="mb-4">
                                     <label class="form-label-modern">
                                         <i class="bi bi-stopwatch text-info"></i> 
-                                        <span>Pump duration <span class="text-danger">*</span></span>
+                                        <span>Thời lượng bơm <span class="text-danger">*</span></span>
                                     </label>
                                     <div class="input-group-modern">
                                         <input type="number" name="durationSeconds" class="form-control" min="10" max="300" value="60" required placeholder="10 - 300">
                                         <i class="bi bi-droplet-half input-icon"></i>
-                                        <span class="input-unit-badge">Seconds</span>
+                                        <span class="input-unit-badge">Giây</span>
                                     </div>
                                     <div class="d-flex justify-content-between align-items-center mt-1">
-                                        <small class="text-muted" style="font-size: 0.76rem;">Minimum: 10s</small>
-                                        <small class="text-muted" style="font-size: 0.76rem;">Maximum: 300s (5 minutes)</small>
+                                        <small class="text-muted" style="font-size: 0.76rem;">Tối thiểu: 10s</small>
+                                        <small class="text-muted" style="font-size: 0.76rem;">Tối đa: 300s (5 phút)</small>
                                     </div>
                                 </div>
                                 
-
+                                <!-- Nút Submit Lưu lịch -->
                                 <button type="submit" class="btn-saas-primary">
-                                    <i class="bi bi-check2-circle fs-5"></i> <span>Save schedule</span>
+                                    <i class="bi bi-check2-circle fs-5"></i> <span>Lưu lịch tưới</span>
                                 </button>
                             </form>
                         </div>
                     </div>
                 </div>
                 
-
+                <!-- Cột Phải: Danh sách lịch đã thiết lập -->
                 <div class="col-lg-8">
                     <div class="feature-box">
                         <div class="feature-box-header">
                             <span class="fw-bold text-dark small text-uppercase tracking-wider d-flex align-items-center gap-2">
-                                <i class="bi bi-list-task text-primary fs-6"></i> Established schedule
+                                <i class="bi bi-list-task text-primary fs-6"></i> Lịch trình đã thiết lập
                             </span>
                             <span class="badge bg-light text-dark border rounded-pill px-3 py-1 small fw-semibold">
-                                <i class="bi bi-clock me-1"></i> Auto cycle
+                                <i class="bi bi-clock me-1"></i> Chu kỳ tự động
                             </span>
                         </div>
                         
@@ -377,66 +381,66 @@
                                 <table class="table saas-table">
                                     <thead>
                                         <tr>
-                                            <th>Setup Time</th>
-                                            <th>Pump duration</th>
-                                            <th class="text-center">Status</th>
-                                            <th class="text-center">Actions</th>
+                                            <th>Thời gian thiết lập</th>
+                                            <th>Thời lượng bơm</th>
+                                            <th class="text-center">Trạng thái</th>
+                                            <th class="text-center">Thao tác</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-
+                                        <!-- Vòng lặp in danh sách lịch tưới -->
                                         <c:forEach var="s" items="${listSchedules}">
                                             <tr>
-
+                                                <!-- Thời gian Cron -->
                                                 <td>
                                                     <div class="cron-pill">
                                                         <i class="bi bi-alarm text-primary"></i> <span>${s.cronExpression}</span>
                                                     </div>
                                                 </td>
                                                 
-
+                                                <!-- Thời lượng bơm -->
                                                 <td>
                                                     <span class="badge bg-light text-dark border px-3 py-2 rounded-pill small fw-semibold">
-                                                        <i class="bi bi-stopwatch text-info me-1"></i> ${s.durationSeconds} seconds
+                                                        <i class="bi bi-stopwatch text-info me-1"></i> ${s.durationSeconds} giây
                                                     </span>
                                                 </td>
                                                 
-
+                                                <!-- Trạng thái -->
                                                 <td class="text-center">
                                                     <c:if test="${s.isActive}">
                                                         <span class="status-badge-active">
-                                                            <span class="pulse-dot-green"></span> On
+                                                            <span class="pulse-dot-green"></span> Đang Bật
                                                         </span>
                                                     </c:if>
                                                     <c:if test="${!s.isActive}">
                                                         <span class="status-badge-inactive">
-                                                            <i class="bi bi-pause-circle text-muted"></i> Temp Off
+                                                            <i class="bi bi-pause-circle text-muted"></i> Tạm Tắt
                                                         </span>
                                                     </c:if>
                                                 </td>
                                                 
-
+                                                <!-- Thao tác -->
                                                 <td class="text-center">
                                                     <div class="d-inline-flex align-items-center gap-2">
-
+                                                        <!-- Nút Bật/Tắt -->
                                                         <form action="${pageContext.request.contextPath}/schedules" method="POST" class="d-inline">
                                                             <input type="hidden" name="action" value="toggle">
                                                             <input type="hidden" name="potId" value="${potId}">
                                                             <input type="hidden" name="scheduleId" value="${s.scheduleId}">
                                                             <input type="hidden" name="isActive" value="${s.isActive}">
-                                                            <button type="submit" class="btn-action-soft-toggle ${s.isActive ? 'active-mode' : 'inactive-mode'}" title="${s.isActive ? 'Pause irrigation schedule' : 'Activate irrigation schedule'}">
+                                                            <button type="submit" class="btn-action-soft-toggle ${s.isActive ? 'active-mode' : 'inactive-mode'}" title="${s.isActive ? 'Tạm dừng lịch tưới' : 'Kích hoạt lịch tưới'}">
                                                                 <i class="bi ${s.isActive ? 'bi-pause-fill' : 'bi-play-fill'}"></i>
-                                                                <span>${s.isActive ? 'Off' : 'On'}</span>
+                                                                <span>${s.isActive ? 'Tắt' : 'Bật'}</span>
                                                             </button>
                                                         </form>
                                                         
-
+                                                        <!-- Nút Xóa -->
                                                         <form action="${pageContext.request.contextPath}/schedules" method="POST" class="d-inline">
                                                             <input type="hidden" name="action" value="delete">
                                                             <input type="hidden" name="potId" value="${potId}">
                                                             <input type="hidden" name="scheduleId" value="${s.scheduleId}">
-                                                            <button type="submit" class="btn-action-soft-delete" onclick="return confirm('Are you sure you want to delete this schedule?');" title="Delete irrigation schedule">
-                                                                <i class="bi bi-trash3"></i> <span>Delete</span>
+                                                            <button type="submit" class="btn-action-soft-delete" onclick="return confirm('Bạn có chắc muốn xóa lịch này?');" title="Xóa lịch tưới">
+                                                                <i class="bi bi-trash3"></i> <span>Xóa</span>
                                                             </button>
                                                         </form>
                                                     </div>
@@ -444,7 +448,7 @@
                                             </tr>
                                         </c:forEach>
                                         
-
+                                        <!-- Khi danh sách trống -->
                                         <c:if test="${empty listSchedules}">
                                             <tr>
                                                 <td colspan="4" class="p-0">
@@ -452,9 +456,9 @@
                                                         <div class="empty-schedule-icon">
                                                             <i class="bi bi-calendar-x"></i>
                                                         </div>
-                                                        <h6 class="fw-bold text-dark mb-1">No irrigation schedule has been established</h6>
+                                                        <h6 class="fw-bold text-dark mb-1">Chưa có lịch tưới nào được thiết lập</h6>
                                                         <p class="text-muted small mb-0">
-                                                            Use the form on the left to create an automatic pumping timeframe for this pot.
+                                                            Sử dụng biểu mẫu bên trái để tạo khung giờ bơm tự động cho chậu này.
                                                         </p>
                                                     </div>
                                                 </td>
@@ -468,11 +472,11 @@
                 </div>
             </div>
             
-
+            <!-- Footer ghi chú kỹ thuật -->
             <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2 mt-4 pt-3 text-muted small border-top border-light">
                 <span>
                     <i class="bi bi-info-circle text-primary me-1"></i> 
-                    Schedule will automatically sync to microcontroller board (ESP32 / NodeMCU) via MQTT protocol.
+                    Lịch tưới sẽ tự động đồng bộ xuống bo mạch vi điều khiển (ESP32 / NodeMCU) qua giao thức MQTT.
                 </span>
                 <span>Smart Irrigation Scheduler &bull; Zone #${potId}</span>
             </div>
@@ -480,7 +484,7 @@
         </div>
     </main>
 
-
+    <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
