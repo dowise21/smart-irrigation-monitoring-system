@@ -1,26 +1,22 @@
-<%-- 
-    Document   : login
-    Created on : Oct 7, 2026, 9:22:14 AM
-    Author     : VNJ - Refactored to Modern Eco-Tech SaaS Login
---%>
+
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng nhập - Smart Irrigation</title>
+    <title>Login - Smart Irrigation</title>
+
     
-    <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
-    <!-- Bootstrap 5 & Bootstrap Icons -->
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     
-    <!-- Tệp CSS tổng của dự án -->
+
     <link href="${pageContext.request.contextPath}/css/app.css" rel="stylesheet">
     
     <style>
@@ -214,21 +210,21 @@
 
     <div class="login-wrapper">
         <div class="login-card">
-            <!-- Brand & Heading Header -->
+
             <div class="text-center mb-4">
                 <div class="brand-icon-box">
                     <i class="bi bi-droplet-half"></i>
                 </div>
                 <div>
                     <span class="eco-badge">
-                        <i class="bi bi-flower1"></i> Hệ thống IoT Nông nghiệp
+                        <i class="bi bi-flower1"></i> Agriculture IoT System
                     </span>
                 </div>
                 <h3 class="fw-bold text-dark mb-1" style="letter-spacing: -0.02em;">Smart Irrigation</h3>
-                <p class="text-muted small mb-0">Đăng nhập cổng quản trị & giám sát tưới tự động</p>
+                <p class="text-muted small mb-0">Login to auto-irrigation management & monitoring portal</p>
             </div>
             
-            <!-- Hiển thị thông báo lỗi nếu có -->
+
             <% 
                 String error = (String) request.getAttribute("errorMessage");
                 if (error != null && !error.isEmpty()) { 
@@ -239,50 +235,50 @@
                 </div>
             <% } %>
             
-            <!-- Gửi dữ liệu tới LoginServlet -->
+
             <form action="${pageContext.request.contextPath}/login" method="POST">
                 <div class="mb-3">
                     <label for="username" class="form-label-custom">
-                        <span>Tên đăng nhập</span>
+                        <span>Username</span>
                     </label>
                     <div class="input-group-modern">
                         <input type="text" class="form-control" id="username" name="username" 
-                               value="${param.username}" placeholder="Nhập tài khoản" required autofocus autocomplete="username">
+                               value="${param.username}" placeholder="Enter username" required autofocus autocomplete="username">
                         <i class="bi bi-person input-icon"></i>
                     </div>
                 </div>
                 
                 <div class="mb-4">
                     <label for="password" class="form-label-custom">
-                        <span>Mật khẩu</span>
+                        <span>Password</span>
                     </label>
                     <div class="input-group-modern">
                         <input type="password" class="form-control" id="password" name="password" 
-                               placeholder="Nhập mật khẩu" required autocomplete="current-password">
+                               placeholder="Enter password" required autocomplete="current-password">
                         <i class="bi bi-shield-lock input-icon"></i>
-                        <button type="button" class="toggle-password" id="togglePasswordBtn" title="Hiện/ẩn mật khẩu">
+                        <button type="button" class="toggle-password" id="togglePasswordBtn" title="Show/hide password">
                             <i class="bi bi-eye" id="togglePasswordIcon"></i>
                         </button>
                     </div>
                 </div>
                 
-                <!-- Nút Submit -->
+
                 <button type="submit" class="btn btn-saas-primary w-100">
-                    <span>Đăng nhập hệ thống</span>
+                    <span>Login to System</span>
                     <i class="bi bi-arrow-right-short fs-5"></i>
                 </button>
             </form>
             
-            <!-- Footer ghi chú phụ -->
+
             <div class="text-center mt-4 pt-2 border-top border-light">
                 <small class="text-muted" style="font-size: 0.78rem;">
-                    <i class="bi bi-shield-check text-success me-1"></i> Hệ thống xác thực mã hóa an toàn &bull; Phiên bản 2.4
+                    <i class="bi bi-shield-check text-success me-1"></i> Secure encrypted authentication system &bull; Version 2.4
                 </small>
             </div>
         </div>
     </div>
 
-    <!-- Toggle Password Visibility Script -->
+
     <script>
         const toggleBtn = document.getElementById('togglePasswordBtn');
         const passwordInput = document.getElementById('password');

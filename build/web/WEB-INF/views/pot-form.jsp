@@ -1,8 +1,4 @@
-<%-- 
-    Document   : pot-form 
-    Created on : Oct 7, 2026, 11:27:43 AM 
-    Author     : VNJ - Refactored to Modern Eco-Tech SaaS Form 
---%>
+
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <!DOCTYPE html>
@@ -11,19 +7,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- Tiêu đề tự động đổi chữ (Giữ nguyên EL) -->
-    <title>${pot != null ? 'Cập nhật' : 'Thêm mới'} Chậu - Smart Irrigation System</title>
     
-    <!-- Google Fonts: Inter -->
+    <title>${pot != null ? 'Update' : 'Add new'} Pot - Smart Irrigation System</title>
+
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
-    <!-- Bootstrap 5 & Bootstrap Icons -->
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     
-    <!-- CSS tổng của dự án -->
+
     <link href="${pageContext.request.contextPath}/css/app.css" rel="stylesheet">
     
     <style>
@@ -213,10 +209,10 @@
 <body>
 
     <div class="container d-flex justify-content-center align-items-center py-5 min-vh-100">
-        <!-- Main Form Card -->
+
         <div class="saas-form-card">
             
-            <!-- Header Section -->
+
             <div class="text-center mb-4 pb-2 border-bottom border-light">
                 <div class="header-icon-box">
                     <i class="bi bi-flower1"></i>
@@ -224,62 +220,62 @@
                 <div class="d-flex justify-content-center mb-1">
                     <span class="page-badge-state">
                         <i class="bi ${pot != null ? 'bi-pencil-square' : 'bi-plus-circle-fill'}"></i> 
-                        <span>${pot != null ? 'Cập nhật' : 'Tạo mới'}</span>
+                        <span>${pot != null ? 'Update' : 'Create new'}</span>
                     </span>
                 </div>
                 <h3 class="fw-bold text-dark mb-1" style="letter-spacing: -0.02em;">
-                    ${pot != null ? 'CẬP NHẬT CHẬU CÂY' : 'THÊM CHẬU MỚI'}
+                    ${pot != null ? 'UPDATE PLANT POT' : 'ADD NEW POT'}
                 </h3>
                 <p class="text-secondary small mb-0">
-                    Cấu hình chậu trồng, vị trí vườn và chế độ tưới tự động thông minh
+                    Configure plant pot, garden location, and smart auto-irrigation mode
                 </p>
             </div>
             
-            <!-- Form POST gọi Servlet (Giữ nguyên action, method, hidden action & potId) -->
+
             <form action="${pageContext.request.contextPath}/pots" method="POST">
                 
-                <!-- Tham số ẩn để Controller biết là thực hiện Insert hay Update (Giữ nguyên) -->
+
                 <input type="hidden" name="action" value="${pot != null ? 'update' : 'insert'}">
                 
-                <!-- ID bị ẩn đi, chỉ có giá trị khi Update (Giữ nguyên c:if) -->
+
                 <c:if test="${pot != null}">
                     <input type="hidden" name="potId" value="${pot.potId}">
                 </c:if>
                 
-                <!-- Trường 1: Tên Chậu / Khu vực -->
+
                 <div class="mb-3">
                     <label class="form-label-modern">
-                        <span>Tên Chậu / Khu vực <span class="text-danger">*</span></span>
-                        <small class="text-muted fw-normal" style="font-size: 0.75rem;">Bắt buộc</small>
+                        <span>Pot Name / Zone <span class="text-danger">*</span></span>
+                        <small class="text-muted fw-normal" style="font-size: 0.75rem;">Required</small>
                     </label>
                     <div class="input-group-modern">
-                        <input type="text" name="potName" class="form-control" required value="${pot.potName}" placeholder="VD: Chậu Ban Công 1">
+                        <input type="text" name="potName" class="form-control" required value="${pot.potName}" placeholder="Ex: Balcony Pot 1">
                         <i class="bi bi-tag-fill input-icon"></i>
                     </div>
                 </div>
                 
-                <!-- Trường 2: Vị trí đặt -->
+
                 <div class="mb-3">
                     <label class="form-label-modern">
-                        <span>Vị trí đặt</span>
-                        <small class="text-muted fw-normal" style="font-size: 0.75rem;">Tùy chọn</small>
+                        <span>Location</span>
+                        <small class="text-muted fw-normal" style="font-size: 0.75rem;">Optional</small>
                     </label>
                     <div class="input-group-modern">
-                        <input type="text" name="location" class="form-control" value="${pot.location}" placeholder="VD: Tầng 2, góc trái ban công">
+                        <input type="text" name="location" class="form-control" value="${pot.location}" placeholder="Ex: 2nd floor, left corner of balcony">
                         <i class="bi bi-geo-alt-fill input-icon"></i>
                     </div>
                 </div>
                 
-                <!-- Trường 3: Chọn loại cây đang trồng -->
+
                 <div class="mb-4">
                     <label class="form-label-modern">
-                        <span>Chọn loại cây đang trồng <span class="text-danger">*</span></span>
-                        <small class="text-muted fw-normal" style="font-size: 0.75rem;">Theo danh mục</small>
+                        <span>Select currently growing plant <span class="text-danger">*</span></span>
+                        <small class="text-muted fw-normal" style="font-size: 0.75rem;">By category</small>
                     </label>
                     <div class="input-group-modern">
                         <select name="plantId" class="form-select" required>
-                            <option value="">-- Chọn một loại cây --</option>
-                            <!-- Đổ danh sách cây từ Database vào Dropdown (Giữ nguyên c:forEach và EL) -->
+                            <option value="">-- Select a plant --</option>
+
                             <c:forEach var="pl" items="${listPlant}">
                                 <option value="${pl.plantId}" ${pot.plantId == pl.plantId ? 'selected' : ''}>
                                     ${pl.plantName}
@@ -290,7 +286,7 @@
                     </div>
                 </div>
                 
-                <!-- Trường 4: Switch Kích hoạt tưới tự động (Giữ nguyên logic check) -->
+
                 <div class="mb-4">
                     <div class="smart-toggle-box">
                         <div class="d-flex align-items-center gap-2">
@@ -299,27 +295,27 @@
                             </div>
                             <div>
                                 <label class="form-check-label fw-bold text-dark d-block mb-0" for="statusSwitch" style="font-size: 0.88rem; cursor: pointer;">
-                                    Kích hoạt tưới tự động
+                                    Activate auto-irrigation
                                 </label>
                                 <small class="text-muted" style="font-size: 0.75rem;">
-                                    Tự động bơm khi độ ẩm đất dưới ngưỡng tối thiểu
+                                    Auto pump when soil moisture is below minimum threshold
                                 </small>
                             </div>
                         </div>
                         <div class="form-check form-switch m-0 p-0">
-                            <!-- Nếu tạo mới (pot == null) thì mặc định check, nếu update thì tùy giá trị cũ (Giữ nguyên) -->
+
                             <input class="form-check-input m-0" type="checkbox" id="statusSwitch" name="status" ${(pot == null || pot.status) ? 'checked' : ''}>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Khối Nút Điều Hướng Thao Tác (Giữ nguyên link và submit) -->
+
                 <div class="d-flex justify-content-between align-items-center pt-2 border-top border-light">
                     <a href="${pageContext.request.contextPath}/pots" class="btn-cancel-action">
-                        <i class="bi bi-arrow-left"></i> <span>Quay lại danh sách</span>
+                        <i class="bi bi-arrow-left"></i> <span>Back to list</span>
                     </a>
                     <button type="submit" class="btn-save-action">
-                        <i class="bi bi-check2-circle"></i> <span>Lưu thông tin</span>
+                        <i class="bi bi-check2-circle"></i> <span>Save information</span>
                     </button>
                 </div>
                 
@@ -327,7 +323,7 @@
         </div>
     </div>
 
-    <!-- Bootstrap 5 Bundle JS -->
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
