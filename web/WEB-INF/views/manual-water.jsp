@@ -163,5 +163,6 @@
             // Form vẫn sẽ submit bình thường sau khi đổi giao diện nút
         });
     </script>
+    <jsp:include page="footer.jsp" />
 </body>
 </html>
