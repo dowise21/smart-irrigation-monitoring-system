@@ -110,4 +110,8 @@ SmartIrrigation/
 │   ├── views/             # Các tệp giao diện .jsp (Plants, Pots, Sensors...)
 │   └── login.jsp          # Trang đăng nhập
 ├── sql/                   # Chứa script khởi tạo Database
+<<<<<<< HEAD
 └── docs/                  # Báo cáo, Kịch bản chạy thử, Lược đồ DB
+=======
+└── docs/                  # Báo cáo, Kịch bản chạy thử, Lược đồ DB
+>>>>>>> c42102665237cebb40b78c8613a8f4b812e80348
