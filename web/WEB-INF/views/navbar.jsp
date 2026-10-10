@@ -1,8 +1,12 @@
-
+<%-- 
+    Document   : navbar 
+    Created on : Oct 8, 2026, 11:20:42 AM 
+    Author     : VNJ - Grouped & Clean Eco-Tech SaaS Navbar 
+--%>
 <%@page pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 
-
+<!-- Custom Navbar Styles nhúng trực tiếp -->
 <style>
     .saas-navbar {
         background: #ffffff;
@@ -99,7 +103,7 @@
 <nav class="navbar navbar-expand-lg saas-navbar mb-4">
     <div class="container">
         
-
+        <!-- Logo & Thương hiệu -->
         <a class="saas-brand" href="${pageContext.request.contextPath}/dashboard">
             <div class="brand-symbol-box">
                 <i class="bi bi-droplet-half"></i>
@@ -107,114 +111,90 @@
             <span>Smart Irrigation</span>
         </a>
         
-
+        <!-- Nút Toggler trên màn hình nhỏ -->
         <button class="navbar-toggler border-0 shadow-none p-2" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <i class="bi bi-list fs-3 text-dark"></i>
         </button>
         
         <div class="collapse navbar-collapse" id="navbarNav">
             
-
+            <!-- MENU ĐIỀU HƯỚNG GOM CỤM CHÍNH -->
             <ul class="navbar-nav me-auto ms-lg-4 mt-3 mt-lg-0 align-items-lg-center">
                 
-
+                <!-- 1. Tổng quan -->
                 <li class="nav-item">
                     <a class="nav-link saas-nav-link" href="${pageContext.request.contextPath}/dashboard">
-                        <i class="bi bi-grid-1x2-fill"></i> <span>Dashboard</span>
+                        <i class="bi bi-grid-1x2-fill"></i> <span>Tổng quan</span>
                     </a>
                 </li>
                 
+                <!-- 2. Nhóm Canh tác: Cây trồng & Chậu -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link saas-nav-link dropdown-toggle" href="#" id="farmDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-tree-fill"></i> <span>Khu vườn</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-saas" aria-labelledby="farmDropdown">
+                        <li>
+                            <a class="dropdown-item dropdown-item-saas" href="${pageContext.request.contextPath}/plants">
+                                <i class="bi bi-flower1 text-success"></i> <span>Quản lý Cây trồng</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item dropdown-item-saas" href="${pageContext.request.contextPath}/pots">
+                                <i class="bi bi-box-seam text-primary"></i> <span>Chậu & Khu vực tưới</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
                 
-                <c:if test="${sessionScope.LOGIN_USER.roleName == 'ADMIN' || sessionScope.LOGIN_USER.roleName == 'MANAGER'}">
-                    <li class="nav-item dropdown">
-                        <a class="nav-link saas-nav-link dropdown-toggle" href="#" id="farmDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-tree-fill"></i> <span>Gardens</span>
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-saas" aria-labelledby="farmDropdown">
-                            <li>
-                                <a class="dropdown-item dropdown-item-saas" href="${pageContext.request.contextPath}/plants">
-                                    <i class="bi bi-flower1 text-success"></i> <span>Plant Management</span>
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item dropdown-item-saas" href="${pageContext.request.contextPath}/pots">
-                                    <i class="bi bi-box-seam text-primary"></i> <span>Pots & Irrigation Zones</span>
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                </c:if>
+                <!-- 3. Nhóm Vận hành IoT: Cảm biến, Lịch tưới & Nhật ký -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link saas-nav-link dropdown-toggle" href="#" id="iotDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-cpu-fill"></i> <span>Vận hành IoT</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-saas" aria-labelledby="iotDropdown">
+                        <li>
+                            <a class="dropdown-item dropdown-item-saas" href="${pageContext.request.contextPath}/sensor-data">
+                                <i class="bi bi-moisture text-info"></i> <span>Dữ liệu Cảm biến</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item dropdown-item-saas" href="${pageContext.request.contextPath}/schedules">
+                                <i class="bi bi-calendar-check text-warning"></i> <span>Lịch tưới tự động</span>
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider my-1"></li>
+                        <li>
+                            <a class="dropdown-item dropdown-item-saas" href="${pageContext.request.contextPath}/history">
+                                <i class="bi bi-clock-history text-secondary"></i> <span>Nhật ký bơm nước</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
                 
-
-
-                <c:if test="${sessionScope.LOGIN_USER.roleName == 'ADMIN' || sessionScope.LOGIN_USER.roleName == 'TECHNICIAN' || sessionScope.LOGIN_USER.roleName == 'MANAGER'}">
-                    <li class="nav-item dropdown">
-                        <a class="nav-link saas-nav-link dropdown-toggle" href="#" id="iotDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-cpu-fill"></i> <span>IoT Operations</span>
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-saas" aria-labelledby="iotDropdown">
-                            <c:if test="${sessionScope.LOGIN_USER.roleName == 'ADMIN' || sessionScope.LOGIN_USER.roleName == 'TECHNICIAN'}">
-                                <li>
-                                    <a class="dropdown-item dropdown-item-saas" href="${pageContext.request.contextPath}/sensor-data">
-                                        <i class="bi bi-moisture text-info"></i> <span>Sensor Data</span>
-                                    </a>
-                                </li>
-                            </c:if>
-                            <c:if test="${sessionScope.LOGIN_USER.roleName == 'ADMIN' || sessionScope.LOGIN_USER.roleName == 'MANAGER'}">
-                                <li>
-                                    <a class="dropdown-item dropdown-item-saas" href="${pageContext.request.contextPath}/schedules">
-                                        <i class="bi bi-calendar-check text-warning"></i> <span>Automated Schedules</span>
-                                    </a>
-                                </li>
-                            </c:if>
-                            <c:if test="${sessionScope.LOGIN_USER.roleName == 'ADMIN' || sessionScope.LOGIN_USER.roleName == 'TECHNICIAN'}">
-                                <li><hr class="dropdown-divider my-1"></li>
-                                <li>
-                                    <a class="dropdown-item dropdown-item-saas" href="${pageContext.request.contextPath}/history">
-                                        <i class="bi bi-clock-history text-secondary"></i> <span>Irrigation History</span>
-                                    </a>
-                                </li>
-                            </c:if>
-                        </ul>
-                    </li>
-                </c:if>
-
-
-                <c:if test="${sessionScope.LOGIN_USER.roleName == 'ADMIN' || sessionScope.LOGIN_USER.roleName == 'STAFF'}">
-                    <li class="nav-item">
-                        <a class="nav-link saas-nav-link" href="${pageContext.request.contextPath}/pots">
-                            <i class="bi bi-droplet text-info"></i> <span>Manual Watering</span>
-                        </a>
-                    </li>
-                </c:if>
-
-
-                <c:if test="${sessionScope.LOGIN_USER.roleName == 'ADMIN'}">
-                    <li class="nav-item">
-                        <a class="nav-link saas-nav-link" href="${pageContext.request.contextPath}/predict">
-                            <i class="bi bi-stars text-primary"></i> <span>AI Prediction</span> <span class="badge-ai ms-1">PRO</span>
-                        </a>
-                    </li>
-                </c:if>
+                <!-- 4. AI Phân tích & Dự đoán -->
+                <li class="nav-item">
+                    <a class="nav-link saas-nav-link" href="${pageContext.request.contextPath}/predict">
+                        <i class="bi bi-stars text-primary"></i> <span>AI Dự đoán</span> <span class="badge-ai ms-1">PRO</span>
+                    </a>
+                </li>
                 
             </ul>
             
-
+            <!-- TOOLBAR GÓC PHẢI: Chuông Cảnh báo & Profile Người dùng -->
             <ul class="navbar-nav align-items-lg-center gap-2 mt-2 mt-lg-0">
                 
+                <!-- Nút Chuông cảnh báo dạng icon tròn có chấm đỏ nổi bật -->
+                <li class="nav-item">
+                    <a class="btn-nav-icon position-relative" href="${pageContext.request.contextPath}/alerts" title="Cảnh báo hệ thống">
+                        <i class="bi bi-bell-fill"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle">
+                            <span class="visually-hidden">New alerts</span>
+                        </span>
+                    </a>
+                </li>
                 
-                <c:if test="${sessionScope.LOGIN_USER.roleName == 'ADMIN' || sessionScope.LOGIN_USER.roleName == 'STAFF'}">
-                    <li class="nav-item">
-                        <a class="btn-nav-icon position-relative" href="${pageContext.request.contextPath}/alerts" title="System Alerts">
-                            <i class="bi bi-bell-fill"></i>
-                            <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle">
-                                <span class="visually-hidden">New alerts</span>
-                            </span>
-                        </a>
-                    </li>
-                </c:if>
-
-
+                <!-- Dropdown Thông tin tài khoản -->
                 <li class="nav-item dropdown">
                     <a class="user-pill-btn dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <div class="user-avatar-circle">
@@ -234,12 +214,12 @@
                         </li>
                         
                         <li>
-                            <div class="dropdown-header text-uppercase text-muted fw-bold" style="font-size: 0.7rem; letter-spacing: 0.05em;">Account</div>
+                            <div class="dropdown-header text-uppercase text-muted fw-bold" style="font-size: 0.7rem; letter-spacing: 0.05em;">Tài khoản</div>
                         </li>
                         
                         <li>
                             <a class="dropdown-item dropdown-item-saas dropdown-item-danger" href="${pageContext.request.contextPath}/logout">
-                                <i class="bi bi-box-arrow-right fs-6"></i> <span>Logout</span>
+                                <i class="bi bi-box-arrow-right fs-6"></i> <span>Đăng xuất</span>
                             </a>
                         </li>
                     </ul>
@@ -250,7 +230,7 @@
     </div>
 </nav>
 
-
+<!-- Tự động Active menu đang xem (hỗ trợ cả Dropdown cha khi đang ở trang con) -->
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const currentPath = window.location.pathname;

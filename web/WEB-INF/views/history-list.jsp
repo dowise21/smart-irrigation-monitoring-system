@@ -1,4 +1,8 @@
-
+<%-- 
+    Document   : history-list 
+    Created on : Oct 7, 2026, 10:37:27 PM 
+    Author     : VNJ - Refactored to Modern Eco-Tech SaaS Dashboard 
+--%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
@@ -7,18 +11,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Irrigation History - Smart Irrigation System</title>
-
+    <title>Lịch sử Tưới - Smart Irrigation System</title>
     
+    <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
-
+    <!-- Bootstrap 5 & Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     
-
+    <!-- CSS tổng của dự án -->
     <link href="${pageContext.request.contextPath}/css/app.css" rel="stylesheet">
     
     <style>
@@ -238,52 +242,52 @@
     </style>
 </head>
 <body>
-
+    <!-- Navbar chung của hệ thống -->
     <jsp:include page="navbar.jsp" />
     
     <main class="container py-4">
-
+        <!-- Main Card Wrapper -->
         <div class="saas-card">
-
+            <!-- Header: Title & Test Trigger Form -->
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4 pb-2 border-bottom border-light">
                 <div>
                     <div class="d-flex align-items-center gap-2 mb-1">
-                        <h3 class="mb-0 fw-bold text-dark tracking-tight" style="letter-spacing: -0.02em;">Automated Watering Log</h3>
+                        <h3 class="mb-0 fw-bold text-dark tracking-tight" style="letter-spacing: -0.02em;">Nhật ký Tưới tự động</h3>
                         <span class="page-badge-history">
                             <span class="pulse-blue-dot"></span> Live Logs
                         </span>
                     </div>
                     <p class="text-secondary small mb-0 d-flex align-items-center gap-1">
                         <i class="bi bi-clock-history text-primary"></i> 
-                        <span>Record real-time pump valve activation time and irrigation water volume</span>
+                        <span>Ghi nhận thời gian kích hoạt van bơm và lượng nước tưới tiêu theo thời gian thực</span>
                     </p>
                 </div>
                 
-
+                <!-- Nút Giả lập gọi API tạo dữ liệu ảo -->
                 <form action="${pageContext.request.contextPath}/history" method="POST" target="_blank" class="d-flex align-items-center m-0">
                     <input type="hidden" name="potId" value="${not empty listPot ? listPot[0].potId : 0}">
                     <input type="hidden" name="duration" value="60">
                     <input type="hidden" name="waterAmount" value="1.5">
-                    <button type="submit" class="btn-test-action" title="Simulate system pumping water for 60s">
-                        <i class="bi bi-play-circle-fill"></i> <span>+ Simulate Water Pump (Test)</span>
+                    <button type="submit" class="btn-test-action" title="Giả lập hệ thống vừa bơm nước 60s">
+                        <i class="bi bi-play-circle-fill"></i> <span>+ Giả lập Bơm nước (Test)</span>
                     </button>
                 </form>
             </div>
             
-
+            <!-- Thanh lọc dữ liệu -->
             <div class="filter-panel">
                 <form action="${pageContext.request.contextPath}/history" method="GET" class="row g-2 align-items-center">
                     <div class="col-auto">
                         <label class="fw-semibold text-dark small d-flex align-items-center gap-1">
-                            <i class="bi bi-funnel-fill text-secondary"></i> <span>Filter by Zone / Pot:</span>
+                            <i class="bi bi-funnel-fill text-secondary"></i> <span>Lọc theo Khu vực / Chậu:</span>
                         </label>
                     </div>
                     <div class="col-auto">
                         <select name="potId" class="form-select select-filter-modern" onchange="this.form.submit()">
-                            <option value="0">-- All plant pots --</option>
+                            <option value="0">-- Tất cả các chậu cây --</option>
                             <c:forEach var="pot" items="${listPot}">
                                 <option value="${pot.potId}" ${selectedPotId == pot.potId ? 'selected' : ''}>
-                                    ${pot.potName} (Plant: ${pot.plantName})
+                                    ${pot.potName} (Trồng: ${pot.plantName})
                                 </option>
                             </c:forEach>
                         </select>
@@ -291,23 +295,23 @@
                 </form>
             </div>
             
-
+            <!-- Bảng Dữ liệu SaaS -->
             <div class="table-saas-container">
                 <table class="table-saas">
                     <thead>
                         <tr>
-                            <th style="width: 24%;" class="text-center">Watering Time</th>
-                            <th style="width: 24%;">Pot Name</th>
-                            <th style="width: 22%;">Plant Type</th>
-                            <th style="width: 15%;" class="text-center">Pump Time</th>
-                            <th style="width: 15%;" class="text-center">Water amount</th>
+                            <th style="width: 24%;" class="text-center">Thời gian tưới</th>
+                            <th style="width: 24%;">Tên Chậu</th>
+                            <th style="width: 22%;">Loại Cây</th>
+                            <th style="width: 15%;" class="text-center">Thời gian bơm</th>
+                            <th style="width: 15%;" class="text-center">Lượng nước</th>
                         </tr>
                     </thead>
                     <tbody>
-
+                        <!-- Vòng lặp JSTL duyệt danh sách lịch sử bơm -->
                         <c:forEach var="h" items="${listHistory}">
                             <tr>
-
+                                <!-- Cột 1: Thời gian tưới -->
                                 <td class="text-center text-muted small">
                                     <div class="d-inline-flex align-items-center gap-1">
                                         <i class="bi bi-calendar3 text-secondary"></i> 
@@ -315,7 +319,7 @@
                                     </div>
                                 </td>
                                 
-
+                                <!-- Cột 2: Tên Chậu -->
                                 <td>
                                     <div class="pot-name-pill">
                                         <div class="pot-icon-circle"><i class="bi bi-flower1"></i></div>
@@ -323,38 +327,38 @@
                                     </div>
                                 </td>
                                 
-
+                                <!-- Cột 3: Loại Cây -->
                                 <td>
                                     <span class="plant-tag">
                                         <i class="bi bi-tree-fill text-success"></i> <span>${h.plantName}</span>
                                     </span>
                                 </td>
                                 
-
+                                <!-- Cột 4: Thời gian bơm (Giây) -->
                                 <td class="text-center">
                                     <span class="badge-duration">
-                                        <i class="bi bi-stopwatch"></i> <span>${h.durationSeconds} seconds</span>
+                                        <i class="bi bi-stopwatch"></i> <span>${h.durationSeconds} giây</span>
                                     </span>
                                 </td>
                                 
-
+                                <!-- Cột 5: Lượng nước (Lít) -->
                                 <td class="text-center">
                                     <span class="badge-water-amount">
-                                        <i class="bi bi-droplet-fill"></i> <span>${h.waterAmount} Liters</span>
+                                        <i class="bi bi-droplet-fill"></i> <span>${h.waterAmount} Lít</span>
                                     </span>
                                 </td>
                             </tr>
                         </c:forEach>
                         
-
+                        <!-- Trạng thái trống -->
                         <c:if test="${empty listHistory}">
                             <tr>
                                 <td colspan="5" class="p-0">
                                     <div class="empty-state-card">
                                         <div class="empty-state-icon-box"><i class="bi bi-droplet-slash"></i></div>
-                                        <h5 class="fw-bold text-dark mb-1">No irrigation log</h5>
+                                        <h5 class="fw-bold text-dark mb-1">Chưa có nhật ký tưới</h5>
                                         <p class="text-muted small mb-0 max-w-sm mx-auto">
-                                            No water pump records for this filter yet. You can click <strong>"Simulate Water Pump"</strong> above to create a test record.
+                                            Chưa ghi nhận lần bơm nước nào cho bộ lọc này. Bạn có thể nhấn <strong>"Giả lập Bơm nước"</strong> phía trên để tạo bản ghi thử nghiệm.
                                         </p>
                                     </div>
                                 </td>
@@ -364,9 +368,9 @@
                 </table>
             </div>
             
-
+            <!-- Footer ghi chú phụ -->
             <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2 mt-3 pt-2 text-muted small">
-                <span><i class="bi bi-info-circle me-1"></i> Data is synchronized automatically from smart exhaust valve microcontrollers.</span>
+                <span><i class="bi bi-info-circle me-1"></i> Dữ liệu được đồng bộ hóa tự động từ các vi điều khiển van xả thông minh.</span>
                 <span>Smart Irrigation Data Logging &bull; v2.4</span>
             </div>
         </div>
