@@ -3,18 +3,18 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/D:/Downloads/smart-irrigation-monitoring-system-main/smart-irrigation-monitoring-system-main/src/java/controller/HistoryController.java</file>
-            <file>file:/D:/Downloads/smart-irrigation-monitoring-system-main/smart-irrigation-monitoring-system-main/src/java/filter/AuthFilter.java</file>
-            <file>file:/D:/Downloads/smart-irrigation-monitoring-system-main/smart-irrigation-monitoring-system-main/src/java/controller/DashboardController.java</file>
-            <file>file:/D:/Downloads/smart-irrigation-monitoring-system-main/smart-irrigation-monitoring-system-main/web/WEB-INF/views/login.jsp</file>
-            <file>file:/D:/Downloads/smart-irrigation-monitoring-system-main/smart-irrigation-monitoring-system-main/src/java/model/WateringSession.java</file>
-            <file>file:/D:/Downloads/smart-irrigation-monitoring-system-main/smart-irrigation-monitoring-system-main/web/WEB-INF/views/dashboard.jsp</file>
-            <file>file:/D:/Downloads/smart-irrigation-monitoring-system-main/smart-irrigation-monitoring-system-main/web/WEB-INF/views/navbar.jsp</file>
-            <file>file:/D:/Downloads/smart-irrigation-monitoring-system-main/smart-irrigation-monitoring-system-main/src/java/controller/ManualWateringServlet.java</file>
-            <file>file:/D:/Downloads/smart-irrigation-monitoring-system-main/smart-irrigation-monitoring-system-main/web/WEB-INF/views/manual-water.jsp</file>
-            <file>file:/D:/Downloads/smart-irrigation-monitoring-system-main/smart-irrigation-monitoring-system-main/src/java/util/DBContext.java</file>
-            <file>file:/D:/Downloads/smart-irrigation-monitoring-system-main/smart-irrigation-monitoring-system-main/src/java/model/WateringSchedule.java</file>
-            <file>file:/D:/Downloads/smart-irrigation-monitoring-system-main/smart-irrigation-monitoring-system-main/src/java/dao/WateringSessionDAO.java</file>
+            <file>file:/C:/Users/VNJ/OneDrive/Desktop/PRJ301/smart-irrigation-monitoring-system/web/WEB-INF/views/footer.jsp</file>
+            <file>file:/C:/Users/VNJ/OneDrive/Desktop/PRJ301/smart-irrigation-monitoring-system/src/java/dao/PlantDAO.java</file>
+            <file>file:/C:/Users/VNJ/OneDrive/Desktop/PRJ301/smart-irrigation-monitoring-system/web/WEB-INF/views/dashboard.jsp</file>
+            <file>file:/C:/Users/VNJ/OneDrive/Desktop/PRJ301/smart-irrigation-monitoring-system/src/java/model/Plant.java</file>
+            <file>file:/C:/Users/VNJ/OneDrive/Desktop/PRJ301/smart-irrigation-monitoring-system/web/WEB-INF/views/schedule.jsp</file>
+            <file>file:/C:/Users/VNJ/OneDrive/Desktop/PRJ301/smart-irrigation-monitoring-system/web/WEB-INF/views/history-list.jsp</file>
+            <file>file:/C:/Users/VNJ/OneDrive/Desktop/PRJ301/smart-irrigation-monitoring-system/web/WEB-INF/views/pot-list.jsp</file>
+            <file>file:/C:/Users/VNJ/OneDrive/Desktop/PRJ301/smart-irrigation-monitoring-system/web/WEB-INF/views/login.jsp</file>
+            <file>file:/C:/Users/VNJ/OneDrive/Desktop/PRJ301/smart-irrigation-monitoring-system/src/java/dao/PotDAO.java</file>
+            <file>file:/C:/Users/VNJ/OneDrive/Desktop/PRJ301/smart-irrigation-monitoring-system/web/WEB-INF/views/ml-prediction.jsp</file>
+            <file>file:/C:/Users/VNJ/OneDrive/Desktop/PRJ301/smart-irrigation-monitoring-system/web/WEB-INF/views/plant-list.jsp</file>
+            <file>file:/C:/Users/VNJ/OneDrive/Desktop/PRJ301/smart-irrigation-monitoring-system/web/WEB-INF/views/sensor-list.jsp</file>
         </group>
     </open-files>
 </project-private>
