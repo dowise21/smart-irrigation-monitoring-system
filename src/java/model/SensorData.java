@@ -6,6 +6,9 @@ public class SensorData {
     private int dataId;
     private int potId;
     private double moistureLevel; // Độ ẩm đo được (%)
+    private Double weightKg;      // Khối lượng chậu (kg)
+    private Integer lightLux;     // Cường độ ánh sáng (lux)
+    private String source;        // DEVICE, SIMULATED, SAMPLE
     private Timestamp recordedAt; // Thời gian đo
 
     // Các thuộc tính mở rộng (Lấy từ bảng Pot và Plant thông qua JOIN)
@@ -33,6 +36,15 @@ public class SensorData {
 
     public double getMoistureLevel() { return moistureLevel; }
     public void setMoistureLevel(double moistureLevel) { this.moistureLevel = moistureLevel; }
+
+    public Double getWeightKg() { return weightKg; }
+    public void setWeightKg(Double weightKg) { this.weightKg = weightKg; }
+
+    public Integer getLightLux() { return lightLux; }
+    public void setLightLux(Integer lightLux) { this.lightLux = lightLux; }
+
+    public String getSource() { return source; }
+    public void setSource(String source) { this.source = source; }
 
     public Timestamp getRecordedAt() { return recordedAt; }
     public void setRecordedAt(Timestamp recordedAt) { this.recordedAt = recordedAt; }

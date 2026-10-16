@@ -1,0 +1,107 @@
+.prediction-page {
+    padding: 45px 0;
+}
+
+.page-header {
+    margin-bottom: 30px;
+}
+
+.page-header h1 {
+    font-size: 36px;
+    margin: 8px 0;
+}
+
+.page-header p:last-child {
+    color: #777;
+}
+
+.prediction-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+}
+
+.input-card label {
+    display: block;
+    font-weight: bold;
+    margin: 17px 0 7px;
+}
+
+.input-card input {
+    width: 100%;
+    padding: 11px;
+    border: 1px solid #ddd;
+    border-radius: 7px;
+}
+
+.input-card button {
+    width: 100%;
+    margin-top: 25px;
+}
+
+.result-card {
+    text-align: center;
+    background: #f0fdf4;
+}
+
+.result-icon {
+    font-size: 55px;
+    margin-bottom: 15px;
+}
+
+.result-card > p:first-of-type {
+    color: #777;
+}
+
+.result-card h2 {
+    font-size: 30px;
+    color: #15803d;
+    margin: 12px 0 25px;
+}
+
+.confidence {
+    display: flex;
+    justify-content: space-between;
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.confidence strong {
+    color: #16a34a;
+}
+
+#recommendation {
+    line-height: 1.6;
+    color: #555;
+}
+
+.prediction-history {
+    margin-top: 25px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th,
+td {
+    padding: 14px;
+    border-bottom: 1px solid #eee;
+    text-align: left;
+}
+
+th {
+    background: #f0fdf4;
+}
+
+@media (max-width: 700px) {
+
+    .prediction-grid {
+        grid-template-columns: 1fr;
+    }
+
+}

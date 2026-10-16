@@ -18,7 +18,7 @@ public class PlantDAO {
 
     private static final String SELECT_BASE =
         "SELECT plant_id, plant_name, species, ideal_moisture_min, " +
-        "       ideal_moisture_max, description, created_at " +
+        "       ideal_moisture_max, description, created_at, water_amount_ml, default_pot_id " +
         "FROM Plant ";
 
     // Xây dựng câu điều kiện WHERE dùng chung cho cả search và count
@@ -103,8 +103,8 @@ public class PlantDAO {
 
     /** CREATE: Thêm cây mới */
     public int insert(Plant p) {
-        String sql = "INSERT INTO Plant(plant_name, species, ideal_moisture_min, ideal_moisture_max, description) "
-                   + "VALUES (?,?,?,?,?)";
+        String sql = "INSERT INTO Plant(plant_name, species, ideal_moisture_min, ideal_moisture_max, description, water_amount_ml, default_pot_id) "
+                   + "VALUES (?,?,?,?,?,?,?)";
         Connection cn = null; PreparedStatement ps = null; ResultSet rs = null;
         try {
             cn = DBContext.getConnection();
@@ -124,13 +124,13 @@ public class PlantDAO {
     /** UPDATE: Cập nhật thông tin cây */
     public boolean update(Plant p) {
         String sql = "UPDATE Plant SET plant_name = ?, species = ?, ideal_moisture_min = ?, "
-                   + "ideal_moisture_max = ?, description = ? WHERE plant_id = ?";
+                   + "ideal_moisture_max = ?, description = ?, water_amount_ml = ?, default_pot_id = ? WHERE plant_id = ?";
         Connection cn = null; PreparedStatement ps = null;
         try {
             cn = DBContext.getConnection();
             ps = cn.prepareStatement(sql);
             bindWritable(ps, p);
-            ps.setInt(6, p.getPlantId()); // ID nằm ở vị trí thứ 6 trong câu UPDATE
+            ps.setInt(8, p.getPlantId());
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Lỗi tại update Plant: {0}", e.getMessage());
@@ -140,18 +140,33 @@ public class PlantDAO {
         return false;
     }
 
-    /** DELETE: Xóa cây (Lưu ý về khóa ngoại với bảng Pot) */
+    /** DELETE: Xóa cây (Tự động chuyển chậu đang trỏ tới cây này sang cây khác để không vướng khóa ngoại) */
     public boolean delete(int plantId) {
-        Connection cn = null; PreparedStatement ps = null;
+        Connection cn = null;
+        PreparedStatement psReassign = null;
+        PreparedStatement psDelete = null;
         try {
             cn = DBContext.getConnection();
-            ps = cn.prepareStatement("DELETE FROM Plant WHERE plant_id = ?");
-            ps.setInt(1, plantId);
-            return ps.executeUpdate() > 0;
+            cn.setAutoCommit(false);
+            String reassignSql = "UPDATE Pot SET plant_id = (SELECT TOP 1 plant_id FROM Plant WHERE plant_id <> ? ORDER BY plant_id ASC) "
+                               + "WHERE plant_id = ? AND EXISTS (SELECT 1 FROM Plant WHERE plant_id <> ?)";
+            psReassign = cn.prepareStatement(reassignSql);
+            psReassign.setInt(1, plantId);
+            psReassign.setInt(2, plantId);
+            psReassign.setInt(3, plantId);
+            psReassign.executeUpdate();
+
+            psDelete = cn.prepareStatement("DELETE FROM Plant WHERE plant_id = ?");
+            psDelete.setInt(1, plantId);
+            int affected = psDelete.executeUpdate();
+            cn.commit();
+            return affected > 0;
         } catch (Exception e) {
+            try { if (cn != null) cn.rollback(); } catch (SQLException ignored) {}
             LOGGER.log(Level.SEVERE, "Lỗi tại delete Plant: {0}", e.getMessage());
         } finally {
-            close(null, ps, cn);
+            close(null, psReassign, null);
+            close(null, psDelete, cn);
         }
         return false;
     }
@@ -162,7 +177,7 @@ public class PlantDAO {
         Connection cn = null; PreparedStatement ps = null; ResultSet rs = null;
         try {
             cn = DBContext.getConnection();
-            ps = cn.prepareStatement(SELECT_BASE + " ORDER BY plant_name ASC");
+            ps = cn.prepareStatement(SELECT_BASE + " ORDER BY plant_id ASC");
             rs = ps.executeQuery();
             while (rs.next()) out.add(map(rs));
         } catch (Exception e) {
@@ -186,6 +201,12 @@ public class PlantDAO {
         else ps.setNull(4, java.sql.Types.DECIMAL);
         
         ps.setString(5, p.getDescription());
+        ps.setInt(6, p.getWaterAmountMl() > 0 ? p.getWaterAmountMl() : 250);
+        if (p.getDefaultPotId() != null && p.getDefaultPotId() > 0) {
+            ps.setInt(7, p.getDefaultPotId());
+        } else {
+            ps.setNull(7, java.sql.Types.INTEGER);
+        }
     }
 
     // Đóng gói ResultSet thành Object Plant
@@ -204,6 +225,10 @@ public class PlantDAO {
         
         p.setDescription(rs.getString("description"));
         p.setCreatedAt(rs.getTimestamp("created_at"));
+        int water = rs.getInt("water_amount_ml");
+        p.setWaterAmountMl(rs.wasNull() || water <= 0 ? 250 : water);
+        int potId = rs.getInt("default_pot_id");
+        p.setDefaultPotId(rs.wasNull() || potId <= 0 ? null : potId);
         return p;
     }
 

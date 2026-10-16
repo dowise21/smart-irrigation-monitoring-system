@@ -82,6 +82,8 @@ CREATE TABLE Plant (
     ideal_moisture_min FLOAT,
     ideal_moisture_max FLOAT,
     description NVARCHAR(MAX),
+    water_amount_ml INT DEFAULT 250,
+    default_pot_id INT NULL,
     created_at DATETIME DEFAULT GETDATE()
 );
 
@@ -113,6 +115,7 @@ CREATE TABLE SensorReading (
     weight_kg FLOAT,
     light_lux INT,
     recorded_at DATETIME DEFAULT GETDATE(),
+    source VARCHAR(20) DEFAULT 'DEVICE', -- DEVICE, SIMULATED
     CONSTRAINT FK_Reading_Sensor FOREIGN KEY (sensor_id) REFERENCES Sensor(sensor_id)
 );
 
@@ -154,6 +157,7 @@ CREATE TABLE WateringSession (
     start_time DATETIME DEFAULT GETDATE(),
     duration_seconds INT,
     status VARCHAR(50), -- PENDING, RUNNING, COMPLETED, FAILED
+    source VARCHAR(20) DEFAULT 'DEVICE', -- MANUAL, SCHEDULED, AUTO, DEVICE
     CONSTRAINT FK_Session_Pot FOREIGN KEY (pot_id) REFERENCES Pot(pot_id),
     CONSTRAINT FK_Session_Schedule FOREIGN KEY (schedule_id) REFERENCES WateringSchedule(schedule_id)
 );

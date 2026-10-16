@@ -14,18 +14,18 @@ public class DashboardDAO {
     public double[] getWaterKPIs() {
         double[] kpis = new double[3];
         // Công thức: Water Waste = Water Used - Retained Water (theo tài liệu PRJ301)
-        String sql = "SELECT SUM(water_ml) / 1000.0 AS total_used, " +
-                     "SUM(water_ml * retain_ratio) / 1000.0 AS total_retained " +
-                     "FROM WaterAnalysis";
-                     
+        String sql = "SELECT ISNULL(SUM(water_ml), 0) / 1000.0 AS total_used, "
+                   + "ISNULL(SUM(water_ml * ISNULL(retain_ratio, 0.75)), 0) / 1000.0 AS total_retained "
+                   + "FROM WaterAnalysis";
+
         try (Connection cn = DBContext.getConnection();
              PreparedStatement ps = cn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
-             
+
             if (rs.next()) {
                 kpis[0] = rs.getDouble("total_used");
                 kpis[1] = rs.getDouble("total_retained");
-                kpis[2] = kpis[0] - kpis[1]; // Waste = Used - Retained
+                kpis[2] = Math.max(0.0, kpis[0] - kpis[1]); // Waste = Used - Retained
             }
         } catch (Exception e) {
             System.err.println("Lỗi DashboardDAO.getWaterKPIs: " + e.getMessage());

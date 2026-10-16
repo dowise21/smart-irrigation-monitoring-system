@@ -1,0 +1,22 @@
+.error-page {
+    min-height: calc(100vh - 150px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.error-icon {
+    font-size: 80px;
+    margin-bottom: 20px;
+}
+
+.error-page h1 {
+    font-size: 38px;
+    margin-bottom: 12px;
+}
+
+.error-page p {
+    color: #777;
+    margin-bottom: 25px;
+}

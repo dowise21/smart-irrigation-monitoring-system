@@ -18,55 +18,102 @@ import model.Pot;
 public class HistoryController extends HttpServlet {
 
     private static final Logger LOGGER = Logger.getLogger(HistoryController.class.getName());
+    private static final int PAGE_SIZE = 10;
     private final IrrigationHistoryDAO historyDAO = new IrrigationHistoryDAO();
     private final PotDAO potDAO = new PotDAO();
 
-    // Dành cho Web: Hiển thị danh sách lịch sử tưới
+    /** Web view: server-side paginated WateringSession list filtered by pot, status and date range. */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
-        String potIdParam = request.getParameter("potId");
-        int potId = 0;
-        if (potIdParam != null && !potIdParam.isEmpty()) {
-            try {
-                potId = Integer.parseInt(potIdParam);
-            } catch (NumberFormatException e) {
-                potId = 0;
-            }
+
+        int potId = parseInt(request.getParameter("potId"), 0);
+        int page = Math.max(1, parseInt(request.getParameter("page"), 1));
+        String status = cleanStatus(request.getParameter("status"));
+        String fromDate = cleanDate(request.getParameter("fromDate"));
+        String toDate = cleanDate(request.getParameter("toDate"));
+
+        int totalItems = historyDAO.countHistory(potId, status, fromDate, toDate);
+        int totalPages = Math.max(1, (int) Math.ceil(totalItems / (double) PAGE_SIZE));
+        if (page > totalPages) {
+            page = totalPages;
         }
 
-        // Lấy 50 bản ghi lịch sử mới nhất
-        List<IrrigationHistory> listHistory = historyDAO.getHistory(potId, 50);
+        List<IrrigationHistory> listHistory = historyDAO.getPaginatedHistory(potId, status, fromDate, toDate, page, PAGE_SIZE);
         List<Pot> listPot = potDAO.getAll();
 
         request.setAttribute("listHistory", listHistory);
         request.setAttribute("listPot", listPot);
         request.setAttribute("selectedPotId", potId);
+        request.setAttribute("status", status);
+        request.setAttribute("fromDate", fromDate);
+        request.setAttribute("toDate", toDate);
+        request.setAttribute("currentPage", page);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("totalItems", totalItems);
 
-        request.getRequestDispatcher("/WEB-INF/views/history-list.jsp").forward(request, response);
+        request.getRequestDispatcher("/wateringHistory.jsp").forward(request, response);
     }
 
-    // Dành cho Mạch IoT: Gửi thông báo khi vừa tưới xong
+    /** IoT device reports a finished watering session (ADMIN/TECHNICIAN/STAFF session required). */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         try {
-            int potId = Integer.parseInt(request.getParameter("potId"));
-            Integer duration = Integer.valueOf(request.getParameter("duration"));
-            Double waterAmount = Double.valueOf(request.getParameter("waterAmount"));
-            
+            int potId = Integer.parseInt(request.getParameter("potId").trim());
+            Integer duration = Integer.valueOf(request.getParameter("duration").trim());
+            Double waterAmount = Double.valueOf(request.getParameter("waterAmount").trim());
+
+            if (potId <= 0) {
+                throw new IllegalArgumentException("potId must be positive.");
+            }
+            if (duration <= 0 || duration > 86400) {
+                throw new IllegalArgumentException("duration must be between 1 and 86400 seconds.");
+            }
+            if (waterAmount.isNaN() || waterAmount <= 0 || waterAmount > 1000) {
+                throw new IllegalArgumentException("waterAmount (liters) must be greater than 0 and at most 1000.");
+            }
+
             boolean success = historyDAO.insert(potId, duration, waterAmount);
-            
             if (success) {
                 response.getWriter().write("OK");
             } else {
-                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi lưu DB");
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error while saving watering history.");
             }
+        } catch (NullPointerException | IllegalArgumentException ex) {
+            LOGGER.log(Level.WARNING, "Rejected watering history: {0}", ex.getMessage());
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid history data.");
         } catch (Exception ex) {
-            LOGGER.log(Level.SEVERE, "Lỗi khi nhận dữ liệu History: {0}", ex.getMessage());
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Dữ liệu không hợp lệ");
+            LOGGER.log(Level.SEVERE, "Error receiving watering history: {0}", ex.getMessage());
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not save watering history.");
         }
+    }
+
+    private static int parseInt(String raw, int fallback) {
+        if (raw == null || raw.trim().isEmpty()) {
+            return fallback;
+        }
+        try {
+            return Integer.parseInt(raw.trim());
+        } catch (NumberFormatException e) {
+            return fallback;
+        }
+    }
+
+    private static String cleanDate(String raw) {
+        if (raw == null) {
+            return null;
+        }
+        String t = raw.trim();
+        return t.matches("\\d{4}-\\d{2}-\\d{2}") ? t : null;
+    }
+
+    private static String cleanStatus(String raw) {
+        if (raw == null) {
+            return null;
+        }
+        String t = raw.trim().toUpperCase();
+        return t.matches("[A-Z_]{1,20}") ? t : null;
     }
 }

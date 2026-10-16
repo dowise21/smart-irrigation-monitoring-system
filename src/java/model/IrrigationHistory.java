@@ -12,6 +12,9 @@ public class IrrigationHistory {
     // Dữ liệu mở rộng từ lệnh JOIN
     private String potName;
     private String plantName;
+    private String status;
+    private String source;
+    private Double retainRatio;
 
     public IrrigationHistory() {
     }
@@ -47,4 +50,15 @@ public class IrrigationHistory {
 
     public String getPlantName() { return plantName; }
     public void setPlantName(String plantName) { this.plantName = plantName; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+
+    public String getSource() { return source; }
+    public void setSource(String source) { this.source = source; }
+
+    /** Fraction of the delivered water the soil kept (0.0 - 1.0); null when not analysed. */
+    public Double getRetainRatio() { return retainRatio; }
+    public void setRetainRatio(Double retainRatio) { this.retainRatio = retainRatio; }
+
 }

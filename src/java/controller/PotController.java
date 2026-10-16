@@ -11,6 +11,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import model.Plant;
 import model.Pot;
 
@@ -18,15 +19,15 @@ import model.Pot;
 public class PotController extends HttpServlet {
 
     private static final Logger LOGGER = Logger.getLogger(PotController.class.getName());
-    
-    // Gọi cả 2 DAO để xử lý dữ liệu chéo nhau
+
     private final PotDAO potDAO = new PotDAO();
     private final PlantDAO plantDAO = new PlantDAO();
 
+    // READ only. Mutations (insert/update/delete) are POST + redirect (PRG).
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         String action = request.getParameter("action");
         if (action == null) {
             action = "list";
@@ -40,111 +41,117 @@ public class PotController extends HttpServlet {
                 case "edit":
                     showEditForm(request, response);
                     break;
-                case "delete":
-                    deletePot(request, response);
-                    break;
                 default:
                     listPots(request, response);
                     break;
             }
+        } catch (NumberFormatException ex) {
+            response.sendRedirect(request.getContextPath() + "/pots");
         } catch (Exception ex) {
-            LOGGER.log(Level.SEVERE, "Lỗi tại PotController (GET): {0}", ex.getMessage());
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi hệ thống khi xử lý yêu cầu.");
+            LOGGER.log(Level.SEVERE, "Error in PotController (GET): {0}", ex.getMessage());
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "System error while processing zone request.");
         }
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         request.setCharacterEncoding("UTF-8");
+        HttpSession session = request.getSession();
         String action = request.getParameter("action");
-        
+
         try {
-            switch (action) {
-                case "insert":
-                    insertPot(request, response);
-                    break;
-                case "update":
-                    updatePot(request, response);
-                    break;
-                default:
-                    response.sendRedirect(request.getContextPath() + "/pots");
-                    break;
+            if ("insert".equals(action)) {
+                insertPot(request, session);
+            } else if ("update".equals(action)) {
+                updatePot(request, session);
+            } else if ("delete".equals(action)) {
+                deletePot(request, session);
             }
+        } catch (IllegalArgumentException ex) { // includes NumberFormatException
+            session.setAttribute("ERROR_MSG", ex instanceof NumberFormatException
+                    ? "Invalid number in the submitted form." : ex.getMessage());
         } catch (Exception ex) {
-            LOGGER.log(Level.SEVERE, "Lỗi tại PotController (POST): {0}", ex.getMessage());
+            LOGGER.log(Level.SEVERE, "Error in PotController (POST): {0}", ex.getMessage());
+            session.setAttribute("ERROR_MSG", "System error while saving the zone.");
         }
+        response.sendRedirect(request.getContextPath() + "/pots");
     }
 
-    // --- CÁC HÀM NGHIỆP VỤ ---
+    // --- BUSINESS METHODS ---
 
-    // 1. Lấy danh sách chậu
     private void listPots(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         List<Pot> listPot = potDAO.getAll();
         request.setAttribute("listPot", listPot);
-        request.getRequestDispatcher("/WEB-INF/views/pot-list.jsp").forward(request, response);
+        request.getRequestDispatcher("/plantManagement.jsp").forward(request, response);
     }
 
-    // 2. Mở form Thêm mới (Cần truyền listPlant sang để làm Menu Dropdown)
     private void showNewForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         List<Plant> listPlant = plantDAO.getAll();
         request.setAttribute("listPlant", listPlant);
-        
-        request.getRequestDispatcher("/WEB-INF/views/pot-form.jsp").forward(request, response);
+        request.getRequestDispatcher("/plantManagement.jsp").forward(request, response);
     }
 
-    // 3. Mở form Sửa (Lấy dữ liệu cũ của chậu + lấy listPlant làm Dropdown)
     private void showEditForm(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         int id = Integer.parseInt(request.getParameter("id"));
         Pot existingPot = potDAO.findById(id);
         List<Plant> listPlant = plantDAO.getAll();
-        
+
         request.setAttribute("pot", existingPot);
         request.setAttribute("listPlant", listPlant);
-        request.getRequestDispatcher("/WEB-INF/views/pot-form.jsp").forward(request, response);
+        request.getRequestDispatcher("/plantManagement.jsp").forward(request, response);
     }
 
-    // 4. Lưu dữ liệu Thêm mới vào Database
-    private void insertPot(HttpServletRequest request, HttpServletResponse response)
-            throws IOException {
-        String name = request.getParameter("potName");
-        String location = request.getParameter("location");
-        int plantId = Integer.parseInt(request.getParameter("plantId"));
-        
-        // Checkbox trong HTML: Nếu tích thì có giá trị (khác null), nếu không tích thì request gửi về null
+    private void insertPot(HttpServletRequest request, HttpSession session) {
+        Pot pot = readPot(request, 0);
+        if (potDAO.insert(pot) > 0) {
+            session.setAttribute("SUCCESS_MSG", "Zone added.");
+        } else {
+            session.setAttribute("ERROR_MSG", "Could not add zone.");
+        }
+    }
+
+    private void updatePot(HttpServletRequest request, HttpSession session) {
+        int id = Integer.parseInt(request.getParameter("potId").trim());
+        Pot pot = readPot(request, id);
+        if (potDAO.update(pot)) {
+            session.setAttribute("SUCCESS_MSG", "Zone updated.");
+        } else {
+            session.setAttribute("ERROR_MSG", "Could not update zone.");
+        }
+    }
+
+    // POST only: a GET link must never delete data
+    private void deletePot(HttpServletRequest request, HttpSession session) {
+        int id = Integer.parseInt(request.getParameter("id").trim());
+        if (potDAO.delete(id)) {
+            session.setAttribute("SUCCESS_MSG", "Zone deleted.");
+        } else {
+            session.setAttribute("ERROR_MSG", "Could not delete zone.");
+        }
+    }
+
+    /** Reads and validates the pot form. */
+    private Pot readPot(HttpServletRequest request, int id) {
+        String name = request.getParameter("potName") == null ? "" : request.getParameter("potName").trim();
+        String location = request.getParameter("location") == null ? "" : request.getParameter("location").trim();
+        int plantId = Integer.parseInt(request.getParameter("plantId").trim());
+        // HTML checkbox: present when ticked, null otherwise
         boolean status = request.getParameter("status") != null;
 
-        Pot newPot = new Pot(0, name, location, plantId, null, status);
-        potDAO.insert(newPot);
-        
-        response.sendRedirect(request.getContextPath() + "/pots");
-    }
-
-    // 5. Cập nhật dữ liệu vào Database
-    private void updatePot(HttpServletRequest request, HttpServletResponse response)
-            throws IOException {
-        int id = Integer.parseInt(request.getParameter("potId"));
-        String name = request.getParameter("potName");
-        String location = request.getParameter("location");
-        int plantId = Integer.parseInt(request.getParameter("plantId"));
-        boolean status = request.getParameter("status") != null;
-
-        Pot pot = new Pot(id, name, location, plantId, null, status);
-        potDAO.update(pot);
-        
-        response.sendRedirect(request.getContextPath() + "/pots");
-    }
-
-    // 6. Xóa chậu
-    private void deletePot(HttpServletRequest request, HttpServletResponse response)
-            throws IOException {
-        int id = Integer.parseInt(request.getParameter("id"));
-        potDAO.delete(id);
-        
-        response.sendRedirect(request.getContextPath() + "/pots");
+        if (name.isEmpty()) {
+            throw new IllegalArgumentException("Zone name is required.");
+        }
+        if (name.length() > 100 || location.length() > 200) {
+            throw new IllegalArgumentException("Zone name (max 100) or location (max 200) is too long.");
+        }
+        if (plantId <= 0) {
+            throw new IllegalArgumentException("Please select a plant for this zone.");
+        }
+        return new Pot(id, name, location, plantId, null, status);
     }
 }

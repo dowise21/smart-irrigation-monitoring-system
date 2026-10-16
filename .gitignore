@@ -1,5 +1,63 @@
+# =============================================================================
+# PRJ301 Smart Irrigation Project - Git Ignore Rules
+# =============================================================================
+
+# Build & Compilation Artifacts
 build/
 dist/
-nbproject/private/
+target/
+out/
 *.class
 *.war
+*.ear
+
+# NetBeans IDE Project Private Settings
+nbproject/private/
+nbproject/project.properties.bak
+.nb-gradle/
+
+# Visual Studio Code & IntelliJ IDEA
+.vscode/
+.idea/
+*.iml
+*.iws
+*.ipr
+*.code-workspace
+
+# Large Media & Video Assets (> 100MB limit on GitHub)
+*.mp4
+*.m4v
+*.mov
+*.avi
+*.mkv
+*.zip
+*.rar
+*.7z
+*.tar.gz
+
+# Microsoft Office Lock & Temp Files
+~$*
+~$*.xlsx
+~$*.docx
+~$*.pptx
+*.tmp
+*.bak
+*.swp
+*~
+
+# Operating System Hidden Files
+Thumbs.db
+ehthumbs.db
+[Dd]esktop.ini
+.DS_Store
+.Spotlight-V100
+.Trashes
+
+# Application Logs & Diagnostics
+*.log
+logs/
+
+# Python Cache (from helper scripts)
+__pycache__/
+*.py[cod]
+*$py.class

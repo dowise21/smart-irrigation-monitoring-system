@@ -1235,44 +1235,61 @@ public class DBContext {
     <section class="panel-card" data-i="7">
       <span class="eyebrow-badge"><i class="fa-solid fa-lock"></i> B. Chức năng hệ thống</span>
       <h2 class="panel-title">8. Đăng nhập & Ma trận 5 Vai trò (RBAC)</h2>
-      <p class="lead-text">Cơ chế xác thực an toàn tuyệt đối với thuật toán băm mật khẩu PBKDF2 và bộ lọc phân quyền 5 cấp độ (Role-Based Access Control).</p>
+      <p class="lead-text">Cơ chế xác thực an toàn với mật khẩu băm (hash) trong <code>PasswordUtil</code> – không lưu plain text – và bộ lọc phân quyền 5 cấp độ <code>AuthFilter</code> chặn truy cập <strong>ở phía server</strong> (ẩn menu bằng JSTL/JSP chỉ là lớp hỗ trợ giao diện, không phải lớp bảo mật).</p>
 
       <div class="table-wrapper">
         <table>
           <thead>
-            <tr><th>Vai trò (Role)</th><th>Tài khoản mẫu</th><th>Mật khẩu</th><th>Phạm vi quyền hạn (Permissions)</th></tr>
+            <tr><th>Vai trò (Role)</th><th>Tài khoản mẫu</th><th>Mật khẩu</th><th>Quyền CRUD theo bảng dữ liệu</th></tr>
           </thead>
           <tbody>
             <tr>
               <td><span class="badge-status danger">ADMIN</span></td>
               <td><code>admin1</code></td>
               <td><code>123456</code></td>
-              <td>Toàn quyền hệ thống (Full Access): Quản trị người dùng, phân quyền, xem mọi module vườn, IoT, nhật ký hệ thống.</td>
+              <td>Full CRUD trên toàn bộ bảng, đặc biệt <code>AppUser</code> và <code>SystemLog</code>.</td>
             </tr>
             <tr>
               <td><span class="badge-status success">MANAGER</span></td>
               <td><code>manager</code></td>
               <td><code>123456</code></td>
-              <td>Quản lý Cây trồng (Plants), Quản lý Chậu/Khu vực (Pots), cấu hình Lịch tưới tự động (Schedules) và dự đoán AI.</td>
+              <td>CRUD: <code>Plant</code>, <code>Pot</code>, <code>WateringSchedule</code>. RU: <code>Alert</code>. Chỉ đọc (R) các bảng còn lại.</td>
             </tr>
             <tr>
               <td><span class="badge-status info">TECHNICIAN</span></td>
               <td><code>tech</code></td>
               <td><code>123456</code></td>
-              <td>Giám sát dữ liệu Telemetry cảm biến (/sensor-data), hiệu chuẩn máy bơm và kiểm tra nhật ký bơm (/history).</td>
+              <td>CRUD: <code>Sensor</code>, <code>SensorReading</code>, <code>PumpCalibration</code>. CRU: <code>WateringSession</code>, <code>Alert</code>. R: <code>Plant</code>, <code>Pot</code>.</td>
             </tr>
             <tr>
               <td><span class="badge-status warning">STAFF</span></td>
               <td><code>staff</code></td>
               <td><code>123456</code></td>
-              <td>Kích hoạt Tưới thủ công khẩn cấp (/manual-water) và xử lý xác nhận các Cảnh báo sự cố (/alerts).</td>
+              <td>CRU: <code>WateringSession</code> (tưới thủ công <code>/manual-water</code>). RU: <code>Alert</code> (xác nhận cảnh báo). R: <code>Plant</code>, <code>Pot</code>, <code>Sensor</code>.</td>
             </tr>
             <tr>
               <td><span class="badge-status" style="background:#e2e8f0; color:#475569;">VIEWER</span></td>
               <td><code>viewer</code></td>
               <td><code>123456</code></td>
-              <td>Chỉ xem tổng quan Dashboard và chỉ số nước. Bị AuthFilter chặn toàn bộ các thao tác thêm, sửa, xóa hoặc kích hoạt tưới.</td>
+              <td>Chỉ đọc (R) toàn hệ thống. Mọi <code>POST</code> và mọi <code>GET ?action=add|edit|delete|water|resolve…</code> đều bị <code>AuthFilter</code> trả 403 / chuyển hướng.</td>
             </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 class="section-subtitle">Ma trận Route &rarr; Role được ghi (WRITE) trong <code>AuthFilter</code></h3>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr><th>Route</th><th>Đọc (GET)</th><th>Ghi (POST / action thay đổi dữ liệu)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>/plants</code>, <code>/pots</code>, <code>/schedules</code>, <code>/api/schedules</code></td><td>Tất cả 5 role</td><td>ADMIN, MANAGER</td></tr>
+            <tr><td><code>/api/plants</code></td><td>Tất cả 5 role</td><td><code>action=water</code>: ADMIN, TECHNICIAN, STAFF · <code>add|update|delete</code>: ADMIN, MANAGER</td></tr>
+            <tr><td><code>/manual-water</code>, <code>/history</code>, <code>/api/history</code></td><td>ADMIN, MANAGER, TECHNICIAN, STAFF (history: tất cả)</td><td>ADMIN, TECHNICIAN, STAFF</td></tr>
+            <tr><td><code>/alerts</code></td><td>Tất cả 5 role</td><td>ADMIN, MANAGER, TECHNICIAN, STAFF</td></tr>
+            <tr><td><code>/sensor-data</code>, <code>/api/sensors</code>, <code>/pump-calibration</code></td><td>Tất cả 5 role</td><td>ADMIN, TECHNICIAN</td></tr>
+            <tr><td><code>/dashboard</code>, <code>/reports</code>, <code>/export-history</code>, <code>/predict</code></td><td>Tất cả 5 role</td><td>ADMIN</td></tr>
           </tbody>
         </table>
       </div>
@@ -1280,7 +1297,14 @@ public class DBContext {
       <div class="callout warn">
         <i class="fa-solid fa-triangle-exclamation"></i>
         <div>
-          <strong>Chống Bypass URL:</strong> Nếu tài khoản <code>viewer</code> hoặc người chưa đăng nhập cố tình gõ thẳng URL <code>/plants?action=new</code> lên thanh địa chỉ, <code>AuthFilter</code> sẽ lập tức chặn lại, ghi nhận thông báo lỗi <em>Access Denied</em> và chuyển hướng về <code>/dashboard</code> hoặc <code>/login</code>.
+          <strong>Chống Bypass URL:</strong> Nếu tài khoản <code>viewer</code> hoặc người chưa đăng nhập gõ thẳng URL <code>/plants?action=new</code>, <code>AuthFilter</code> chặn lại, ghi <em>Access Denied</em> vào session (hiển thị 1 lần dưới dạng toast) và chuyển hướng về <code>/dashboard</code> hoặc <code>/login</code>. Truy cập <code>/dashboard</code> khi chưa đăng nhập luôn chuyển về <code>/login</code>. Truy cập trực tiếp <code>*.jsp</code> bị chặn hoặc chuyển về route tương ứng.
+        </div>
+      </div>
+
+      <div class="callout">
+        <i class="fa-solid fa-bolt"></i>
+        <div>
+          <strong>Navbar thống nhất, 0ms:</strong> toàn bộ 8 trang dùng chung <code>WEB-INF/navbar.jspf</code>, render menu theo role <em>ngay trên server</em> (không còn hiện đủ menu rồi mới ẩn). Tài khoản hiển thị bằng chip avatar tròn 42×42px (tooltip hiện tên + role) nên không làm vỡ thanh điều hướng. Thông báo flash (<code>SUCCESS_MSG</code>/<code>ERROR_MSG</code>) cũng được navbar hiển thị một lần.
         </div>
       </div>
     </section>
@@ -1431,23 +1455,37 @@ OK: Reading saved successfully (ID: 1042)</code></pre>
     <section class="panel-card" data-i="14">
       <span class="eyebrow-badge"><i class="fa-solid fa-triangle-exclamation"></i> B. Chức năng hệ thống</span>
       <h2 class="panel-title">15. Động cơ Cảnh báo Sự cố (Alert Rules Engine)</h2>
-      <p class="lead-text">Bộ quy tắc phát hiện bất thường tự động được cài đặt trong <code>AlertService.java</code> giúp phòng tránh úng rễ và lãng phí tài nguyên nước.</p>
+      <p class="lead-text">5 quy tắc cốt lõi được cài đặt trong <code>AlertService.java</code> và được <strong>gọi tự động</strong> từ luồng tưới (<code>WateringSessionDAO</code>, <code>IrrigationHistoryDAO</code>) và luồng telemetry (<code>SensorDataDAO.insert</code> &rarr; <code>evaluateIncomingTelemetry</code>).</p>
 
+      <h3 class="section-subtitle">Math Engine (công thức chuẩn)</h3>
       <div class="table-wrapper">
         <table>
-          <thead>
-            <tr><th>Mã cảnh báo</th><th>Điều kiện kích hoạt</th><th>Ý nghĩa & Hành động xử lý</th></tr>
-          </thead>
+          <thead><tr><th>Đại lượng</th><th>Công thức</th><th>Hàm</th></tr></thead>
           <tbody>
-            <tr><td><span class="badge-status danger">OVERWATER</span></td><td><code>waterMl &gt;= 1000 &amp;&amp; retainRatio &lt; 0.5</code></td><td>Tưới quá nhiều nước nhưng đất không giữ được (nguy cơ úng rễ, thối rễ).</td></tr>
-            <tr><td><span class="badge-status warning">SENSOR_FAULT</span></td><td><code>waterMl &gt; 0 &amp;&amp; ẩm_sau &lt;= ẩm_trước</code></td><td>Đã kích hoạt bơm nhưng độ ẩm đất không đổi (cảm biến bị tuột hoặc hỏng).</td></tr>
-            <tr><td><span class="badge-status warning">DRY_STRESS</span></td><td><code>moisture &lt; ideal_moisture_min</code></td><td>Độ ẩm tụt sâu dưới ngưỡng cho phép, cây có nguy cơ héo úa cần cấp nước.</td></tr>
-            <tr><td><span class="badge-status danger">LEAK</span></td><td><code>tốc_độ_mất_nước &gt; 5.0 %/giờ</code></td><td>Độ ẩm tụt dốc bất thường, nghi ngờ chậu bị vỡ hoặc rò rỉ đường ống dẫn nước.</td></tr>
+            <tr><td>Retain Ratio</td><td><code>(weight_after - weight_before) / water_ml</code> (đổi kg &rarr; ml khi cần, kẹp trong 0..1)</td><td><code>calculateRetainRatio</code></td></tr>
+            <tr><td>Water Waste</td><td><code>water_ml - (retain_ratio * water_ml)</code></td><td><code>calculateWaterWaste</code></td></tr>
+            <tr><td>Dry Rate</td><td><code>delta_weight / delta_time</code> (kg/giờ)</td><td><code>calculateDryRate</code></td></tr>
           </tbody>
         </table>
       </div>
 
-      <p>Nhân viên kỹ thuật có thể mở màn hình <code>/alerts</code>, xem chi tiết sự cố và bấm nút <em>Xác nhận đã khắc phục</em> (ghi nhận vào bảng <code>AlertConfirmation</code>).</p>
+      <h3 class="section-subtitle">5 quy tắc cảnh báo</h3>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr><th>Mã cảnh báo</th><th>Điều kiện kích hoạt</th><th>Ý nghĩa &amp; Hành động xử lý</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><span class="badge-status danger">OVERWATER</span></td><td><code>water_ml &gt;= 1000 &amp;&amp; retain_ratio &lt; 0.5</code></td><td>Tưới nhiều nhưng đất giữ rất ít nước (nguy cơ úng rễ, lãng phí). Kèm lượng nước lãng phí ước tính.</td></tr>
+            <tr><td><span class="badge-status warning">DRY_STRESS</span></td><td><code>moisture &lt; Plant.ideal_moisture_min</code></td><td>Độ ẩm tụt dưới ngưỡng tối ưu của <em>chính cây đang trồng trong chậu</em> (không dùng ngưỡng cứng).</td></tr>
+            <tr><td><span class="badge-status warning">SENSOR_FAULT</span></td><td><code>water_ml &gt; 0 &amp;&amp; ẩm_sau &lt;= ẩm_trước</code> <em>hoặc</em> <code>|Δweight| &gt;= 0.4 kg &amp;&amp; |Δmoisture| &lt; 0.3%</code></td><td>Bơm đã chạy / khối lượng đổi mạnh nhưng độ ẩm đứng yên: cảm biến tuột hoặc hỏng.</td></tr>
+            <tr><td><span class="badge-status danger">LEAK</span></td><td><code>dry_rate &gt; 0.5 kg/h</code> và <strong>không</strong> có <code>WateringSession</code> đang PENDING/RUNNING</td><td>Khối lượng chậu giảm bất thường khi không tưới: nghi ngờ vỡ chậu / rò rỉ.</td></tr>
+            <tr><td><span class="badge-status info">CALIBRATION_MISSING</span></td><td>Pump của chậu <strong>chưa có</strong> bản ghi <code>PumpCalibration</code></td><td>Cần hiệu chuẩn lưu lượng bơm tại <code>/pump-calibration</code>; hệ thống không tạo trùng khi đã có cảnh báo chưa xử lý.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Mọi cảnh báo được ghi vào bảng <code>Alert</code> và <code>SystemLog</code>. Nhân viên (ADMIN, MANAGER, TECHNICIAN, STAFF) mở <code>/alerts</code>, bấm <em>Xác nhận đã khắc phục</em>: <code>AlertDAO.resolveAlert(alertId, userId, actionTaken)</code> chạy trong một transaction, cập nhật <code>Alert.is_resolved</code> và chèn bản ghi vào <code>AlertConfirmation</code> (ai xác nhận, làm gì, lúc nào). Danh sách cảnh báo phân trang phía server (<code>OFFSET ? ROWS FETCH NEXT ? ROWS ONLY</code>) với bộ lọc Open / Resolved / All.</p>
     </section>
 
     <!-- PANEL 15 -->
@@ -1505,18 +1543,20 @@ if (totalHoursToDry < 1.0) totalHoursToDry = 1.0;
             <tr><th>URL Pattern</th><th>Lớp Servlet</th><th>Phương thức</th><th>JSP View trả về</th><th>Quyền truy cập</th></tr>
           </thead>
           <tbody>
-            <tr><td><code>/login</code></td><td><code>LoginServlet</code></td><td>GET / POST</td><td><code>/WEB-INF/views/login.jsp</code></td><td>Public (Công khai)</td></tr>
+            <tr><td><code>/login</code>, <code>/register</code></td><td><code>LoginServlet</code>, <code>RegisterServlet</code></td><td>GET / POST (PRG)</td><td><code>login.jsp</code>, <code>register.jsp</code></td><td>Public (Công khai). Đăng ký thành công &rarr; redirect + flash message; role mặc định VIEWER</td></tr>
             <tr><td><code>/logout</code></td><td><code>LogoutServlet</code></td><td>GET</td><td>Redirect về <code>/login</code></td><td>Tất cả người đã login</td></tr>
-            <tr><td><code>/dashboard</code></td><td><code>DashboardServlet</code></td><td>GET</td><td><code>/WEB-INF/views/dashboard.jsp</code></td><td>Tất cả 5 vai trò</td></tr>
-            <tr><td><code>/plants</code></td><td><code>PlantController</code></td><td>GET / POST</td><td><code>plant-list.jsp</code>, <code>plant-form.jsp</code></td><td>Admin, Manager</td></tr>
-            <tr><td><code>/pots</code></td><td><code>PotController</code></td><td>GET / POST</td><td><code>pot-list.jsp</code>, <code>pot-form.jsp</code></td><td>Admin, Manager</td></tr>
-            <tr><td><code>/sensor-data</code></td><td><code>SensorController</code></td><td>GET / POST</td><td><code>sensor-list.jsp</code></td><td>Admin, Technician</td></tr>
-            <tr><td><code>/schedules</code></td><td><code>ScheduleController</code></td><td>GET / POST</td><td><code>schedule.jsp</code></td><td>Admin, Manager</td></tr>
-            <tr><td><code>/history</code></td><td><code>HistoryController</code></td><td>GET</td><td><code>history-list.jsp</code></td><td>Admin, Technician</td></tr>
-            <tr><td><code>/manual-water</code></td><td><code>ManualWateringServlet</code></td><td>GET / POST</td><td><code>manual-water.jsp</code></td><td>Admin, Staff</td></tr>
-            <tr><td><code>/alerts</code></td><td><code>AlertController</code></td><td>GET / POST</td><td><code>alert-list.jsp</code></td><td>Admin, Staff</td></tr>
-            <tr><td><code>/predict</code></td><td><code>MLController</code></td><td>GET / POST</td><td><code>ml-prediction.jsp</code></td><td>Admin, Manager</td></tr>
-            <tr><td><code>/export-history</code></td><td><code>ExportCSVController</code></td><td>GET</td><td>Stream tải file .CSV</td><td>Admin, Manager</td></tr>
+            <tr><td><code>/dashboard</code></td><td><code>DashboardServlet</code></td><td>GET</td><td><code>dashboard.jsp</code></td><td>Tất cả 5 vai trò</td></tr>
+            <tr><td><code>/plants</code> + <code>/api/plants</code></td><td><code>PlantController</code>, <code>ApiPlantServlet</code></td><td>GET / POST (PRG, delete = POST)</td><td><code>plantManagement.jsp</code></td><td>Read: tất cả · Write: Admin, Manager · <code>action=water</code>: Admin, Technician, Staff</td></tr>
+            <tr><td><code>/pots</code></td><td><code>PotController</code></td><td>GET / POST (PRG, delete = POST)</td><td><code>plantManagement.jsp</code></td><td>Read: tất cả · Write: Admin, Manager</td></tr>
+            <tr><td><code>/schedules</code> + <code>/api/schedules</code></td><td><code>ScheduleController</code>, <code>ApiScheduleServlet</code></td><td>GET / POST (PRG)</td><td><code>wateringManagement.jsp</code></td><td>Read: tất cả · Write: Admin, Manager</td></tr>
+            <tr><td><code>/sensor-data</code> + <code>/api/sensors</code></td><td><code>SensorController</code>, <code>SensorApiServlet</code></td><td>GET (phân trang + lọc ngày) / POST (validate 0..100)</td><td><code>sensors.jsp</code></td><td>Read: tất cả · Write: Admin, Technician</td></tr>
+            <tr><td><code>/history</code> + <code>/api/history</code></td><td><code>HistoryController</code>, <code>ApiHistoryServlet</code></td><td>GET (phân trang + lọc status/ngày) / POST</td><td><code>wateringHistory.jsp</code></td><td>Read: tất cả · Write: Admin, Technician, Staff</td></tr>
+            <tr><td><code>/manual-water</code></td><td><code>ManualWateringServlet</code></td><td>GET / POST (PRG)</td><td><code>wateringManagement.jsp</code></td><td>Admin, Manager, Technician, Staff (Viewer không có) · Write: Admin, Technician, Staff. Từ chối volume &le; 0 hoặc &gt; 10000 ml</td></tr>
+            <tr><td><code>/alerts</code></td><td><code>AlertController</code></td><td>GET (phân trang + lọc) / POST resolve</td><td><code>alert.jsp</code></td><td>Read: tất cả · Resolve: Admin, Manager, Technician, Staff</td></tr>
+            <tr><td><code>/pump-calibration</code></td><td><code>PumpCalibrationServlet</code></td><td>GET / POST (PRG)</td><td><code>pump-calibration.jsp</code></td><td>Read: tất cả · Write: Admin, Technician</td></tr>
+            <tr><td><code>/predict</code></td><td><code>MLController</code></td><td>GET / POST (PRG)</td><td><code>ml-prediction.jsp</code></td><td>Read: tất cả · Write: Admin</td></tr>
+            <tr><td><code>/reports</code>, <code>/export-history</code></td><td><code>ReportsServlet</code>, <code>ExportCSVController</code></td><td>GET</td><td><code>reports.jsp</code>, stream .CSV</td><td>Tất cả 5 vai trò (chỉ đọc)</td></tr>
+
           </tbody>
         </table>
       </div>
@@ -1573,6 +1613,23 @@ if (totalHoursToDry < 1.0) totalHoursToDry = 1.0;
             <tr><td><strong>TC15</strong></td><td>IoT</td><td>Vẽ biểu đồ nội bộ</td><td>Ngắt kết nối mạng Internet của máy tính</td><td><span class="badge-status success">Pass</span> Biểu đồ trong trang vẫn render bình thường</td></tr>
             <tr><td><strong>TC16</strong></td><td>Alert</td><td>Kích hoạt cảnh báo úng</td><td>Nạp bản ghi waterMl=1200, retainRatio=0.3</td><td><span class="badge-status success">Pass</span> Sinh cảnh báo OVERWATER trong /alerts</td></tr>
             <tr><td><strong>TC17</strong></td><td>CSV</td><td>Xuất file Excel</td><td>Bấm "Export CSV Report" trên Dashboard</td><td><span class="badge-status success">Pass</span> Tải file .csv mở trên Excel không lỗi font</td></tr>
+            <tr><td><strong>TC18</strong></td><td>RBAC</td><td>Technician ghi Sensor/Calibration</td><td>Đăng nhập tech, POST /pump-calibration (pumpId, measuredMl, durationSec)</td><td><span class="badge-status success">Pass</span> Lưu bản ghi PumpCalibration, redirect (PRG) + toast thành công</td></tr>
+            <tr><td><strong>TC19</strong></td><td>RBAC</td><td>Manager sửa Plant, không tưới</td><td>Đăng nhập manager, POST /api/plants action=water</td><td><span class="badge-status success">Pass</span> HTTP 403 (chỉ Admin/Technician/Staff tạo WateringSession)</td></tr>
+            <tr><td><strong>TC20</strong></td><td>RBAC</td><td>Staff xử lý cảnh báo, không sửa Plant</td><td>Đăng nhập staff: POST /alerts action=resolve và POST /api/plants action=add</td><td><span class="badge-status success">Pass</span> resolve OK (ghi AlertConfirmation); add bị 403</td></tr>
+            <tr><td><strong>TC21</strong></td><td>RBAC</td><td>Viewer read-only tuyệt đối</td><td>Đăng nhập viewer, POST /alerts, GET /plants?action=delete&amp;id=1</td><td><span class="badge-status success">Pass</span> Cả hai bị AuthFilter chặn, dữ liệu không đổi</td></tr>
+            <tr><td><strong>TC22</strong></td><td>RBAC</td><td>Navbar không nhấp nháy</td><td>Đăng nhập viewer, tải lại các trang</td><td><span class="badge-status success">Pass</span> Menu đúng role ngay lần render đầu tiên, avatar chip gọn</td></tr>
+            <tr><td><strong>TC23</strong></td><td>Math</td><td>Retain Ratio / Water Waste</td><td>weight_before=5.00, weight_after=5.60, water_ml=1000</td><td><span class="badge-status success">Pass</span> ratio = 0.60, waste = 400 ml</td></tr>
+            <tr><td><strong>TC24</strong></td><td>Alert</td><td>DRY_STRESS theo cây</td><td>POST /sensor-data moisture thấp hơn ideal_moisture_min của cây trong chậu</td><td><span class="badge-status success">Pass</span> Sinh cảnh báo DRY_STRESS</td></tr>
+            <tr><td><strong>TC25</strong></td><td>Alert</td><td>LEAK chỉ khi không tưới</td><td>Khối lượng giảm &gt; 0.5 kg/h khi không có WateringSession đang chạy</td><td><span class="badge-status success">Pass</span> Sinh cảnh báo LEAK; không sinh khi đang tưới</td></tr>
+            <tr><td><strong>TC26</strong></td><td>Alert</td><td>SENSOR_FAULT do lệch weight/moisture</td><td>Weight đổi &ge; 0.4 kg nhưng moisture đổi &lt; 0.3%</td><td><span class="badge-status success">Pass</span> Sinh cảnh báo SENSOR_FAULT</td></tr>
+            <tr><td><strong>TC27</strong></td><td>Alert</td><td>CALIBRATION_MISSING</td><td>Tưới ở chậu có Pump chưa có PumpCalibration</td><td><span class="badge-status success">Pass</span> Sinh cảnh báo CALIBRATION_MISSING (không trùng lặp)</td></tr>
+            <tr><td><strong>TC28</strong></td><td>Pagination</td><td>Phân trang phía server</td><td>Mở /sensor-data, /history, /alerts; bấm Next/Prev, lọc theo ngày/status</td><td><span class="badge-status success">Pass</span> Mỗi trang chỉ nạp 10 dòng bằng OFFSET/FETCH NEXT</td></tr>
+            <tr><td><strong>TC29</strong></td><td>PRG</td><td>F5 sau khi tưới thủ công</td><td>POST /manual-water rồi nhấn F5</td><td><span class="badge-status success">Pass</span> Không tạo phiên tưới trùng (redirect 302 &rarr; GET)</td></tr>
+            <tr><td><strong>TC30</strong></td><td>PRG</td><td>F5 sau Add Plant / Register</td><td>POST thành công rồi F5</td><td><span class="badge-status success">Pass</span> Không tạo bản ghi trùng</td></tr>
+            <tr><td><strong>TC31</strong></td><td>Validation</td><td>Thể tích nước âm</td><td>POST /manual-water volume=-50 (hoặc 0, hoặc 99999)</td><td><span class="badge-status success">Pass</span> Từ chối với thông báo lỗi, không ghi DB</td></tr>
+            <tr><td><strong>TC32</strong></td><td>Validation</td><td>Sensor ngoài biên</td><td>POST /sensor-data moisture=150 hoặc weightKg=-1</td><td><span class="badge-status success">Pass</span> HTTP 400 "Invalid sensor data."</td></tr>
+            <tr><td><strong>TC33</strong></td><td>Error</td><td>Không lộ stack trace</td><td>Gõ URL không tồn tại / gây lỗi 500</td><td><span class="badge-status success">Pass</span> Hiển thị error.jsp thân thiện (web.xml error-page), không có stack trace</td></tr>
+
           </tbody>
         </table>
       </div>
@@ -1595,6 +1652,13 @@ if (totalHoursToDry < 1.0) totalHoursToDry = 1.0;
             <tr><td><strong>Bảo mật mật khẩu</strong></td><td>Áp dụng PBKDF2WithHmacSHA256 băm 20.000 vòng lặp có Salt ngẫu nhiên qua <code>PasswordUtil</code>.</td><td>Không lưu mật khẩu dạng plaintext, chống rò rỉ.</td></tr>
             <tr><td><strong>Bảo vệ phân quyền</strong></td><td>Cài đặt <code>AuthFilter</code> kiểm tra URL và vai trò người dùng, ngăn chặn gõ URL trực tiếp.</td><td>Phân quyền 5 vai trò hoạt động độc lập và an toàn.</td></tr>
             <tr><td><strong>Dọn dẹp mã nguồn</strong></td><td>Dọn dẹp toàn bộ lệnh in thử <code>System.out.println</code>, thay bằng <code>java.util.logging.Logger</code>.</td><td>Mã nguồn sạch sẽ, không rò rỉ thông tin nhạy cảm.</td></tr>
+            <tr><td><strong>17 bảng &amp; 17 thực thể</strong></td><td>Có DAO cho Pump/PumpCalibration (<code>PumpCalibrationDAO</code>), SystemLog (<code>SystemLogDAO</code>), AlertConfirmation (trong <code>AlertDAO</code>), SensorReading có <code>weight_kg</code>, <code>light_lux</code>.</td><td>Mọi bảng trong ERD đều được code truy cập thật.</td></tr>
+            <tr><td><strong>SQL Injection &amp; rò rỉ tài nguyên</strong></td><td>100% <code>PreparedStatement</code>; <code>try-with-resources</code> cho Connection/Statement/ResultSet, kể cả <code>SampleDataGenerator</code>.</td><td>Không nối chuỗi dữ liệu người dùng vào SQL, không rò rỉ kết nối.</td></tr>
+            <tr><td><strong>Phân trang &amp; lọc phía server</strong></td><td><code>OFFSET ? ROWS FETCH NEXT ? ROWS ONLY</code> trong <code>SensorDataDAO</code>, <code>IrrigationHistoryDAO</code>, <code>AlertDAO</code>, <code>PlantDAO</code>, <code>PumpCalibrationDAO</code>; lọc theo ngày/status.</td><td>Không dùng phân trang JavaScript cho danh sách lớn.</td></tr>
+            <tr><td><strong>Post-Redirect-Get</strong></td><td>Mọi <code>doPost</code> (Plant, Pot, Schedule, Manual water, Register, Predict, Calibration, Alert) kết thúc bằng <code>sendRedirect</code>; thao tác xoá chuyển sang POST; thông báo qua flash message trong <code>navbar.jspf</code>.</td><td>F5 không gửi lại form, GET không bao giờ xoá dữ liệu.</td></tr>
+            <tr><td><strong>Validation &amp; xử lý lỗi</strong></td><td>Kiểm tra số âm/0/quá lớn, min &lt; max, độ ẩm 0..100; <code>web.xml</code> ánh xạ 400/403/404/405/500 và <code>Throwable</code> &rarr; <code>/error.jsp</code>.</td><td>Người dùng không thấy stack trace Tomcat.</td></tr>
+            <tr><td><strong>Math &amp; Alert Engine</strong></td><td><code>AlertService</code> (3 công thức + 5 luật) được gọi tự động từ luồng tưới và telemetry; lưu lượng bơm lấy từ <code>PumpCalibration</code> thay vì hằng số.</td><td>Cảnh báo sinh tự động, đúng ngưỡng theo từng loại cây.</td></tr>
+
           </tbody>
         </table>
       </div>

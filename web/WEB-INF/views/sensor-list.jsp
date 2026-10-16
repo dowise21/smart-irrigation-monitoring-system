@@ -4,6 +4,7 @@
     Author     : VNJ - Refactored to Modern Eco-Tech IoT Telemetry Dashboard 
 --%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@page isELIgnored="false"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <!-- Thư viện format (fmt) để hiển thị ngày giờ chuẩn xác -->
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>

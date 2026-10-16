@@ -5,6 +5,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import model.AppUser;
@@ -43,32 +46,82 @@ public class UserDAO {
         return u;
     }
 
+    private Set<String> loadPermissions(Connection cn, int roleId) {
+        Set<String> perms = new HashSet<>();
+        String sql = "SELECT p.perm_name FROM RolePermission rp "
+                   + "JOIN Permission p ON p.perm_id = rp.perm_id "
+                   + "WHERE rp.role_id = ?";
+        try (PreparedStatement ps = cn.prepareStatement(sql)) {
+            ps.setInt(1, roleId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String name = rs.getString("perm_name");
+                    if (name != null && !name.trim().isEmpty()) {
+                        perms.add(name.trim().toUpperCase(Locale.ROOT));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.log(Level.WARNING, "Could not load permissions for roleId={0}: {1}", new Object[]{roleId, e.getMessage()});
+        }
+        return perms;
+    }
+
     /**
-     * HÀM 1: Tìm người dùng bằng Username (Phục vụ chức năng Login)
+     * HÀM 1: Tìm người dùng bằng Username hoặc Email (Phục vụ chức năng Login)
      */
     public AppUser findByUsername(String username) {
-        Connection cn = null; 
-        PreparedStatement ps = null; 
+        Connection cn = null;
+        PreparedStatement ps = null;
         ResultSet rs = null;
-        
+
         try {
             cn = DBContext.getConnection();
-            String sql = SELECT_BASE + " WHERE u.username = ?";
+            String sql = SELECT_BASE + " WHERE u.username = ? OR u.email = ?";
             ps = cn.prepareStatement(sql);
             ps.setString(1, username);
-            
+            ps.setString(2, username);
+
             rs = ps.executeQuery();
-            
+
             if (rs.next()) {
-                return map(rs);
+                AppUser u = map(rs);
+                u.setPermissions(loadPermissions(cn, u.getRoleId()));
+                return u;
             }
         } catch (Exception e) {
-            // Thay thế printStackTrace bằng Logger
             LOGGER.log(Level.SEVERE, "Loi tai findByUsername: {0}", e.getMessage());
         } finally {
-            close(rs, ps, cn); 
+            close(rs, ps, cn);
         }
-        return null; 
+        return null;
+    }
+
+    /**
+     * Tìm người dùng bằng user_id (Phục vụ kiểm tra phiên đăng nhập và quyền hạn thực tế)
+     */
+    public AppUser findById(int userId) {
+        Connection cn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            cn = DBContext.getConnection();
+            String sql = SELECT_BASE + " WHERE u.user_id = ?";
+            ps = cn.prepareStatement(sql);
+            ps.setInt(1, userId);
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                AppUser u = map(rs);
+                u.setPermissions(loadPermissions(cn, u.getRoleId()));
+                return u;
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Loi tai findById: {0}", e.getMessage());
+        } finally {
+            close(rs, ps, cn);
+        }
+        return null;
     }
     
     /**

@@ -1,0 +1,127 @@
+.bell-wrap {
+    position: relative;
+    display: inline-flex;
+    flex: 0 0 auto;
+    margin-left: 14px;
+}
+
+.notification-bell {
+    position: relative;
+    display: grid;
+    width: 42px;
+    height: 42px;
+    place-items: center;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    background: #fff;
+    color: #475569;
+    cursor: pointer;
+}
+
+.notification-bell:hover {
+    border-color: #6ee7b7;
+    color: #059669;
+}
+
+.notification-bell svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    display: flex;
+    min-width: 19px;
+    height: 19px;
+    padding: 0 5px;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #fff;
+    border-radius: 10px;
+    background: #ef4444;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.notification-badge[hidden],
+.alert-menu[hidden] {
+    display: none;
+}
+
+.alert-menu {
+    position: absolute;
+    top: 52px;
+    right: 0;
+    z-index: 60;
+    width: 330px;
+    padding: 8px;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 16px 36px rgba(15, 23, 42, .16);
+}
+
+.alert-menu-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    color: #1e293b;
+    font-size: 14px;
+}
+
+.alert-menu-head a {
+    color: #059669;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.alert-menu .alert-item {
+    display: flex;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    color: #1e293b;
+}
+
+.alert-menu .alert-item:hover {
+    background: #f8fafc;
+}
+
+.alert-menu .alert-dot {
+    width: 8px;
+    height: 8px;
+    margin-top: 5px;
+    flex: 0 0 8px;
+    border-radius: 50%;
+    background: #10b981;
+}
+
+.alert-menu .alert-item.warn .alert-dot {
+    background: #ef4444;
+}
+
+.alert-menu .alert-item strong {
+    font-size: 12px;
+}
+
+.alert-menu .alert-item p {
+    margin: 2px 0 0;
+    color: #64748b;
+    font-size: 11px;
+}
+
+@media (max-width: 520px) {
+    .alert-menu {
+        right: -6px;
+        width: min(330px, calc(100vw - 32px));
+    }
+}

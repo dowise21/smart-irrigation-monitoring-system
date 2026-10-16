@@ -1,0 +1,245 @@
+<%@page pageEncoding="UTF-8"%>
+<%
+    model.AppUser _navUser = (model.AppUser) session.getAttribute("LOGIN_USER");
+    String _navCtx = request.getContextPath();
+    String _navRole = (_navUser != null && _navUser.getRoleName() != null)
+            ? _navUser.getRoleName().trim().toUpperCase() : "";
+    String _navName = (_navUser != null && _navUser.getFullName() != null && !_navUser.getFullName().trim().isEmpty())
+            ? _navUser.getFullName().trim()
+            : (_navUser != null && _navUser.getUsername() != null ? _navUser.getUsername() : "User");
+    String[] _navParts = _navName.trim().split("\\s+");
+    String _navInitials = _navParts.length >= 2
+            ? ("" + _navParts[0].charAt(0) + _navParts[_navParts.length - 1].charAt(0)).toUpperCase()
+            : _navName.substring(0, Math.min(2, _navName.length())).toUpperCase();
+
+    java.util.Set<String> _navMenu = filter.AuthFilter.navRoutes(_navRole);
+    java.util.Set<String> _navRead = filter.AuthFilter.allowedRoutes(_navRole);
+    java.util.Set<String> _navWrite = filter.AuthFilter.writableRoutes(_navRole);
+    java.util.Set<String> _navPerms = filter.AuthFilter.effectivePermissions(_navUser);
+    String _jspPath = request.getServletPath() == null ? "" : request.getServletPath();
+%>
+<style>
+<% if (!_navWrite.contains("/plants")) { %>
+    #addPlantButton, [data-action="edit"], [data-action="delete"] { display: none !important; }
+<% } %>
+<% if (!_navWrite.contains("/api/schedules")) { %>
+    .sched-form, #scheduleForm, #schedAdd, [data-del], [data-delete-schedule], #scheduleList .del-btn { display: none !important; }
+<% } %>
+<% if (!_navPerms.contains("REPORT_EXPORT") && !"ADMIN".equals(_navRole)) { %>
+    #exportBtn, #exportReportBtn, a[href$="/export-history"], .btn-export { display: none !important; }
+<% } %>
+<% if (!_navWrite.contains("/alerts")) { %>
+    .record-action.dismiss, [data-action="dismiss"], #markAllReadBtn, #resolveAllBtn, .btn-resolve-alert { display: none !important; }
+<% } %>
+<% if (!_navWrite.contains("/manual-water")) { %>
+    .zone-water, #aiApply, #startWateringBtn, [data-action="water"] { display: none !important; }
+<% } %>
+<% if (!_navWrite.contains("/pump-calibration")) { %>
+    #calibrationForm, #runTestBtn, #saveCalibrationBtn, .calib-action { display: none !important; }
+<% } %>
+<% if (!_navWrite.contains("/sensor-data")) { %>
+    #addSensorBtn, .sensor-action, [data-action="edit-sensor"], [data-action="delete-sensor"] { display: none !important; }
+<% } %>
+<%
+    String[] _allRoutes = {"/sensor-data", "/manual-water", "/plants", "/alerts", "/history", "/reports", "/pump-calibration"};
+    for (String _rt : _allRoutes) {
+        if (!_navMenu.contains(_rt)) {
+%>
+    .nav a[href$="<%= _rt %>"], .nav a[href*="<%= _rt %>?"] { display: none !important; }
+<%
+        }
+    }
+%>
+    /* Unified compact navbar layout - prevent horizontal overflow & chip deformation */
+    .navbar .navbar-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        height: 80px;
+        min-width: 0;
+    }
+    .navbar .brand {
+        flex-shrink: 0;
+        min-width: 0;
+    }
+    .navbar .brand-name {
+        font-size: 19px;
+        white-space: nowrap;
+    }
+    .navbar .nav {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        flex-wrap: nowrap;
+        min-width: 0;
+    }
+    .navbar .nav a {
+        padding: 8px 12px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 500;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    .navbar .nav-right {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-shrink: 0;
+    }
+    .navbar .user-chip-wrap {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+    }
+    .navbar .user-chip {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 38px;
+        height: 38px;
+        padding: 0;
+        border: 1px solid #e2e8f0;
+        border-radius: 50%;
+        background-color: #ffffff;
+        flex-shrink: 0;
+        cursor: default;
+        transition: border-color 0.2s ease, transform 0.2s ease;
+    }
+    .navbar .user-chip:hover {
+        border-color: #6ee7b7;
+        transform: translateY(-1px);
+    }
+    .navbar .user-chip .avatar {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: linear-gradient(to top right, #059669, #2dd4bf);
+        color: #ffffff;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        flex-shrink: 0;
+    }
+    .navbar .role-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 3px 8px;
+        border-radius: 9999px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        line-height: 1.2;
+    }
+    .role-admin { background: #ede9fe; color: #6d28d9; border: 1px solid #ddd6fe; }
+    .role-manager { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+    .role-technician { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+    .role-staff { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+    .role-viewer { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+    .navbar .btn-logout {
+        white-space: nowrap;
+        flex-shrink: 0;
+        padding: 9px 15px;
+    }
+</style>
+<script><%= controller.AppDataServlet.renderAccessScript(request) %></script>
+<header class="navbar">
+    <div class="container navbar-inner">
+        <a href="<%= _navCtx %>/index.jsp" class="brand">
+            <div class="brand-logo">
+                <svg class="icon icon-md" viewBox="0 0 24 24"><path d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21V12m0 0a4 4 0 014-4h.5a4.5 4.5 0 014.5 4.5c0 2.4-1.8 4.3-4.2 4.5M12 12a4 4 0 00-4-4h-.5a4.5 4.5 0 00-4.5 4.5c0 2.4 1.8 4.3 4.2 4.5"/></svg>
+            </div>
+            <span class="brand-name">Smart Irrigation System</span>
+        </a>
+
+        <nav class="nav" id="mainNav" aria-label="Main navigation">
+            <% if (_navMenu.contains("/dashboard")) { %>
+                <a href="<%= _navCtx %>/dashboard"<%= _jspPath.endsWith("dashboard.jsp") ? " class=\"active\" aria-current=\"page\"" : "" %>>Dashboard</a>
+            <% } %>
+            <% if (_navMenu.contains("/sensor-data")) { %>
+                <a href="<%= _navCtx %>/sensor-data"<%= _jspPath.endsWith("sensors.jsp") ? " class=\"active\" aria-current=\"page\"" : "" %>>Sensors</a>
+            <% } %>
+            <% if (_navMenu.contains("/manual-water")) { %>
+                <a href="<%= _navCtx %>/manual-water"<%= _jspPath.endsWith("wateringManagement.jsp") ? " class=\"active\" aria-current=\"page\"" : "" %>>Irrigation</a>
+            <% } %>
+            <% if (_navMenu.contains("/plants")) { %>
+                <a href="<%= _navCtx %>/plants"<%= _jspPath.endsWith("plantManagement.jsp") ? " class=\"active\" aria-current=\"page\"" : "" %>>Plants</a>
+            <% } %>
+            <% if (_navMenu.contains("/alerts")) { %>
+                <a href="<%= _navCtx %>/alerts"<%= _jspPath.endsWith("alert.jsp") ? " class=\"active\" aria-current=\"page\"" : "" %>>Alerts</a>
+            <% } %>
+            <% if (_navMenu.contains("/history")) { %>
+                <a href="<%= _navCtx %>/history"<%= _jspPath.endsWith("wateringHistory.jsp") ? " class=\"active\" aria-current=\"page\"" : "" %>>History</a>
+            <% } %>
+            <% if (_navMenu.contains("/reports")) { %>
+                <a href="<%= _navCtx %>/reports"<%= _jspPath.endsWith("reports.jsp") ? " class=\"active\" aria-current=\"page\"" : "" %>>Reports</a>
+            <% } %>
+            <% if (_navMenu.contains("/pump-calibration")) { %>
+                <a href="<%= _navCtx %>/pump-calibration"<%= _jspPath.endsWith("pump-calibration.jsp") ? " class=\"active\" aria-current=\"page\"" : "" %>>Calibration</a>
+            <% } %>
+        </nav>
+
+        <div class="nav-right">
+            <% if (!"VIEWER".equals(_navRole)) { %>
+            <div class="bell-wrap">
+                <button type="button" class="icon-btn" id="bellBtn" aria-label="Notifications" aria-expanded="false">
+                    <svg class="icon icon-md" viewBox="0 0 24 24"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                    <span class="bell-badge" id="bellBadge" hidden>0</span>
+                </button>
+                <div class="alert-menu" id="alertMenu" hidden>
+                    <div class="alert-menu-head">
+                        <strong>Notifications</strong>
+                        <% if (_navMenu.contains("/alerts")) { %>
+                            <a href="<%= _navCtx %>/alerts">View all</a>
+                        <% } %>
+                    </div>
+                    <div id="alertList"></div>
+                </div>
+            </div>
+            <% } %>
+
+            <div class="user-chip-wrap" title="<%= _navName %><%= !_navRole.isEmpty() ? " · " + _navRole : "" %>">
+                <div class="user-chip" aria-label="<%= _navName %>">
+                    <span class="avatar"><%= _navInitials %></span>
+                </div>
+                <% if (!_navRole.isEmpty()) { %>
+                    <span class="role-badge role-<%= _navRole.toLowerCase() %>"><%= _navRole %></span>
+                <% } %>
+            </div>
+
+            <a href="<%= _navCtx %>/logout" class="btn-logout">
+                <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+                Logout
+            </a>
+
+            <button type="button" class="icon-btn nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
+                <svg class="icon icon-md" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+            </button>
+        </div>
+    </div>
+</header>
+<%
+    Object _flashOk = session.getAttribute("SUCCESS_MSG");
+    Object _flashErr = session.getAttribute("ERROR_MSG");
+    session.removeAttribute("SUCCESS_MSG");
+    session.removeAttribute("ERROR_MSG");
+    if (_flashOk != null || _flashErr != null) {
+        boolean _flashIsErr = _flashErr != null;
+        String _flashText = String.valueOf(_flashIsErr ? _flashErr : _flashOk)
+                .replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
+%>
+<div id="flashToast" role="status" aria-live="polite"
+     style="position:fixed;top:76px;right:20px;z-index:9999;max-width:360px;padding:12px 16px;border-radius:12px;font:600 14px 'Plus Jakarta Sans',sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.15);color:#fff;background:<%= _flashIsErr ? "#dc2626" : "#16a34a" %>;">
+    <%= _flashText %>
+</div>
+<script>setTimeout(function () { var t = document.getElementById("flashToast"); if (t) { t.style.display = "none"; } }, 5000);</script>
+<% } %>
+

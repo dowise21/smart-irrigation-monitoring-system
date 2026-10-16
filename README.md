@@ -87,7 +87,7 @@ Hệ thống sử dụng cơ sở dữ liệu chuẩn hóa gồm **17 bảng**, 
 5.  Truy cập trình duyệt tại: `http://localhost:8080/SmartIrrigation/login`.
 
 ### 4. Tài khoản Demo (Mật khẩu chung: `123456`)
-*   Admin: `admin1`
+*   Admin: `admin` (hoặc email `admin1@demo.com`)
 *   Manager: `manager`
 *   Technician: `tech`
 *   Staff: `staff`
@@ -98,20 +98,26 @@ Hệ thống sử dụng cơ sở dữ liệu chuẩn hóa gồm **17 bảng**, 
 ## 📂 Cấu trúc Thư mục (Project Structure)
 ```text
 SmartIrrigation/
-├── build/                 # Thư mục build ứng dụng
-├── src/java/              # Mã nguồn Java Backend
-│   ├── controller/        # Các Servlet xử lý HTTP Requests
-│   ├── dao/               # Data Access Objects (Tương tác DB)
-│   ├── filter/            # Authorization Filter (RBAC Security)
-│   ├── model/             # Models / DTOs (Java Beans)
-│   └── utils/             # DBContext
-├── web/                   # Mã nguồn Frontend (Views & Assets)
-│   ├── css/               # Thư mục chứa app.css (SaaS Style)
-│   ├── views/             # Các tệp giao diện .jsp (Plants, Pots, Sensors...)
-│   └── login.jsp          # Trang đăng nhập
-├── sql/                   # Chứa script khởi tạo Database
-<<<<<<< HEAD
-└── docs/                  # Báo cáo, Kịch bản chạy thử, Lược đồ DB
-=======
-└── docs/                  # Báo cáo, Kịch bản chạy thử, Lược đồ DB
->>>>>>> c42102665237cebb40b78c8613a8f4b812e80348
+├── src/java/                  # Mã nguồn Java Backend (Strict MVC2)
+│   ├── controller/            # 12+ Servlet Controllers xử lý HTTP Requests & APIs
+│   ├── dao/                   # Data Access Objects (PreparedStatement kết nối DB)
+│   ├── filter/                # AuthFilter phân quyền RBAC 5 vai trò
+│   ├── model/                 # Entity POJOs (Java Beans)
+│   ├── service/               # Business Logic, Alert Engine, AppData
+│   └── util/                  # DBContext, AppConfig, Json helper, Format
+├── web/                       # Mã nguồn Frontend (Views & Assets)
+│   ├── css/                   # CSS giao diện Eco-Tech SaaS hiện đại
+│   ├── js/                    # JavaScript tương tác client & biểu đồ
+│   ├── images/                # Tài nguyên hình ảnh hệ thống
+│   ├── WEB-INF/               # navbar.jspf và cấu hình web.xml
+│   └── *.jsp                  # Các trang giao diện chức năng chính
+├── sql/                       # Bộ 3 tệp SQL chuẩn CSDL 17 bảng
+│   ├── 01_SmartIrrigation_Schema_17Tables.sql
+│   ├── 02_SmartIrrigation_SampleData.sql
+│   └── 03_SmartIrrigation_VerificationQueries.sql
+├── scripts/                   # Script hỗ trợ kiểm thử & dữ liệu
+├── Thuyet_Trinh_Smart_Irrigation.html # Slide thuyết trình tương tác
+├── Thuyet_Trinh_PRJ301_Kich_Ban.md   # Kịch bản thuyết trình & Vấn đáp
+├── Checklist_Project_Group_PRJ301_FA26_Group6.xlsx # Bảng kiểm tra tiến độ
+└── Project - Group 1 - phần Test ứng dụng - report.xlsx # Báo cáo kiểm thử UAT/SUS
+```

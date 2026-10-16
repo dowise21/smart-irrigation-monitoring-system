@@ -10,6 +10,8 @@ public class Plant {
     private Double idealMoistureMax;
     private String description;
     private Timestamp createdAt;
+    private int waterAmountMl = 250; // default volume of one manual watering (ml)
+    private Integer defaultPotId;    // assigned irrigation zone / pot
 
     public Plant() {
     }
@@ -44,4 +46,10 @@ public class Plant {
 
     public Timestamp getCreatedAt() { return createdAt; }
     public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
+
+    public int getWaterAmountMl() { return waterAmountMl; }
+    public void setWaterAmountMl(int waterAmountMl) { this.waterAmountMl = waterAmountMl; }
+
+    public Integer getDefaultPotId() { return defaultPotId; }
+    public void setDefaultPotId(Integer defaultPotId) { this.defaultPotId = defaultPotId; }
 }

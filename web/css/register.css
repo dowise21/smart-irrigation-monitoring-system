@@ -1,0 +1,86 @@
+.register-page {
+	padding-top: 40px;
+	padding-bottom: 40px;
+}
+
+.register-box {
+	max-width: 500px;
+	padding: 36px 38px;
+}
+
+.register-box .login-header {
+	margin-bottom: 22px;
+}
+
+.register-box .login-header h1 {
+	font-size: 28px;
+}
+
+.register-box .form-group {
+	margin-bottom: 14px;
+}
+
+.register-box .form-group input {
+	min-height: 46px;
+}
+
+.register-terms {
+	display: flex;
+	align-items: flex-start;
+	gap: 9px;
+	margin: 4px 0 16px;
+	color: #334155;
+	font-size: 13px;
+	line-height: 1.5;
+	cursor: pointer;
+}
+
+.register-terms input {
+	width: 16px;
+	height: 16px;
+	flex: 0 0 auto;
+	margin-top: 2px;
+	accent-color: #059669;
+}
+
+.register-message {
+	margin: 0 0 14px;
+	padding: 11px 12px;
+	border: 1px solid #bae6fd;
+	border-radius: 10px;
+	background: #f0f9ff;
+	color: #075985;
+	font-size: 13px;
+}
+
+.register-message.is-error {
+	border-color: #fecaca;
+	background: #fef2f2;
+	color: #b91c1c;
+}
+
+.register-box .login-footer {
+	margin-top: 20px;
+}
+
+@media (max-width: 900px) {
+	.register-box {
+		justify-self: center;
+		background-color: rgba(255, 255, 255, 0.88);
+	}
+}
+
+@media (max-width: 480px) {
+	.register-page {
+		padding: 28px 12px;
+	}
+
+	.register-box {
+		padding: 30px 20px;
+		border-radius: 20px;
+	}
+
+	.register-box .login-header h1 {
+		font-size: 24px;
+	}
+}

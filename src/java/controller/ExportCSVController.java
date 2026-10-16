@@ -18,40 +18,42 @@ public class ExportCSVController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-            
-        // 1. Cấu hình Response để ép trình duyệt tải file
+
         response.setContentType("text/csv; charset=UTF-8");
-        response.setHeader("Content-Disposition", "attachment; filename=\"Bao_Cao_Lich_Su_Tuoi.csv\"");
-        
+        response.setHeader("Content-Disposition", "attachment; filename=\"Irrigation_History_Report.csv\"");
+
         try (PrintWriter out = response.getWriter()) {
-            // 2. Ghi cờ BOM (Byte Order Mark) để Excel đọc tiếng Việt UTF-8 không bị lỗi font
-            out.write('\ufeff'); 
-            
-            // 3. Ghi dòng Header của file CSV
-            out.println("ID Lịch sử,Chậu cây,Thời gian tưới,Thời lượng bơm (giây),Lượng nước (Lít)");
-            
-            // 4. Lấy dữ liệu từ Database (Giả sử lấy 1000 bản ghi mới nhất)
+            out.write('\ufeff');
+            out.println("Session ID,Garden / Pot,Plant,Start Time,Duration (s),Water Used (L),Status,Source");
+
             IrrigationHistoryDAO dao = new IrrigationHistoryDAO();
-            List<IrrigationHistory> list = dao.getHistory(0, 1000); 
-            
-            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-            
-            // 5. Duyệt danh sách và ghi từng dòng dữ liệu cách nhau bằng dấu phẩy
+            List<IrrigationHistory> list = dao.getHistory(0, 1000);
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
             for (IrrigationHistory h : list) {
                 String timeStr = h.getIrrigationTime() != null ? sdf.format(h.getIrrigationTime()) : "";
-                String duration = h.getDurationSeconds() != null ? String.valueOf(h.getDurationSeconds()) : "N/A";
-                String amount = h.getWaterAmount() != null ? String.format("%.2f", h.getWaterAmount()) : "0";
-                
-                // Bao bọc tên chậu trong dấu ngoặc kép để tránh lỗi nếu tên có chứa dấu phẩy
-                out.println(String.format("%d,\"%s\",%s,%s,%s", 
-                        h.getHistoryId(), 
-                        h.getPotName(), 
-                        timeStr, 
-                        duration, 
-                        amount));
+                String duration = h.getDurationSeconds() != null ? String.valueOf(h.getDurationSeconds()) : "0";
+                String amount = h.getWaterAmount() != null ? String.format("%.2f", h.getWaterAmount()) : "0.00";
+                String status = h.getStatus() != null ? h.getStatus() : "COMPLETED";
+                String source = h.getSource() != null ? h.getSource() : "DEVICE";
+
+                out.println(String.format("%d,\"%s\",\"%s\",%s,%s,%s,%s,%s",
+                        h.getHistoryId(),
+                        escapeCsv(h.getPotName()),
+                        escapeCsv(h.getPlantName()),
+                        timeStr,
+                        duration,
+                        amount,
+                        status,
+                        source));
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private static String escapeCsv(String s) {
+        return s == null ? "" : s.replace("\"", "\"\"");
     }
 }

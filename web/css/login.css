@@ -1,0 +1,625 @@
+/* Khoảng cách lề trái/phải của cả trang (chỉnh 1 chỗ này là đổi toàn bộ) */
+:root {
+    --page-pad: clamp(20px, 4vw, 48px);
+}
+
+/* ===== 1. RESET & BASE ===== */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body,
+h1,
+h2,
+h3,
+p,
+ul {
+    margin: 0;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
+    background-color: #fbfdfe;
+    color: #1e293b;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+body ::selection {
+    background-color: #10b981;
+    color: #ffffff;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+svg {
+    display: block;
+}
+
+/* ===== 2. ICONS ===== */
+.icon {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.icon-sm {
+    width: 16px;
+    height: 16px;
+}
+
+.icon-md {
+    width: 20px;
+    height: 20px;
+}
+
+.icon-lg {
+    width: 24px;
+    height: 24px;
+}
+
+/* ===== 3. LAYOUT & BUTTONS ===== */
+.container {
+    width: 100%;
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 0 var(--page-pad);
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 32px;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-primary {
+    background: linear-gradient(to right, #059669, #10b981);
+    color: #ffffff;
+    box-shadow: 0 10px 15px -3px rgba(5, 150, 105, 0.25);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(to right, #047857, #059669);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(5, 150, 105, 0.4);
+}
+
+/* ===== 4. NAVBAR (đồng bộ với index) ===== */
+.navbar {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background-color: rgba(255, 255, 255, 0.8);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(209, 250, 229, 0.6);
+}
+
+.navbar .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 80px;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 4px;
+    border-radius: 8px;
+}
+
+.brand-logo {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    background: linear-gradient(to top right, #059669, #2dd4bf);
+    color: #ffffff;
+    box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2);
+    transition: transform 0.3s ease;
+}
+
+.brand:hover .brand-logo {
+    transform: scale(1.05);
+}
+
+.brand-name {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    color: #0f172a;
+    transition: color 0.2s ease;
+}
+
+.brand:hover .brand-name {
+    color: #047857;
+}
+
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.nav-hint {
+    font-size: 14px;
+    color: #64748b;
+}
+
+.btn-signup {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 24px;
+    border-radius: 999px;
+    background: linear-gradient(to right, #059669, #10b981);
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 600;
+    box-shadow: 0 4px 10px -2px rgba(5, 150, 105, 0.3);
+    transition: all 0.2s ease;
+}
+
+.btn-signup:hover {
+    background: linear-gradient(to right, #047857, #059669);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px -2px rgba(5, 150, 105, 0.4);
+}
+
+/* ===== 5. LOGIN PAGE ===== */
+/* Ảnh nền: đặt ảnh của bạn tại webapp/images/login-bg.jpg
+   (đổi tên file ở dòng url() bên dưới nếu ảnh có tên/đuôi khác).
+   Nếu chưa có ảnh, trang sẽ tự dùng ảnh minh hoạ login-side.svg. */
+.login-page {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 56px var(--page-pad);
+    background:
+        linear-gradient(90deg, rgba(3, 35, 26, 0.88) 0%, rgba(3, 35, 26, 0.6) 50%, rgba(3, 35, 26, 0.3) 100%),
+        url("../images/login.jpeg") center / cover no-repeat,
+
+        #064e3b;
+}
+
+.login-wrapper {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    align-items: center;
+    gap: 56px;
+    width: 100%;
+    max-width: 1344px;
+}
+
+/* ----- Cột chữ bên trái (nằm trực tiếp trên ảnh) ----- */
+.login-visual {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    color: #ffffff;
+}
+
+.visual-top,
+.visual-stat {
+    position: relative;
+    z-index: 1;
+    max-width: 620px;
+}
+
+.visual-badge {
+    display: inline-block;
+    padding: 6px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 999px;
+    background-color: rgba(255, 255, 255, 0.12);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.visual-title {
+    margin: 24px 0 12px;
+    font-size: 46px;
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.025em;
+}
+
+.visual-title span {
+    display: block;
+    color: #6ee7b7;
+}
+
+.visual-text {
+    font-size: 16px;
+    line-height: 1.7;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.visual-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 28px;
+    padding: 0;
+    list-style: none;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.visual-list li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.visual-list li::before {
+    content: "✓";
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background-color: rgba(110, 231, 183, 0.2);
+    color: #6ee7b7;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.visual-stat {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 32px;
+    padding: 18px 20px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 16px;
+    background-color: rgba(255, 255, 255, 0.1);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+}
+
+.visual-stat strong {
+    font-size: 36px;
+    font-weight: 800;
+    line-height: 1;
+    color: #6ee7b7;
+}
+
+.visual-stat span {
+    font-size: 14px;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+/* ----- Form ----- */
+.login-box {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 100%;
+    max-width: 460px;
+    justify-self: end;
+    padding: 48px 40px;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 28px;
+    /* Độ trong suốt: 0.42 = thấy rõ ảnh phía sau. Giảm số này để trong hơn, tăng để đặc hơn. */
+    background-color: rgba(255, 255, 255, 0.2);
+    -webkit-backdrop-filter: blur(14px) saturate(150%);
+    backdrop-filter: blur(14px) saturate(150%);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+}
+
+.login-header {
+    margin-bottom: 28px;
+}
+
+.login-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    border-radius: 14px;
+    background: linear-gradient(to top right, #059669, #2dd4bf);
+    color: #ffffff;
+    box-shadow: 0 4px 10px -2px rgba(16, 185, 129, 0.3);
+}
+
+.login-header h1 {
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    color: #0f172a;
+}
+
+.login-header p {
+    margin-top: 8px;
+    font-size: 15px;
+    color: #334155;
+}
+
+.form-error {
+    margin: 0 0 1rem;
+    padding: .75rem 1rem;
+    border: 1px solid #fecaca;
+    border-radius: .75rem;
+    color: #b91c1c;
+    background: #fef2f2;
+    font-size: .875rem;
+}
+
+.form-group {
+    margin-bottom: 18px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 13px 16px;
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    border-radius: 12px;
+    background-color: rgba(255, 255, 255, 0.78);
+    font-family: inherit;
+    font-size: 15px;
+    color: #0f172a;
+    transition: all 0.2s ease;
+}
+
+.form-group input::placeholder {
+    color: #94a3b8;
+}
+
+.form-group input:focus {
+    background-color: #ffffff;
+    outline: none;
+    border-color: #10b981;
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
+}
+
+.input-wrap {
+    position: relative;
+}
+
+.input-wrap input {
+    padding-right: 48px;
+}
+
+.toggle-password {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    padding: 4px;
+    border: none;
+    background: none;
+    color: #64748b;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.toggle-password:hover {
+    color: #059669;
+}
+
+.form-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 4px 0 24px;
+    font-size: 14px;
+}
+
+.remember {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #334155;
+    cursor: pointer;
+}
+
+.remember input {
+    width: 16px;
+    height: 16px;
+    accent-color: #059669;
+}
+
+.form-options a {
+    font-weight: 600;
+    color: #011111;
+}
+
+.form-options a:hover {
+    color: #ffffff;
+    text-decoration: underline;
+}
+
+.login-button {
+    width: 100%;
+}
+
+/* ----- Divider & Google ----- */
+.divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 24px 0;
+    font-size: 13px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #475569;
+}
+
+.divider::before,
+.divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background-color: rgba(71, 85, 105, 0.25);
+}
+
+.btn-google {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    padding: 13px 20px;
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    border-radius: 12px;
+    background-color: rgba(255, 255, 255, 0.8);
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    color: #334155;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+}
+
+.btn-google svg {
+    width: 20px;
+    height: 20px;
+}
+
+.btn-google:hover {
+    background-color: #ffffff;
+    border-color: #cbd5e1;
+    transform: translateY(-1px);
+}
+
+/* ----- Footer của form ----- */
+.login-footer {
+    margin-top: 28px;
+    text-align: center;
+}
+
+.login-footer p {
+    font-size: 14px;
+    color: #334155;
+}
+
+.login-footer p a {
+    font-weight: 700;
+    color: #011111;
+}
+
+.login-footer p a:hover {
+    color: #ffffff;
+    text-decoration: underline;
+}
+
+.back-home {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 16px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #2f3948;
+    transition: all 0.2s ease;
+}
+
+.back-home:hover {
+    color: #ffffff;
+    gap: 10px;
+}
+
+/* ===== 6. PAGE FOOTER ===== */
+.footer {
+    width: 100%;
+    padding: 28px 0;
+    border-top: 1px solid rgba(226, 232, 240, 0.8);
+    background-color: #ffffff;
+    text-align: center;
+}
+
+.footer p {
+    font-size: 14px;
+    font-weight: 500;
+    color: #94a3b8;
+}
+
+/* ===== 7. RESPONSIVE ===== */
+@media (max-width: 900px) {
+    .login-wrapper {
+        grid-template-columns: 1fr;
+    }
+
+    .login-visual {
+        display: none;
+    }
+
+    .login-box {
+        justify-self: center;
+        background-color: rgba(255, 255, 255, 0.7);
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 0 20px;
+    }
+
+    .nav-hint {
+        display: none;
+    }
+
+    .brand-name {
+        font-size: 18px;
+    }
+}
+
+@media (max-width: 480px) {
+    .login-page {
+        padding: 32px 16px;
+    }
+
+    .login-box {
+        padding: 36px 24px;
+        border-radius: 24px;
+    }
+
+    .login-header h1 {
+        font-size: 26px;
+    }
+}

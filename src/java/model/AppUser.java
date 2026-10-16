@@ -1,5 +1,10 @@
 package model;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Set;
+
 public class AppUser {
     private int userId;
     private String username;
@@ -9,6 +14,7 @@ public class AppUser {
     private int roleId;
     private boolean status;
     private String roleName;
+    private Set<String> permissions = new HashSet<>();
 
     public AppUser() {
     }
@@ -47,4 +53,29 @@ public class AppUser {
 
     public String getRoleName() { return roleName; }
     public void setRoleName(String roleName) { this.roleName = roleName; }
+
+    public Set<String> getPermissions() {
+        return permissions == null ? Collections.<String>emptySet() : Collections.unmodifiableSet(permissions);
+    }
+
+    public void setPermissions(Set<String> permissions) {
+        this.permissions = new HashSet<>();
+        if (permissions != null) {
+            for (String perm : permissions) {
+                if (perm != null && !perm.trim().isEmpty()) {
+                    this.permissions.add(perm.trim().toUpperCase(Locale.ROOT));
+                }
+            }
+        }
+    }
+
+    public boolean hasPermission(String permission) {
+        if ("ADMIN".equalsIgnoreCase(roleName)) {
+            return true;
+        }
+        if (permission == null || permissions == null) {
+            return false;
+        }
+        return permissions.contains(permission.trim().toUpperCase(Locale.ROOT));
+    }
 }

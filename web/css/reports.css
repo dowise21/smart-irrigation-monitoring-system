@@ -1,0 +1,599 @@
+.reports-page {
+    padding: 45px 0;
+}
+
+.report-filter {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.report-filter select {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 7px;
+}
+
+.report-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.report-grid p {
+    color: #777;
+}
+
+.report-grid h2 {
+    color: #15803d;
+    margin: 10px 0;
+    font-size: 30px;
+}
+
+.positive {
+    color: #16a34a;
+    font-size: 13px;
+}
+
+.chart-card {
+    margin-top: 25px;
+}
+
+.chart {
+    height: 280px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+    border-bottom: 1px solid #ddd;
+    margin-top: 25px;
+    padding: 20px;
+}
+
+.bar {
+    width: 45px;
+    background: #16a34a;
+    border-radius: 7px 7px 0 0;
+    position: relative;
+}
+
+.bar span {
+    position: absolute;
+    bottom: -25px;
+    width: 100%;
+    text-align: center;
+    font-size: 12px;
+    color: #777;
+}
+
+.report-message {
+    color: #777;
+    margin-top: 10px;
+}
+
+.reports-page {
+    min-height: 0;
+    padding-top: 36px;
+    background: radial-gradient(ellipse 800px 300px at 15% 0%, rgba(167, 243, 208, .3), transparent 70%), #f7fafb;
+}
+
+.reports-page .page-header {
+    margin-bottom: 22px;
+}
+
+.report-toolbar {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 62px;
+    margin-bottom: 18px;
+    padding: 10px 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: #fff;
+}
+
+.report-toolbar label {
+    flex: 0 0 auto;
+    color: #475569;
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.report-period-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.report-toolbar select {
+    width: auto;
+    min-width: 0;
+    flex: 1 1 auto;
+    min-height: 38px;
+    padding: 0 32px 0 11px;
+    border: 1px solid #dbe4e8;
+    border-radius: 8px;
+    background: #fff;
+    color: #1e293b;
+    font: inherit;
+    font-size: 13px;
+}
+
+.report-toolbar .btn {
+    height: 38px;
+    padding: 0 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    white-space: nowrap;
+    flex: 0 0 auto;
+}
+
+.report-toolbar .btn-ghost {
+    height: 42px;
+    padding: 9px 16px;
+    border-radius: 999px;
+    font-size: 14px;
+    white-space: nowrap;
+    flex: 0 0 auto;
+}
+
+.report-toolbar-end {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.report-toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 0 0 auto;
+}
+
+.report-updated {
+    color: #94a3b8;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.report-kpis {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+.report-kpi {
+    min-width: 0;
+    min-height: 135px;
+    padding: 18px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+}
+
+.report-kpi p {
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.report-kpi h2 {
+    margin: 12px 0 7px;
+    color: #0f172a;
+    font-size: 26px;
+    line-height: 1.15;
+    font-variant-numeric: tabular-nums;
+}
+
+.report-kpi > span {
+    display: block;
+    color: #64748b;
+    font-size: 11px;
+}
+
+.report-kpi-excess {
+    border-top: 3px solid #f59e0b;
+}
+
+.report-kpi-efficiency h2 {
+    color: #047857;
+}
+
+.water-waste-card {
+    margin-bottom: 18px;
+    padding: 20px;
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid #f59e0b;
+    border-radius: 10px;
+}
+
+.water-waste-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.water-waste-heading .card-eyebrow {
+    margin-bottom: 4px;
+    color: #a16207;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.water-waste-heading .card-title {
+    color: #0f172a;
+    font-size: 19px;
+}
+
+.water-waste-period {
+    padding: 5px 9px;
+    border-radius: 6px;
+    background: #fffbeb;
+    color: #92400e;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: capitalize;
+}
+
+.water-waste-content {
+    display: grid;
+    grid-template-columns: minmax(180px, .8fr) minmax(0, 2fr);
+    gap: 28px;
+    align-items: center;
+    margin-top: 18px;
+}
+
+.water-waste-total {
+    display: grid;
+    gap: 4px;
+}
+
+.water-waste-metrics {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    align-items: center;
+}
+
+.water-waste-total span:first-child {
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.water-waste-total strong {
+    color: #b45309;
+    font-size: 34px;
+    line-height: 1.15;
+    font-variant-numeric: tabular-nums;
+}
+
+.water-waste-total span:last-child {
+    color: #92400e;
+    font-size: 12px;
+}
+
+.water-within-target {
+    display: grid;
+    gap: 4px;
+    padding-left: 14px;
+    border-left: 1px solid #e2e8f0;
+}
+
+.water-within-target span:first-child {
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.water-within-target strong {
+    color: #047857;
+    font-size: 28px;
+    line-height: 1.15;
+    font-variant-numeric: tabular-nums;
+}
+
+.water-within-target span:last-child {
+    color: #047857;
+    font-size: 11px;
+}
+
+.water-waste-meter {
+    height: 8px;
+    overflow: hidden;
+    border-radius: 8px;
+    background: #f1f5f9;
+}
+
+.water-waste-meter span {
+    display: block;
+    width: 0;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #fbbf24, #d97706);
+    transition: width .25s ease;
+}
+
+.water-waste-method {
+    margin: 8px 0 12px;
+    color: #64748b;
+    font-size: 11px;
+}
+
+.water-waste-gardens {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px 18px;
+}
+
+.water-waste-garden {
+    display: grid;
+    grid-template-columns: 62px minmax(30px, 1fr) 50px;
+    gap: 8px;
+    align-items: center;
+    color: #475569;
+    font-size: 11px;
+}
+
+.water-waste-garden strong {
+    color: #334155;
+    font-size: 11px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.water-waste-garden-track {
+    height: 6px;
+    overflow: hidden;
+    border-radius: 6px;
+    background: #f1f5f9;
+}
+
+.water-waste-garden-track i {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: #f59e0b;
+}
+
+.report-chart-card,
+.report-breakdown-card,
+.reports-page > .container > .card:last-child {
+    margin-bottom: 18px;
+    padding: 20px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+}
+
+.report-section-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.report-section-heading .card-eyebrow {
+    margin-bottom: 4px;
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.report-section-heading .card-title {
+    color: #0f172a;
+    font-size: 17px;
+}
+
+.report-chart-total {
+    color: #047857;
+    font-size: 13px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.report-chart {
+    display: grid;
+    min-height: 225px;
+    grid-auto-columns: minmax(32px, 1fr);
+    grid-auto-flow: column;
+    gap: 10px;
+    align-items: end;
+    margin-top: 20px;
+    padding: 12px 4px 0;
+    border-bottom: 1px solid #e2e8f0;
+    overflow-x: auto;
+}
+
+.report-bar-column {
+    display: grid;
+    min-width: 32px;
+    height: 205px;
+    grid-template-rows: 20px 1fr 22px;
+    gap: 5px;
+    align-items: end;
+    text-align: center;
+}
+
+.report-bar-value,
+.report-bar-label {
+    overflow: hidden;
+    color: #64748b;
+    font-size: 10px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.report-bar-track {
+    display: flex;
+    width: min(34px, 75%);
+    height: 100%;
+    margin: auto auto 0;
+    align-items: flex-end;
+    overflow: hidden;
+    border-radius: 5px 5px 0 0;
+    background: #f1f5f9;
+}
+
+.report-bar-track span {
+    display: block;
+    width: 100%;
+    min-height: 0;
+    border-radius: 5px 5px 0 0;
+    background: linear-gradient(180deg, #34d399, #059669);
+}
+
+.report-table {
+    width: 100%;
+    margin-top: 14px;
+    border-collapse: collapse;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.report-table th {
+    padding: 10px 12px;
+    border-bottom: 1px solid #e2e8f0;
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.report-table td {
+    padding: 12px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #475569;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+}
+
+.report-table td strong {
+    color: #1e293b;
+}
+
+.report-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.report-table .report-empty-cell {
+    padding: 22px 12px;
+    color: #64748b;
+    text-align: center;
+}
+
+.reports-page .report-message {
+    margin-top: 8px;
+    color: #475569;
+    font-size: 13px;
+}
+
+.report-summary {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(230px, 1fr);
+    gap: 28px;
+    align-items: center;
+    margin-bottom: 18px;
+    padding: 20px;
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid #10b981;
+    border-radius: 10px;
+}
+
+.report-summary-main .card-eyebrow {
+    margin-bottom: 4px;
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.report-summary-main .card-title {
+    color: #0f172a;
+    font-size: 17px;
+}
+
+.report-summary-headline {
+    margin-top: 14px;
+    color: #047857;
+    font-size: 16px;
+    line-height: 1.4;
+}
+
+.report-summary .report-message {
+    margin-top: 5px;
+    color: #475569;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.report-summary-facts {
+    display: grid;
+    gap: 12px;
+    margin: 0;
+}
+
+.report-summary-facts > div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-top: 10px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.report-summary-facts dt {
+    color: #64748b;
+    font-size: 11px;
+}
+
+.report-summary-facts dd {
+    margin: 0;
+    color: #334155;
+    font-size: 12px;
+    font-weight: 700;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 1000px) {
+    .report-kpis {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .report-summary {
+        grid-template-columns: 1fr;
+        gap: 18px;
+    }
+}
+
+@media (max-width: 700px) {
+    .reports-page { padding-top: 26px; }
+    .report-toolbar { flex-wrap: wrap; justify-content: flex-start; gap: 8px; }
+    .report-period-control { flex: 1 1 100%; }
+    .report-toolbar-end { width: 100%; flex-direction: column; align-items: stretch; gap: 6px; }
+    .report-toolbar-actions { width: 100%; }
+    .report-toolbar-actions .btn { flex: 1 1 auto; justify-content: center; }
+    .report-updated { align-self: flex-end; }
+    .report-chart-card,
+    .report-breakdown-card,
+    .water-waste-card,
+    .reports-page > .container > .card:last-child { padding: 16px; }
+    .report-chart { grid-auto-columns: minmax(34px, 1fr); }
+    .water-waste-content { grid-template-columns: 1fr; gap: 16px; }
+    .water-waste-gardens { grid-template-columns: 1fr; }
+    .water-waste-metrics { gap: 8px; }
+    .water-within-target { padding-left: 8px; }
+    .water-waste-total strong,
+    .water-within-target strong { font-size: 26px; }
+    .report-summary { padding: 16px; }
+}
