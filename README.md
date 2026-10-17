@@ -1,177 +1,123 @@
 # 🌿 Smart Irrigation Monitoring System
 
-The **Smart Irrigation Monitoring System** is a web-based project designed to support plant management, environmental monitoring, and irrigation operations through a centralized interface.
+![Java](https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=java&logoColor=white)
+![JSP/Servlet](https://img.shields.io/badge/JSP_/_Servlet-007396?style=for-the-badge&logo=java&logoColor=white)
+![SQL Server](https://img.shields.io/badge/SQL_Server-CC2927?style=for-the-badge&logo=microsoft-sql-server&logoColor=white)
+![Bootstrap](https://img.shields.io/badge/Bootstrap_5-563D7C?style=for-the-badge&logo=bootstrap&logoColor=white)
+![IoT](https://img.shields.io/badge/IoT-NodeMCU_/_ESP32-10b981?style=for-the-badge)
 
-The project aims to simplify irrigation management by organizing plant information, monitoring sensor readings, managing watering schedules, and providing users with access to relevant system data.
-
-## ✨ Key Features
-
-- **Dashboard:** Provides a centralized view of relevant system information.
-- **Plant Management:** Organizes and manages plant information.
-- **Environmental Monitoring:** Displays sensor readings and environmental conditions.
-- **Irrigation Management:** Supports the management of watering schedules and irrigation sessions.
-- **Pump Management:** Organizes information related to irrigation equipment.
-- **Alert Management:** Supports the monitoring and tracking of system alerts.
-- **User Access Management:** Organizes user permissions according to assigned roles.
-
-*Feature availability depends on the current project implementation.*
-
-## 👥 Development Team
-
-**Group 1 — PRJ301 — Fall 2026**
-
-| Team Member | Responsibility |
-|---|---|
-| Lê Văn Ngoan | Backend Development & Database Design |
-| Nguyễn Ngọc Linh | IoT Integration & Backend Logic |
-| Phan Duy Bảo | Frontend UI/UX Development & Web Integration |
-
-## 🔐 User Roles and Access Control
-
-The project defines five user roles to organize access and responsibilities within the system.
-
-| Role | Main Responsibilities |
-|---|---|
-| **ADMIN** | Manage user accounts and oversee system administration. |
-| **MANAGER** | Manage plant information and irrigation schedules. |
-| **TECHNICIAN** | Monitor sensors and manage irrigation equipment. |
-| **STAFF** | Monitor system information and perform authorized operational tasks. |
-| **VIEWER** | View available information with read-only access. |
-
-Access to system functions is organized according to the permissions assigned to each role.
-
-## 💾 Database Design
-
-The database is designed to support the system's core operations, including user access management, plant management, environmental monitoring, irrigation scheduling, and system alerts.
-
-It provides a structured way to store and manage application data, helping maintain data consistency and support interactions between different system components.
-
-Database schema and related SQL scripts are maintained separately within the project.
-
-Database scripts are organized in the project's SQL directory. Refer to the actual scripts for the latest schema and sample data.
-
-## 🏗️ Application Architecture
-
-The application follows the **MVC2 architectural pattern**, separating the presentation layer, request processing, business logic, and database operations.
-
-- **Controller:** Handles incoming requests and coordinates application workflows.
-- **Model:** Represents application data and domain entities.
-- **DAO (Data Access Object):** Handles database access and data persistence.
-- **Service:** Organizes business logic and application operations.
-- **Filter:** Supports request filtering and access control.
-- **JSP Pages:** Render the web interface and display application information.
-- **Configuration:** Stores configuration files required by the application.
-
-This structure helps separate responsibilities and makes the application easier to maintain and extend.
-
-## 📂 Project Structure
-
-```text
-smart-irrigation-monitoring-system/
-├── src/
-│   ├── conf/                  # Configuration files
-│   └── java/
-│       ├── controller/        # Request handling
-│       ├── dao/               # Database access
-│       ├── filter/            # Request filtering and access control
-│       ├── model/             # Application models
-│       ├── service/           # Business logic
-│       └── util/              # Shared utilities
-│
-├── web/
-│   ├── *.jsp                  # JSP pages
-│   ├── css/                   # CSS stylesheets
-│   ├── js/                    # JavaScript files
-│   ├── images/                # Image assets
-|   ├── META-INF/ 
-│   └── WEB-INF/
-│       └── build.xml            # Web application configuration
-│
-├── sql/                       # Database scripts
-└── scripts/                   # Utility scripts      
-```
-
-*Note: This is a simplified overview. Directory names and files should be adjusted to match the actual repository.*
-
-## 🚀 Installation and Setup
-
-### Prerequisites
-
-Prepare the development environment required by the project:
-
-- A compatible Java Development Kit (JDK)
-- A compatible Java web application server
-- Microsoft SQL Server
-- SQL Server Management Studio (SSMS)
-- A supported Java IDE or code editor
-
-### 1. Clone the Repository
-
-Open a terminal and run:
-
-```bash
-git clone https://github.com/baophan123-developer/smart-irrigation-monitoring-system.git
-cd smart-irrigation-monitoring-system
-```
-
-Replace the example repository URL with the actual GitHub repository URL.
-
-### 2. Set Up the Database
-
-1. Open SQL Server Management Studio.
-2. Connect to your SQL Server instance.
-3. Locate the database scripts in the `sql/` directory.
-4. Execute the schema script to create the database structure.
-5. Execute the sample-data script if one is available.
-6. Verify that the required tables have been created successfully.
-
-### 3. Configure the Database Connection
-
-1. Open the project in your IDE.
-2. Locate the database connection configuration, such as `DBContext.java` if that is the class used by the project.
-3. Update the database server, database name, username, and password to match your local environment.
-4. Verify that the required JDBC driver is available.
-5. Test the database connection before running the application.
-
-**Security note:** Do not commit real database passwords or other sensitive credentials to a public repository.
-
-### 4. Build and Run the Application
-
-1. Open the project in a compatible Java IDE.
-2. Configure the required Java web application server.
-3. Build the project.
-4. Deploy and start the application.
-5. Open the local application URL using the context path configured for your project.
-
-The exact server configuration and URL depend on the project setup.
-
-## 🧪 Testing and Documentation
-
-Project documentation may include the following materials, depending on what is available in the repository:
-
-- Database schema and design documentation
-- Functional testing reports
-- User Acceptance Testing (UAT) results
-- System Usability Scale (SUS) evaluation
-- Project presentation materials
-
-Refer to the corresponding files in the repository for detailed information.
-
-## 🔒 Security Considerations
-
-- Apply appropriate access controls to protected functions.
-- Validate user input before processing requests.
-- Protect database credentials and other sensitive configuration values.
-- Avoid exposing sensitive information in logs or public repositories.
-- Use demonstration accounts only in development or testing environments.
-
-## 📌 Project Information
-
-- **Project:** Smart Irrigation Monitoring System
-- **Course:** PRJ301
-- **Group:** Group 1
-- **Semester:** FPT University Fall 2026
+**Smart Irrigation Monitoring System** là hệ thống phần mềm quản lý, giám sát và vận hành tưới tiêu tự động ứng dụng công nghệ IoT. Dự án cung cấp giải pháp SaaS (Software as a Service) giúp tối ưu hóa lượng nước tưới, theo dõi độ ẩm/ánh sáng thời gian thực và quản lý các thiết bị trạm bơm từ xa.
 
 ---
 
-*Smart Irrigation Monitoring System — Supporting plant management and irrigation monitoring through a centralized web application.*
+## 👥 Đội ngũ phát triển (Group 1 - PRJ301 - Fall 2026)
+*   **Lê Văn Ngoan** (Backend & Database Architecture)
+*   **Nguyễn Ngọc Linh** (IoT Integration & Backend Logic)
+*   **Phan Duy Bảo** (Frontend UI/UX & Web Integration)
+
+---
+
+## 🛠 Nền tảng Công nghệ (Tech Stack)
+*   **Kiến trúc:** Strict MVC2 (Model - View - Controller).
+*   **Backend:** Java EE (Servlets, JSP, JSTL, EL), JDBC (PreparedStatement).
+*   **Frontend:** HTML5, CSS3, JavaScript, Bootstrap 5 (Eco-Tech SaaS Design).
+*   **Database:** Microsoft SQL Server (17 Tables).
+*   **Hardware/IoT:** ESP32 / NodeMCU (Mô phỏng & Thực tế), Giao thức HTTP/MQTT.
+
+---
+
+## 🔐 Phân quyền & Tính năng (RBAC - Role Based Access Control)
+
+Hệ thống được bảo mật thông qua `AuthorizationFilter` với 5 cấp độ phân quyền chuyên sâu:
+
+1.  **👑 ADMIN (Quản trị hệ thống):**
+    *   Có toàn quyền truy cập (Full Access). Quản lý và phân quyền tài khoản người dùng, xem nhật ký hệ thống (System Logs).
+2.  **👨‍🌾 MANAGER (Quản lý vườn):**
+    *   Quản lý danh mục Cây trồng (Plants), định nghĩa các ngưỡng sinh học.
+    *   Quản lý Chậu/Khu vực tưới (Pots) và cấu hình Lịch tưới tự động (Cron Schedules).
+3.  **🔧 TECHNICIAN (Kỹ thuật viên):**
+    *   Lắp đặt và giám sát các Node Cảm biến (Sensors), hiệu chuẩn máy bơm (Pump Calibration).
+4.  **👷 STAFF (Nhân viên vận hành):**
+    *   Giám sát dữ liệu Telemetry thời gian thực.
+    *   Kích hoạt Tưới thủ công (Manual Watering) khẩn cấp, xử lý Cảnh báo sự cố (Alerts).
+5.  **👀 VIEWER (Khách tham quan):**
+    *   Chỉ xem thông số trên Dashboard tổng quan. Không có quyền thêm/sửa/xóa.
+
+---
+
+## 💾 Cấu trúc Cơ sở dữ liệu (Database Schema)
+Hệ thống sử dụng cơ sở dữ liệu chuẩn hóa gồm **17 bảng**, được chia thành 5 nhóm cốt lõi:
+*   **Nhóm Phân quyền:** `AppRole`, `Permission`, `RolePermission`, `AppUser`.
+*   **Nhóm Thực thể:** `Plant`, `Pot`.
+*   **Nhóm IoT:** `Sensor`, `SensorReading`, `Pump`, `PumpCalibration`.
+*   **Nhóm Tưới tiêu:** `WateringSchedule`, `WateringSession`, `WaterAnalysis`.
+*   **Nhóm AI & Cảnh báo:** `Alert`, `AlertConfirmation`, `MLPrediction`, `SystemLog`.
+
+> **Lưu ý:** Lược đồ E-R chi tiết và từ điển dữ liệu được lưu tại thư mục `/docs`.
+
+---
+
+## 🚀 Hướng dẫn Cài đặt & Khởi chạy (Installation Guide)
+
+### 1. Yêu cầu môi trường (Prerequisites)
+*   **JDK 1.8** hoặc mới hơn.
+*   **Apache Tomcat 9.0**.
+*   **Microsoft SQL Server** (2019 trở lên).
+*   **IDE:** NetBeans 13+ (hoặc VS Code, IntelliJ IDEA, Eclipse).
+
+### 2. Thiết lập Cơ sở dữ liệu
+1.  Mở SQL Server Management Studio (SSMS).
+2.  Đảm bảo **TCP/IP** đã được bật (Enable) và Port `1433` đang mở trong *SQL Server Configuration Manager*.
+3.  Mở tệp `sql/PRJ_Project_17TB.sql`.
+4.  Bôi đen toàn bộ và nhấn **Execute (F5)** để hệ thống tự động tạo DB `SmartIrrigationDB`, khởi tạo 17 bảng và chèn Dữ liệu mẫu (Dummy Data).
+
+### 3. Cấu hình & Chạy dự án Web
+1.  Clone repository này về máy:
+    ```bash
+    git clone [https://github.com/YourUsername/smart-irrigation-monitoring-system.git](https://github.com/YourUsername/smart-irrigation-monitoring-system.git)
+    ```
+2.  Mở Project trong NetBeans / IDE của bạn.
+3.  Điều hướng đến tệp `src/java/utils/DBContext.java` và cấu hình lại chuỗi kết nối (Connection String) cho đúng với mật khẩu sa của SQL Server trên máy bạn.
+    ```java
+    String url = "jdbc:sqlserver://localhost:1433;databaseName=SmartIrrigationDB";
+    String user = "sa";
+    String pass = "your_sql_password";
+    ```
+4.  Click chuột phải vào Project -> Chọn **Clean and Build** -> Chọn **Run**.
+5.  Truy cập trình duyệt tại: `http://localhost:8080/SmartIrrigation/login`.
+
+### 4. Tài khoản Demo (Mật khẩu chung: `123456`)
+*   Admin: `admin` (hoặc email `admin1@demo.com`)
+*   Manager: `manager`
+*   Technician: `tech`
+*   Staff: `staff`
+*   Viewer: `viewer`
+
+---
+
+## 📂 Cấu trúc Thư mục (Project Structure)
+```text
+SmartIrrigation/
+├── src/java/                  # Mã nguồn Java Backend (Strict MVC2)
+│   ├── controller/            # 12+ Servlet Controllers xử lý HTTP Requests & APIs
+│   ├── dao/                   # Data Access Objects (PreparedStatement kết nối DB)
+│   ├── filter/                # AuthFilter phân quyền RBAC 5 vai trò
+│   ├── model/                 # Entity POJOs (Java Beans)
+│   ├── service/               # Business Logic, Alert Engine, AppData
+│   └── util/                  # DBContext, AppConfig, Json helper, Format
+├── web/                       # Mã nguồn Frontend (Views & Assets)
+│   ├── css/                   # CSS giao diện Eco-Tech SaaS hiện đại
+│   ├── js/                    # JavaScript tương tác client & biểu đồ
+│   ├── images/                # Tài nguyên hình ảnh hệ thống
+│   ├── WEB-INF/               # navbar.jspf và cấu hình web.xml
+│   └── *.jsp                  # Các trang giao diện chức năng chính
+├── sql/                       # Bộ 3 tệp SQL chuẩn CSDL 17 bảng
+│   ├── 01_SmartIrrigation_Schema_17Tables.sql
+│   ├── 02_SmartIrrigation_SampleData.sql
+│   └── 03_SmartIrrigation_VerificationQueries.sql
+├── scripts/                   # Script hỗ trợ kiểm thử & dữ liệu
+├── Thuyet_Trinh_Smart_Irrigation.html # Slide thuyết trình tương tác
+├── Thuyet_Trinh_PRJ301_Kich_Ban.md   # Kịch bản thuyết trình & Vấn đáp
+├── Checklist_Project_Group_PRJ301_FA26_Group6.xlsx # Bảng kiểm tra tiến độ
+└── Project - Group 1 - phần Test ứng dụng - report.xlsx # Báo cáo kiểm thử UAT/SUS
+```
