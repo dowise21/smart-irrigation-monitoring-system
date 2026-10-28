@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="css/dashboard.css?v=20261013e">
+    <link rel="stylesheet" href="css/dashboard.css?v=20261028b">
     <link rel="stylesheet" href="css/navbarResponsive.css?v=20261013a">
 </head>
 <body>
@@ -53,23 +53,26 @@
 <main class="dashboard-page">
     <div class="container">
 
-        <!-- ================= PAGE HEADER ================= -->
+        <!-- ================= PAGE HEADER (CLEAN & EXECUTIVE) ================= -->
         <div class="page-header">
 
             <div class="page-header-left">
-                <p class="section-label">Smart control center</p>
-                <h1>Dashboard</h1>
-                <p class="page-sub">Monitor your irrigation system in real time.</p>
+                <div class="header-meta-row">
+                    <span class="section-label">IoT Telemetry &amp; Control</span>
+                    <span class="strip-item live"><span class="live-dot"></span>LIVE SYNC</span>
+                    <span class="strip-item muted">Updated <b id="lastUpdate">--:--:--</b></span>
+                    <span class="strip-item muted">&middot; <b id="nodesActive">4</b> Active Pots</span>
+                    <span class="strip-item muted" id="stripMode" hidden>Eco-AI Cycle Armed</span>
+                </div>
+                <h1>System Overview</h1>
             </div>
 
             <div class="page-actions">
 
-                <span class="system-online">System Online</span>
-
                 <div class="segmented" id="modeToggle" role="group" aria-label="Control mode">
                     <button type="button" class="seg-btn" data-mode="auto">
                         <svg class="icon icon-sm"><use href="#i-sparkle"></use></svg>
-                        Auto
+                        Auto Mode
                     </button>
                     <button type="button" class="seg-btn" data-mode="manual">Manual</button>
                 </div>
@@ -84,107 +87,103 @@
         </div>
 
 
-        <!-- ================= STATUS STRIP ================= -->
-        <div class="status-strip">
-
-            <div class="strip-left">
-                <span class="strip-item"><strong>Garden Node #01</strong></span>
-                <span class="strip-item live"><span class="live-dot"></span>LIVE SYNC</span>
-                <span class="strip-item muted">Last update: <b id="lastUpdate">--:--:--</b></span>
-            </div>
-
-            <div class="strip-right">
-                <span class="strip-item">
-                    <svg class="icon icon-sm"><use href="#i-nodes"></use></svg>
-                    <b id="nodesActive">4</b> Nodes Active
-                </span>
-                <span class="strip-item">
-                    <svg class="icon icon-sm"><use href="#i-sparkle"></use></svg>
-                    <span id="stripMode">Eco-AI Cycle Armed</span>
-                </span>
-            </div>
-
-        </div>
-
-
-        <!-- ================= KPI CARDS ================= -->
+        <!-- ================= 4 HERO KPI CARDS (DATA-FIRST) ================= -->
         <div class="kpi-grid">
 
-            <div class="kpi-card">
-                <div class="kpi-top">
-                    <div class="icon-box kpi-icon tone-red">
-                        <svg class="icon icon-md"><use href="#i-thermo"></use></svg>
-                    </div>
-                    <span class="kpi-label">Temperature</span>
-                    <span class="badge good" id="tempBadge">Nominal</span>
-                </div>
-                <h2 class="kpi-value"><span id="temperature">28</span> <small>°C</small></h2>
-                <div class="kpi-foot">
-                    <span>Baseline 24–28°C</span>
-                    <svg class="spark" id="spkTemp" viewBox="0 0 100 32" preserveAspectRatio="none"></svg>
-                </div>
-            </div>
-
-            <div class="kpi-card">
-                <div class="kpi-top">
-                    <div class="icon-box kpi-icon tone-blue">
-                        <svg class="icon icon-md"><use href="#i-drop"></use></svg>
-                    </div>
-                    <span class="kpi-label">Humidity</span>
-                    <span class="badge good" id="humBadge">Balanced</span>
-                </div>
-                <h2 class="kpi-value"><span id="humidity">68</span> <small>%</small></h2>
-                <div class="kpi-foot">
-                    <span>VPD 1.1 kPa</span>
-                    <svg class="spark" id="spkHum" viewBox="0 0 100 32" preserveAspectRatio="none"></svg>
-                </div>
-            </div>
-
-            <div class="kpi-card">
+            <!-- 1. Soil Moisture (Primary Metric) -->
+            <div class="kpi-card kpi-hero">
                 <div class="kpi-top">
                     <div class="icon-box kpi-icon tone-emerald">
                         <svg class="icon icon-md"><use href="#i-sprout"></use></svg>
                     </div>
-                    <span class="kpi-label">Soil Moisture</span>
+                    <span class="kpi-label">Avg Soil Moisture</span>
                     <span class="badge good" id="soilBadge">Optimal</span>
                 </div>
                 <h2 class="kpi-value"><span id="soil">74</span> <small>%</small></h2>
                 <div class="kpi-foot column">
                     <div class="kpi-bar"><span id="soilBar"></span></div>
-                    <span>Target range 60–80%</span>
+                    <span id="soilTargetFoot">Target range 30–60%</span>
                 </div>
             </div>
 
+            <!-- 2. Temperature -->
+            <div class="kpi-card">
+                <div class="kpi-top">
+                    <div class="icon-box kpi-icon tone-red">
+                        <svg class="icon icon-md"><use href="#i-thermo"></use></svg>
+                    </div>
+                    <span class="kpi-label">Air Temperature</span>
+                    <span class="badge good" id="tempBadge">Nominal</span>
+                </div>
+                <h2 class="kpi-value"><span id="temperature">28</span> <small>°C</small></h2>
+                <div class="kpi-foot">
+                    <span>DHT11 &middot; Optimal 20–30°C</span>
+                    <svg class="spark" id="spkTemp" viewBox="0 0 100 32" preserveAspectRatio="none"></svg>
+                </div>
+            </div>
+
+            <!-- 3. Humidity -->
+            <div class="kpi-card">
+                <div class="kpi-top">
+                    <div class="icon-box kpi-icon tone-blue">
+                        <svg class="icon icon-md"><use href="#i-drop"></use></svg>
+                    </div>
+                    <span class="kpi-label">Air Humidity</span>
+                    <span class="badge good" id="humBadge">Balanced</span>
+                </div>
+                <h2 class="kpi-value"><span id="humidity">68</span> <small>%</small></h2>
+                <div class="kpi-foot">
+                    <span>DHT11 &middot; Optimal 50–80%</span>
+                    <svg class="spark" id="spkHum" viewBox="0 0 100 32" preserveAspectRatio="none"></svg>
+                </div>
+            </div>
+
+            <!-- 4. Water Usage -->
             <div class="kpi-card">
                 <div class="kpi-top">
                     <div class="icon-box kpi-icon tone-sky">
                         <svg class="icon icon-md"><use href="#i-shower"></use></svg>
                     </div>
-                    <span class="kpi-label">Water Usage</span>
+                    <span class="kpi-label">Water Delivered</span>
                     <span class="badge good" id="waterBadge">On track</span>
                 </div>
                 <h2 class="kpi-value"><span id="water">${waterUsed}</span> <small>L</small></h2>
                 <div class="kpi-foot column">
                     <div class="kpi-bar sky"><span id="waterBar"></span></div>
-                    <span id="waterQuotaText">Database total · ${waterQuota} L daily reference</span>
+                    <span id="waterQuotaText">Daily quota ${waterQuota} L</span>
                 </div>
             </div>
 
         </div>
 
 
-        <!-- ================= MAIN GRID ================= -->
+        <!-- ================= MAIN WORKSPACE (2 CLEAN COLUMNS) ================= -->
         <div class="dash-main">
 
-            <!-- ---------- Cột trái ---------- -->
+            <!-- ---------- Cột trái: Tập trung hiển thị DATA (Chậu cây & Biểu đồ Telemetry) ---------- -->
             <div class="col">
 
-                <!-- Realtime telemetry -->
+                <!-- 1. Bảng trạng thái từng Chậu cây (Area · Pot · Plant) rộng rãi, nổi bật Data -->
+                <section class="card zones-card">
+                    <div class="card-head">
+                        <div>
+                            <p class="card-eyebrow">Area &middot; Pot &middot; Plant Status</p>
+                            <h2 class="card-title">Live Soil Moisture by Pot</h2>
+                        </div>
+                        <a href="<%= request.getContextPath() %>/plants" class="view-all">
+                            Manage Pots &amp; Thresholds
+                            <svg class="icon icon-sm"><use href="#i-arrow"></use></svg>
+                        </a>
+                    </div>
+                    <div class="zone-grid" id="zoneList"></div>
+                </section>
+
+                <!-- 2. Biểu đồ Telemetry thời gian thực -->
                 <section class="card telemetry-card">
 
                     <div class="card-head">
                         <div>
-                            <p class="card-eyebrow">Realtime telemetry</p>
+                            <p class="card-eyebrow">Sensor trend analysis</p>
                             <h2 class="card-title" id="chartTitle">Soil Moisture</h2>
                         </div>
 
@@ -203,11 +202,11 @@
                     </div>
 
                     <div class="chart-meta">
-                        <span>Now: <b id="chartNow">74%</b></span>
-                        <span>Target: <b id="chartTarget">60–80%</b></span>
-                        <span class="legend"><i class="legend-line"></i>Reading</span>
-                        <span class="legend"><i class="legend-band"></i>Target band</span>
-                        <span class="legend"><i class="legend-pulse"></i>Irrigation pulse</span>
+                        <span class="chart-stat-pill">Current: <b id="chartNow">74%</b></span>
+                        <span class="chart-stat-pill">Target Range: <b id="chartTarget">30–60%</b></span>
+                        <span class="legend"><i class="legend-line"></i>Live Reading</span>
+                        <span class="legend"><i class="legend-band"></i>Safe Threshold Band</span>
+                        <span class="legend"><i class="legend-pulse"></i>Watering Event</span>
                     </div>
 
                     <div class="chart-wrap">
@@ -217,54 +216,25 @@
 
                 </section>
 
-
-                <div class="dual-grid">
-
-                    <!-- Water usage 7 ngày -->
-                    <section class="card">
-                        <div class="card-head">
-                            <div>
-                                <p class="card-eyebrow">Water usage</p>
-                                <h2 class="card-title">Last 7 days</h2>
-                            </div>
-                            <span class="pill" id="weeklyTotal">0 L</span>
-                        </div>
-                        <div class="chart" id="weeklyChart"></div>
-                    </section>
-
-                    <!-- Vùng tưới -->
-                    <section class="card">
-                        <div class="card-head">
-                            <div>
-                                <p class="card-eyebrow">Zone overview</p>
-                                <h2 class="card-title">Soil by zone</h2>
-                            </div>
-                        </div>
-                        <div class="zone-grid" id="zoneList"></div>
-                    </section>
-
-                </div>
-
             </div>
 
 
-            <!-- ---------- Cột phải ---------- -->
+            <!-- ---------- Cột phải: Điều khiển Bơm/Ngưỡng & Lượng nước 7 ngày ---------- -->
             <div class="col">
 
-                <!-- Irrigation system -->
+                <!-- 1. Trạm điều khiển Máy bơm & Ngưỡng tưới tự động -->
                 <section class="card system-card">
 
                     <div class="card-head">
                         <div>
-                            <p class="card-eyebrow">Actuator node</p>
-                            <h2 class="card-title">Irrigation System</h2>
+                            <p class="card-eyebrow">Hardware Actuator &amp; Threshold</p>
+                            <h2 class="card-title">Pump Control</h2>
                         </div>
 
                         <span id="pumpStatus" class="status success">Ready</span>
                     </div>
 
-
-                    <div class="pump-display">
+                    <div class="pump-display pump-display-compact">
 
                         <div class="pump-ring">
                             <svg viewBox="0 0 160 160" aria-hidden="true">
@@ -273,27 +243,28 @@
                             </svg>
 
                             <div class="pump-circle" id="pumpCircle">
-                                <svg class="icon icon-lg"><use href="#i-drop"></use></svg>
+                                <svg class="icon icon-md"><use href="#i-drop"></use></svg>
                                 <strong id="pumpTimer">STANDBY</strong>
                                 <small id="pumpPressure">3.2 bar</small>
                             </div>
                         </div>
 
-                        <h3 id="pumpText">Pump is Ready</h3>
-                        <p id="pumpSub">Control your irrigation system manually.</p>
+                        <div class="pump-summary-text">
+                            <h3 id="pumpText">Pump is Ready</h3>
+                            <p id="pumpSub">Select a pot to bind ESP8266 pump &amp; adjust threshold.</p>
+                        </div>
 
                     </div>
-
 
                     <div class="pump-controls">
 
                         <div class="field">
-                            <label for="zoneSelect">Zone</label>
+                            <label for="zoneSelect">Active Pot (Area &middot; Pot &middot; Plant)</label>
                             <select id="zoneSelect"></select>
                         </div>
 
                         <div class="field">
-                            <label>Duration</label>
+                            <label>Manual Run Duration</label>
                             <div class="chips" id="durationChips">
                                 <button type="button" class="chip" data-min="5">5 min</button>
                                 <button type="button" class="chip" data-min="10">10 min</button>
@@ -304,167 +275,59 @@
 
                         <div class="field">
                             <label for="thresholdRange">
-                                Auto-irrigate below
-                                <b id="thresholdValue">60%</b>
+                                Auto-irrigate below (Min threshold)
+                                <b id="thresholdValue">30%</b>
                             </label>
-                            <input type="range" id="thresholdRange" min="30" max="90" step="1" value="60">
+                            <input type="range" id="thresholdRange" min="10" max="90" step="1" value="30">
                         </div>
 
                     </div>
-
 
                     <button type="button" class="btn btn-primary btn-block" id="pumpButton">
                         Start Pump
                     </button>
 
+                    <div class="next-schedule pump-schedule-foot">
+                        <svg class="icon icon-sm"><use href="#i-clock"></use></svg>
+                        <span id="nextSchedule">Next: --</span>
+                        <a href="<%= request.getContextPath() %>/manual-water" class="schedule-manage-link">Schedules &rarr;</a>
+                    </div>
+
                 </section>
 
-
-                <!-- AI recommendation -->
-                <section class="card ai-card">
-
+                <!-- 2. Biểu đồ lượng nước 7 ngày -->
+                <section class="card">
                     <div class="card-head">
                         <div>
-                            <p class="card-eyebrow">ML prediction</p>
-                            <h2 class="card-title">AI Recommendation</h2>
+                            <p class="card-eyebrow">Consumption analytics</p>
+                            <h2 class="card-title">Water Usage (Last 7 Days)</h2>
                         </div>
-                        <div class="icon-box ai-icon tone-teal">
-                            <svg class="icon icon-md"><use href="#i-chip"></use></svg>
-                        </div>
+                        <span class="pill" id="weeklyTotal">0 L</span>
                     </div>
-
-                    <p class="ai-text" id="aiText">Waiting for sensor data…</p>
-
-                    <div class="ai-grid">
-                        <div class="ai-stat">
-                            <span>Duration</span>
-                            <strong id="aiDuration">10 min</strong>
-                        </div>
-                        <div class="ai-stat">
-                            <span>Water</span>
-                            <strong id="aiWater">20 L</strong>
-                        </div>
-                        <div class="ai-stat">
-                            <span>Soil after</span>
-                            <strong id="aiSoilAfter">80%</strong>
-                        </div>
-                    </div>
-
-                    <div class="ai-confidence">
-                        <div class="ai-confidence-row">
-                            <span>Model confidence</span>
-                            <b id="aiConfidence">90%</b>
-                        </div>
-                        <div class="ai-bar"><span id="aiBar"></span></div>
-                    </div>
-
-                    <button type="button" class="btn btn-soft btn-block" id="aiApply">
-                        Apply recommendation
-                    </button>
-
+                    <div class="chart" id="weeklyChart"></div>
                 </section>
-
-
-
 
             </div>
 
         </div>
 
-
-        <!-- ================= SHORTCUTS + SCHEDULE ================= -->
-        <div class="dash-bottom">
-
-            <section class="card quick-card">
-
-                <div class="card-head">
-                    <div>
-                        <p class="card-eyebrow">Shortcuts</p>
-                        <h2 class="card-title">Quick Actions</h2>
-                    </div>
-                </div>
-
-                <div class="quick-grid">
-
-                    <a href="<%= request.getContextPath() %>/sensor-data" class="quick-tile">
-                        <div class="icon-box tone-amber"><svg class="icon icon-md"><use href="#i-chart"></use></svg></div>
-                        <div><strong>View Sensors</strong><span>Live metrics</span></div>
-                        <svg class="icon icon-sm tile-arrow"><use href="#i-arrow"></use></svg>
-                    </a>
-
-                    <a href="<%= request.getContextPath() %>/manual-water" class="quick-tile">
-                        <div class="icon-box tone-sky"><svg class="icon icon-md"><use href="#i-drop"></use></svg></div>
-                        <div><strong>Manage Irrigation</strong><span>Timers &amp; rules</span></div>
-                        <svg class="icon icon-sm tile-arrow"><use href="#i-arrow"></use></svg>
-                    </a>
-
-                    <a href="<%= request.getContextPath() %>/plants" class="quick-tile">
-                        <div class="icon-box tone-emerald"><svg class="icon icon-md"><use href="#i-sprout"></use></svg></div>
-                        <div><strong>Manage Plants</strong><span>Crop library</span></div>
-                        <svg class="icon icon-sm tile-arrow"><use href="#i-arrow"></use></svg>
-                    </a>
-
-                    <a href="<%= request.getContextPath() %>/reports" class="quick-tile">
-                        <div class="icon-box tone-rose"><svg class="icon icon-md"><use href="#i-report"></use></svg></div>
-                        <div><strong>View Reports</strong><span>Usage analytics</span></div>
-                        <svg class="icon icon-sm tile-arrow"><use href="#i-arrow"></use></svg>
-                    </a>
-
-                    <a href="<%= request.getContextPath() %>/alerts" class="quick-tile">
-                        <div class="icon-box tone-amber"><svg class="icon icon-md"><use href="#i-bell"></use></svg></div>
-                        <div><strong>View Alerts</strong><span>Garden notifications</span></div>
-                        <svg class="icon icon-sm tile-arrow"><use href="#i-arrow"></use></svg>
-                    </a>
-
-                    <a href="<%= request.getContextPath() %>/history" class="quick-tile">
-                        <div class="icon-box tone-purple"><svg class="icon icon-md"><use href="#i-history"></use></svg></div>
-                        <div><strong>Water History</strong><span>Past cycles</span></div>
-                        <svg class="icon icon-sm tile-arrow"><use href="#i-arrow"></use></svg>
-                    </a>
-
-                </div>
-
-            </section>
-
-                <!-- Lịch tưới -->
-                <section class="card schedule-card">
-
-                    <div class="card-head">
-                        <div>
-                            <p class="card-eyebrow">Water timers</p>
-                            <h2 class="card-title">Schedule</h2>
-                        </div>
-                    </div>
-
-                    <div class="next-schedule">
-                        <svg class="icon icon-md"><use href="#i-clock"></use></svg>
-                        <span id="nextSchedule">Next: --</span>
-                    </div>
-
-                    <div class="schedule-list" id="scheduleList"></div>
-
-                    <div class="schedule-form">
-                        <input type="time" id="schedTime" value="07:00" aria-label="Start time">
-                        <select id="schedMin" aria-label="Duration">
-                            <option value="5">5 min</option>
-                            <option value="10" selected>10 min</option>
-                            <option value="15">15 min</option>
-                            <option value="20">20 min</option>
-                        </select>
-                        <select id="schedZone" aria-label="Garden"></select>
-                        <select id="schedFrequency" aria-label="Repeat">
-                            <option value="daily">Every day</option>
-                            <option value="weekdays">Weekdays</option>
-                            <option value="once">One time</option>
-                        </select>
-                        <button type="button" class="btn-add" id="schedAdd">
-                            <svg class="icon icon-sm"><use href="#i-plus"></use></svg>
-                            Add
-                        </button>
-                    </div>
-
-                </section>
-
+        <!-- Hidden compatibility hooks for legacy widgets -->
+        <div hidden aria-hidden="true">
+            <span id="aiText"></span>
+            <strong id="aiDuration"></strong>
+            <strong id="aiWater"></strong>
+            <strong id="aiSoilAfter"></strong>
+            <b id="aiConfidence"></b>
+            <span id="aiBar"></span>
+            <button type="button" id="aiApply"></button>
+            <div id="scheduleList"></div>
+            <div class="sched-form">
+                <input type="time" id="schedTime" value="07:00">
+                <select id="schedMin"><option value="10" selected>10</option></select>
+                <select id="schedZone"></select>
+                <select id="schedFrequency"><option value="daily" selected>daily</option></select>
+                <button type="button" id="schedAdd"></button>
+            </div>
         </div>
 
     </div>
@@ -485,11 +348,11 @@
 <div class="toast-box" id="toastBox" aria-live="polite"></div>
 
 <script src="<%= request.getContextPath() %>/app-data.js"></script>
-<script src="js/zone-data.js?v=20261016a"></script>
+<script src="js/zone-data.js?v=20261028a"></script>
 <script src="js/alertCenter.js?v=20261016a"></script>
 <script src="js/siteNavigation.js?v=20261016a"></script>
 <script src="js/irrigationSchedules.js?v=20261016a"></script>
-<script src="js/dashboard.js?v=20261016a"></script>
+<script src="js/dashboard.js?v=20261028a"></script>
 
 </body>
 </html>

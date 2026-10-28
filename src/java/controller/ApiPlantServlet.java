@@ -1,6 +1,7 @@
 package controller;
 
 import dao.PlantDAO;
+import dao.PotDAO;
 import dao.SensorDataDAO;
 import dao.WateringSessionDAO;
 import java.io.IOException;
@@ -19,18 +20,21 @@ import util.AppConfig;
 import util.Json;
 
 /**
- * JSON endpoint backing the Plant Management page (/plants -> plantManagement.jsp):
- *   GET  /api/plants                   -> array of plants with live zone & moisture info
- *   POST /api/plants action=water      -> triggers manual watering for a plant (ADMIN, TECHNICIAN, STAFF)
- *   POST /api/plants action=add        -> creates a new plant (ADMIN, MANAGER)
- *   POST /api/plants action=update     -> updates an existing plant (ADMIN, MANAGER)
- *   POST /api/plants action=delete     -> deletes a plant (ADMIN, MANAGER)
+ * JSON endpoint backing the Plant Management page (/plants -> plantManagement.jsp)
+ * and threshold synchronization across Dashboard / Watering Management:
+ *   GET  /api/plants                        -> array of active Pot-Plant records with Area & threshold info
+ *   POST /api/plants action=water           -> triggers manual watering for a plant
+ *   POST /api/plants action=updateThreshold -> updates min/max moisture thresholds for a Pot/Plant
+ *   POST /api/plants action=add             -> creates a new plant and assigns/creates its Pot in an Area
+ *   POST /api/plants action=update          -> updates an existing plant and syncs its Pot & Area
+ *   POST /api/plants action=delete          -> deletes a plant and deactivates its Pot
  */
 @WebServlet(name = "ApiPlantServlet", urlPatterns = {"/api/plants"})
 public class ApiPlantServlet extends HttpServlet {
 
     private final AppDataService data = new AppDataService();
     private final PlantDAO plantDAO = new PlantDAO();
+    private final PotDAO potDAO = new PotDAO();
     private final WateringSessionDAO sessionDAO = new WateringSessionDAO();
     private final SensorDataDAO sensorDAO = new SensorDataDAO();
 
@@ -48,6 +52,22 @@ public class ApiPlantServlet extends HttpServlet {
         String action = request.getParameter("action");
         String role = ApiSupport.role(request);
 
+        if ("bindHardware".equals(action)) {
+            Integer potId = ApiSupport.intParam(request, "potId");
+            if (potId == null) {
+                potId = ApiSupport.intParam(request, "zoneId");
+            }
+            if (potId == null || potId <= 0) {
+                ApiSupport.error(response, HttpServletResponse.SC_BAD_REQUEST, "Valid potId is required.");
+                return;
+            }
+            WateringCommandServlet.setActiveHardwarePotId(potId);
+            ApiSupport.write(response, HttpServletResponse.SC_OK,
+                    "{\"ok\":true,\"message\":" + Json.quote("Hardware ESP8266 & Pump bound to Pot #" + potId)
+                    + ",\"potId\":" + potId + ",\"activeHardwarePotId\":" + potId + "}");
+            return;
+        }
+
         if ("water".equals(action)) {
             if (!"ADMIN".equals(role) && !"TECHNICIAN".equals(role) && !"STAFF".equals(role)) {
                 ApiSupport.error(response, HttpServletResponse.SC_FORBIDDEN,
@@ -55,6 +75,16 @@ public class ApiPlantServlet extends HttpServlet {
                 return;
             }
             waterPlant(request, response);
+            return;
+        }
+
+        if ("updateThreshold".equals(action)) {
+            if (!"ADMIN".equals(role) && !"MANAGER".equals(role) && !"TECHNICIAN".equals(role) && !"STAFF".equals(role)) {
+                ApiSupport.error(response, HttpServletResponse.SC_FORBIDDEN,
+                        "Your account role cannot update irrigation thresholds.");
+                return;
+            }
+            updateThreshold(request, response);
             return;
         }
 
@@ -73,6 +103,53 @@ public class ApiPlantServlet extends HttpServlet {
             deletePlant(request, response);
         } else {
             ApiSupport.error(response, HttpServletResponse.SC_BAD_REQUEST, "Unknown action.");
+        }
+    }
+
+    private void updateThreshold(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        Integer potId = ApiSupport.intParam(request, "potId");
+        if (potId == null) {
+            potId = ApiSupport.intParam(request, "zoneId");
+        }
+        Integer plantId = ApiSupport.intParam(request, "plantId");
+        if (plantId == null) {
+            plantId = ApiSupport.intParam(request, "id");
+        }
+        Double targetMin = ApiSupport.doubleParam(request, "targetMin");
+        if (targetMin == null) {
+            targetMin = ApiSupport.doubleParam(request, "minMoisture");
+        }
+        Double targetMax = ApiSupport.doubleParam(request, "targetMax");
+        if (targetMax == null) {
+            targetMax = ApiSupport.doubleParam(request, "maxMoisture");
+        }
+
+        if ((potId == null || potId <= 0) && (plantId == null || plantId <= 0)) {
+            ApiSupport.error(response, HttpServletResponse.SC_BAD_REQUEST, "potId or plantId is required.");
+            return;
+        }
+        if (targetMin != null && (targetMin < 0 || targetMin > 100)) {
+            ApiSupport.error(response, HttpServletResponse.SC_BAD_REQUEST, "targetMin must be between 0 and 100.");
+            return;
+        }
+        if (targetMax != null && (targetMax < 0 || targetMax > 100)) {
+            ApiSupport.error(response, HttpServletResponse.SC_BAD_REQUEST, "targetMax must be between 0 and 100.");
+            return;
+        }
+        if (targetMin != null && targetMax != null && targetMin >= targetMax) {
+            ApiSupport.error(response, HttpServletResponse.SC_BAD_REQUEST, "Minimum moisture must be lower than maximum moisture.");
+            return;
+        }
+
+        if (plantDAO.updateThresholdsByPotOrPlant(potId, plantId, targetMin, targetMax)) {
+            ApiSupport.write(response, HttpServletResponse.SC_OK,
+                    "{\"ok\":true,\"message\":\"Thresholds updated.\""
+                    + (potId != null ? ",\"potId\":" + potId : "")
+                    + (targetMin != null ? ",\"targetMin\":" + Json.number(targetMin) : "")
+                    + (targetMax != null ? ",\"targetMax\":" + Json.number(targetMax) : "")
+                    + "}");
+        } else {
+            ApiSupport.error(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not update thresholds.");
         }
     }
 
@@ -101,6 +178,7 @@ public class ApiPlantServlet extends HttpServlet {
             ApiSupport.error(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not record watering session.");
             return;
         }
+        WateringCommandServlet.enqueueStart(pot.getPotId(), durationSeconds);
 
         // Also bump sensor reading slightly to reflect the watering event
         Map<Integer, SensorData> readings = data.latestReadings();
@@ -123,10 +201,26 @@ public class ApiPlantServlet extends HttpServlet {
         if (category == null || category.trim().isEmpty()) {
             category = request.getParameter("species");
         }
-        Integer zoneId = ApiSupport.intParam(request, "zoneId");
+        String rawZoneId = request.getParameter("zoneId");
+        boolean isNewPot = "__new_pot__".equals(rawZoneId);
+        Integer zoneId = isNewPot ? null : ApiSupport.intParam(request, "zoneId");
+        if (zoneId == null && !isNewPot) {
+            zoneId = ApiSupport.intParam(request, "potId");
+        }
+        Integer areaId = ApiSupport.intParam(request, "areaId");
+        String newPotName = request.getParameter("newPotName");
+        if (newPotName == null || newPotName.trim().isEmpty()) {
+            newPotName = request.getParameter("potName");
+        }
         Integer waterAmountMl = ApiSupport.intParam(request, "waterAmountMl");
         Double targetMin = ApiSupport.doubleParam(request, "targetMin");
+        if (targetMin == null) {
+            targetMin = ApiSupport.doubleParam(request, "minMoistureThreshold");
+        }
         Double targetMax = ApiSupport.doubleParam(request, "targetMax");
+        if (targetMax == null) {
+            targetMax = ApiSupport.doubleParam(request, "maxMoistureThreshold");
+        }
 
         if (name == null || name.trim().isEmpty() || category == null || category.trim().isEmpty()) {
             ApiSupport.error(response, HttpServletResponse.SC_BAD_REQUEST, "Plant name and category are required.");
@@ -150,9 +244,16 @@ public class ApiPlantServlet extends HttpServlet {
             return;
         }
         int waterMl = waterAmountMl != null ? waterAmountMl : 250;
+        String waterReq = request.getParameter("waterRequirement");
+        if (waterReq == null || waterReq.trim().isEmpty()) {
+            waterReq = waterMl + " ml/lần";
+        }
 
         if (isUpdate) {
             Integer id = ApiSupport.intParam(request, "id");
+            if (id == null) {
+                id = ApiSupport.intParam(request, "plantId");
+            }
             if (id == null) {
                 ApiSupport.error(response, HttpServletResponse.SC_BAD_REQUEST, "Plant id is required.");
                 return;
@@ -165,24 +266,42 @@ public class ApiPlantServlet extends HttpServlet {
             existing.setPlantName(name.trim());
             existing.setSpecies(category.trim());
             existing.setWaterAmountMl(waterMl);
-            if (zoneId != null && zoneId > 0) {
-                existing.setDefaultPotId(zoneId);
-            }
+            existing.setWaterRequirement(waterReq.trim());
             if (targetMin != null) {
-                existing.setIdealMoistureMin(targetMin);
+                existing.setMinMoistureThreshold(targetMin);
             }
             if (targetMax != null) {
-                existing.setIdealMoistureMax(targetMax);
+                existing.setMaxMoistureThreshold(targetMax);
             }
+            int resolvedPotId = (zoneId != null && zoneId > 0)
+                    ? zoneId
+                    : (existing.getDefaultPotId() != null ? existing.getDefaultPotId() : 1);
+            if (isNewPot) {
+                int createdPotId = potDAO.insertWithHardware(
+                        (newPotName != null && !newPotName.trim().isEmpty()) ? newPotName.trim() : ("Chậu " + name.trim()),
+                        areaId != null && areaId > 0 ? areaId : 1,
+                        existing.getPlantId()
+                );
+                if (createdPotId > 0) {
+                    resolvedPotId = createdPotId;
+                }
+            }
+            existing.setDefaultPotId(resolvedPotId);
             if (!plantDAO.update(existing)) {
                 ApiSupport.error(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not update plant.");
                 return;
             }
-            ApiSupport.ok(response, "Plant updated.");
+            if (!isNewPot && resolvedPotId > 0) {
+                potDAO.syncPotPlantAssignment(resolvedPotId, existing.getPlantId(), areaId, newPotName);
+            }
+            ApiSupport.write(response, HttpServletResponse.SC_OK,
+                    "{\"ok\":true,\"message\":\"Plant updated.\",\"id\":" + existing.getPlantId()
+                    + ",\"potId\":" + resolvedPotId + "}");
         } else {
             double min = targetMin != null ? targetMin : AppConfig.DEFAULT_MOISTURE_MIN;
             double max = targetMax != null ? targetMax : AppConfig.DEFAULT_MOISTURE_MAX;
             Plant plant = new Plant(0, name.trim(), category.trim(), min, max, null, null);
+            plant.setWaterRequirement(waterReq.trim());
             plant.setWaterAmountMl(waterMl);
             plant.setDefaultPotId(zoneId != null && zoneId > 0 ? zoneId : null);
             int newId = plantDAO.insert(plant);
@@ -190,8 +309,20 @@ public class ApiPlantServlet extends HttpServlet {
                 ApiSupport.error(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not add plant.");
                 return;
             }
+            int resolvedPotId;
+            if (isNewPot || zoneId == null || zoneId <= 0) {
+                resolvedPotId = potDAO.insertWithHardware(
+                        (newPotName != null && !newPotName.trim().isEmpty()) ? newPotName.trim() : ("Chậu " + name.trim()),
+                        areaId != null && areaId > 0 ? areaId : 1,
+                        newId
+                );
+            } else {
+                resolvedPotId = zoneId;
+                potDAO.syncPotPlantAssignment(resolvedPotId, newId, areaId, newPotName);
+            }
             ApiSupport.write(response, HttpServletResponse.SC_OK,
-                    "{\"ok\":true,\"message\":" + Json.quote("Plant added.") + ",\"id\":" + newId + "}");
+                    "{\"ok\":true,\"message\":" + Json.quote("Plant added.") + ",\"id\":" + newId
+                    + ",\"potId\":" + resolvedPotId + "}");
         }
     }
 
@@ -208,4 +339,3 @@ public class ApiPlantServlet extends HttpServlet {
         }
     }
 }
-

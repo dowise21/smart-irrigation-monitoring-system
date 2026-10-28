@@ -7,9 +7,8 @@
     var cfg = (window.SI_DATA && window.SI_DATA.config) || {};
     var flowLitersPerMinute = Number(cfg.flowLitersPerMinute) || 2;
     var soilGainPerMinute = 0.9;
-    var demoSecondsPerTick = 10;
+    var demoSecondsPerTick = 60;
     var dailyQuotaLiters = Number(cfg.dailyQuotaLiters) || 160;
-    var autoThreshold = 60;
     var mode = readValue("si.irrigation.mode", "auto");
     var requestedZone = new URLSearchParams(window.location.search).get("zone");
     var defaultZoneId = (zones.list[0] && zones.list[0].id) || "1";
@@ -60,16 +59,22 @@
         });
     }
 
-    function defaultSchedules() {
-        return [
-            { id: "plan-1-am", zoneId: defaultZoneId, time: "06:30", minutes: 10, frequency: "daily", enabled: true }
-        ];
+    function zoneMin(zone) {
+        return zone && Number.isFinite(Number(zone.targetMin)) ? Number(zone.targetMin) : 35;
+    }
+
+    function zoneMax(zone) {
+        return zone && Number.isFinite(Number(zone.targetMax)) ? Number(zone.targetMax) : 75;
     }
 
     function populateGardenSelect(select) {
+        if (!select) return;
+        var prev = select.value;
         select.innerHTML = zones.list.map(function (zone) {
-            return '<option value="' + zone.id + '">' + escapeHtml(zone.name + " · " + zone.crop) + '</option>';
+            var label = (zone.areaName ? zone.areaName + " · " : "") + zone.name + " · " + zone.crop + " (" + Math.round(zoneMin(zone)) + "–" + Math.round(zoneMax(zone)) + "%)";
+            return '<option value="' + zone.id + '">' + escapeHtml(label) + '</option>';
         }).join("");
+        if (prev && zones.get(prev)) select.value = prev;
     }
 
     function currentSoil(zoneId) {
@@ -109,10 +114,17 @@
     function updateGardenContext() {
         var zone = zones.get(selectedZone) || zones.list[0];
         var moisture = currentSoil(selectedZone);
-        byId("activeGardenName").textContent = zone ? zone.name : "Garden";
+        var minT = zoneMin(zone);
+        var maxT = zoneMax(zone);
+        byId("activeGardenName").textContent = zone
+            ? ((zone.areaName ? zone.areaName + " · " : "") + zone.name + " · " + zone.crop)
+            : "Garden";
         byId("activeSoil").textContent = Math.round(moisture) + "%";
         byId("soilContextValue").textContent = Math.round(moisture) + "%";
         byId("soilContextBar").style.width = Math.max(0, Math.min(100, moisture)) + "%";
+        if (byId("soilTargetRange")) {
+            byId("soilTargetRange").textContent = "Target " + Math.round(minT) + "–" + Math.round(maxT) + "% (" + (zone ? zone.crop : "Plant") + ")";
+        }
         byId("sensorLink").href = ctx + "/sensor-data?zone=" + encodeURIComponent(selectedZone);
         byId("zoneSelect").value = selectedZone;
     }
@@ -121,6 +133,8 @@
         var running = Boolean(pump);
         var zone = zones.get(running ? pump.zoneId : selectedZone) || zones.list[0];
         var moisture = currentSoil(zone.id);
+        var minT = zoneMin(zone);
+        var maxT = zoneMax(zone);
         byId("systemStatus").textContent = running ? "Pump running" : (canWater ? "Pump ready" : "Schedule view");
         byId("pumpState").textContent = running ? "PUMP RUNNING" : (canWater ? "PUMP READY" : "PUMP LOCKED");
         byId("pumpBadge").textContent = running ? "Running" : (canWater ? "Standby" : "View only");
@@ -129,7 +143,7 @@
         byId("pumpHeadline").textContent = running ? "Irrigating " + zone.name : (canWater ? "Ready to irrigate" : "Manual pump locked");
         byId("pumpDetail").textContent = running
             ? (Math.round(moisture) + "% soil · " + pump.liters.toFixed(1) + " L delivered")
-            : (canWater ? (zone.crop + " · " + Math.round(moisture) + "% soil moisture") : "Your role manages schedules only (no manual pump execution).");
+            : (canWater ? ((zone.areaName ? zone.areaName + " · " : "") + zone.crop + " · " + Math.round(moisture) + "% (Target " + Math.round(minT) + "–" + Math.round(maxT) + "%)") : "Your role manages schedules only (no manual pump execution).");
         byId("pumpTimer").textContent = running ? formatTimer(pump.remaining) : "--:--";
         byId("runProgress").style.width = running ? ((pump.total - pump.remaining) / pump.total * 100) + "%" : "0%";
         byId("pumpButton").disabled = !canWater;
@@ -146,17 +160,29 @@
     }
 
     function renderGardens() {
+        var hwZone = zones.getActiveHardwareZone ? zones.getActiveHardwareZone() : null;
+        var hwId = hwZone ? String(hwZone.id) : String(selectedZone);
         byId("gardenGrid").innerHTML = zones.list.map(function (zone) {
             var moisture = currentSoil(zone.id);
-            var dry = moisture < 60;
-            var wet = moisture > 80;
-            var status = dry ? "Needs water" : (wet ? "Above target" : "In target");
+            var minT = zoneMin(zone);
+            var maxT = zoneMax(zone);
+            var dry = moisture < minT;
+            var wet = moisture > maxT;
+            var isHwBound = String(zone.id) === hwId;
+            var status = dry
+                ? "Needs water (<" + Math.round(minT) + "%)"
+                : (wet ? "Too wet (>" + Math.round(maxT) + "%)" : "Healthy (" + Math.round(minT) + "–" + Math.round(maxT) + "%)");
+            var areaText = zone.areaName ? escapeHtml(zone.areaName) + " · " : "";
+            var nodeBadge = isHwBound
+                ? '<span class="garden-node" style="background:#d1fae5;color:#065f46;font-weight:700">🔌 ESP8266 &amp; Bơm</span>'
+                : '<span class="garden-node">' + zones.nodeLabel(zone.id) + '</span>';
+            var btnLabel = isHwBound ? "🔌 Đang gắn Bơm" : "🔌 Gán Bơm & Chọn";
             return '<article class="garden-tile' + (zone.id === selectedZone ? " is-selected" : "") + (dry ? " is-dry" : "") + (wet ? " is-wet" : "") + '" data-garden="' + zone.id + '">' +
-                '<div class="garden-tile-head"><a href="' + ctx + '/plants?zone=' + encodeURIComponent(zone.id) + '">' + escapeHtml(zone.name) + '</a><span class="garden-node">' + zones.nodeLabel(zone.id) + '</span></div>' +
-                '<p class="garden-crop">' + escapeHtml(zone.crop) + '</p>' +
+                '<div class="garden-tile-head"><a href="' + ctx + '/plants?zone=' + encodeURIComponent(zone.id) + '">' + escapeHtml(zone.name) + '</a>' + nodeBadge + '</div>' +
+                '<p class="garden-crop">' + areaText + escapeHtml(zone.crop) + '</p>' +
                 '<div class="garden-moisture">' + Math.round(moisture) + '<small>%</small></div>' +
                 '<div class="garden-bar"><span style="width:' + Math.max(0, Math.min(100, moisture)) + '%"></span></div>' +
-                '<div class="garden-tile-foot"><span>' + status + '</span><button type="button" class="garden-select" data-select-zone="' + zone.id + '">Select</button></div>' +
+                '<div class="garden-tile-foot"><span>' + status + '</span><button type="button" class="garden-select" data-select-zone="' + zone.id + '">' + btnLabel + '</button></div>' +
                 '</article>';
         }).join("");
     }
@@ -246,10 +272,12 @@
         }
         if (pump) return;
         var initialSoil = currentSoil(zoneId);
+        var hwSeconds = Math.max(1, Math.round(Number(minutes)));
         pump = {
             zoneId: zoneId,
             source: source,
             startedAt: new Date().toISOString(),
+            startedMs: Date.now(),
             total: Number(minutes) * 60,
             remaining: Number(minutes) * 60,
             liters: 0,
@@ -261,6 +289,14 @@
         renderPump();
         renderGardens();
         toast("Irrigation started · " + zones.name(zoneId));
+        fetch(ctx + "/api/watering/command", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-Requested-With": "fetch"
+            },
+            body: "potId=" + encodeURIComponent(zoneId) + "&command=START&duration=" + encodeURIComponent(hwSeconds) + "&minutes=" + encodeURIComponent(minutes)
+        }).catch(function () {});
     }
 
     function tickPump() {
@@ -272,18 +308,31 @@
         zones.setSoilMoisture(pump.zoneId, moisture);
         renderPump();
         renderGardens();
-        if (pump.remaining <= 0) stopPump(true);
+        if (pump.remaining <= 0) stopPump(true, false);
     }
 
-    function stopPump(completed) {
+    function stopPump(completed, fromDevice) {
         if (!pump) return;
         window.clearInterval(pumpTimer);
         pumpTimer = null;
+        var stoppedZoneId = pump.zoneId;
+        if (!completed && !fromDevice) {
+            fetch(ctx + "/api/watering/command", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "X-Requested-With": "fetch"
+                },
+                body: "potId=" + encodeURIComponent(stoppedZoneId) + "&command=STOP"
+            }).catch(function () {});
+        }
         var elapsedMinutes = (pump.total - pump.remaining) / 60;
         if (pump.liters > 0.05) {
+            var z = zones.get(pump.zoneId);
+            var maxT = zoneMax(z);
             var finalSoil = currentSoil(pump.zoneId);
             var moistureGain = Math.max(0, finalSoil - pump.initialSoil);
-            var gainAboveTarget = Math.max(0, finalSoil - Math.max(pump.initialSoil, 80));
+            var gainAboveTarget = Math.max(0, finalSoil - Math.max(pump.initialSoil, maxT));
             var excessLiters = moistureGain > 0 ? pump.liters * gainAboveTarget / moistureGain : 0;
             history.push({
                 id: "run-" + Date.now(),
@@ -304,6 +353,35 @@
         renderPump();
         renderGardens();
         toast(completed ? "Run completed · " + zoneName : "Pump stopped · " + zoneName);
+    }
+
+    function syncSensorsAndPump() {
+        fetch(ctx + "/api/sensors", {
+            cache: "no-store",
+            headers: { "X-Requested-With": "fetch" }
+        })
+            .then(function (res) { return res.ok ? res.json() : []; })
+            .then(function (readings) {
+                if (!Array.isArray(readings) || !readings.length) return;
+                if (zones.syncFromReadings) {
+                    zones.syncFromReadings(readings);
+                }
+                readings.forEach(function (reading) {
+                    var id = String(reading.id || reading.potId);
+                    var m = Number(reading.moisture !== undefined ? reading.moisture : reading.soilMoisture);
+                    if (Number.isFinite(m) && (!pump || String(pump.zoneId) !== id)) {
+                        zones.setSoilMoisture(id, m);
+                    }
+                    if (pump && String(pump.zoneId) === id && (Date.now() - pump.startedMs > 2000) && reading.pumpRunning === false) {
+                        stopPump(true, true);
+                    }
+                });
+                populateGardenSelect(byId("zoneSelect"));
+                populateGardenSelect(byId("scheduleZone"));
+                renderPump();
+                renderGardens();
+            })
+            .catch(function () {});
     }
 
     function toast(message) {
@@ -328,7 +406,7 @@
         byId("pumpNote").textContent = !canWater
             ? "Your role can manage watering schedules, while Staff and Admin accounts execute manual pump runs."
             : (mode === "auto"
-                ? "Auto mode starts a short run when any garden falls below 60% soil moisture. Manual runs use your selected duration."
+                ? "Auto mode starts a short run when any pot falls below its Plant's min moisture threshold. Manual runs use your selected duration."
                 : "Manual mode runs only when you start the pump. Garden moisture still updates across the other pages.");
         if (mode === "auto" && canWater) autoCheck();
     }
@@ -336,9 +414,11 @@
     function autoCheck() {
         if (!canWater || mode !== "auto" || pump) return;
         var driest = zones.list.slice().sort(function (first, second) {
-            return currentSoil(first.id) - currentSoil(second.id);
+            return (currentSoil(first.id) - zoneMin(first)) - (currentSoil(second.id) - zoneMin(second));
         })[0];
-        if (currentSoil(driest.id) < autoThreshold) startPump(driest.id, 5, "Auto");
+        if (driest && currentSoil(driest.id) < zoneMin(driest)) {
+            startPump(driest.id, 5, "Auto");
+        }
     }
 
     function isScheduleDue(schedule, now) {
@@ -369,8 +449,12 @@
     function setupControls() {
         byId("zoneSelect").addEventListener("change", function (event) {
             selectedZone = event.target.value;
+            if (zones.bindHardware) {
+                zones.bindHardware(selectedZone);
+            }
             renderPump();
             renderGardens();
+            toast("🔌 Đã gán Mạch ESP8266 & Máy bơm vật lý vào: " + zones.name(selectedZone));
         });
         byId("durationSelect").addEventListener("change", updateKpis);
         byId("pumpButton").addEventListener("click", function () {
@@ -438,8 +522,12 @@
             var button = event.target.closest("[data-select-zone]");
             if (!button) return;
             selectedZone = button.getAttribute("data-select-zone");
+            if (zones.bindHardware) {
+                zones.bindHardware(selectedZone);
+            }
             renderPump();
             renderGardens();
+            toast("🔌 Đã gán Mạch ESP8266 & Máy bơm vật lý vào: " + zones.name(selectedZone));
             byId("pumpTitle").scrollIntoView({ behavior: "smooth", block: "center" });
         });
     }
@@ -463,6 +551,7 @@
         renderSchedules();
         updateKpis();
     });
+    window.setInterval(syncSensorsAndPump, 2000);
     window.setInterval(checkSchedules, 15000);
     window.setInterval(autoCheck, 30000);
 }());

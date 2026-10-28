@@ -45,16 +45,16 @@
         <!-- Tiêu đề trang -->
         <div class="page-header">
             <div class="page-title">
-                <p class="section-label">PLANT MANAGEMENT</p>
-                <h1>Plants</h1>
-                <p class="page-sub">Manage your plants and watering requirements.</p>
+                <p class="section-label">AREA · POT · PLANT MANAGEMENT</p>
+                <h1>Plants &amp; Pots</h1>
+                <p class="page-sub">Manage areas, pots (1 pot = 1 plant), and flexible auto-watering moisture thresholds.</p>
             </div>
 
             <div class="page-tools">
                 <span class="sync-pill"><svg class="ico"><use href="#i-sync"/></svg><span id="syncText">Auto-sync</span></span>
                 <label class="search-box">
                     <svg class="ico"><use href="#i-search"/></svg>
-                    <input type="search" id="plantSearch" placeholder="Search plants by name or node...">
+                    <input type="search" id="plantSearch" placeholder="Search by area, pot, plant or node...">
                 </label>
                 <button class="btn btn-primary" id="addPlantButton" type="button">
                     <svg class="ico"><use href="#i-plus"/></svg>Add Plant
@@ -67,7 +67,7 @@
         <section class="summary">
             <div class="summary-card">
                 <span class="summary-icon tone-green"><svg class="ico"><use href="#i-leaf"/></svg></span>
-                <div><p class="summary-label">Total plants</p><p class="summary-value" id="statTotal">0</p></div>
+                <div><p class="summary-label">Active Pots / Plants</p><p class="summary-value" id="statTotal">0</p></div>
             </div>
             <div class="summary-card">
                 <span class="summary-icon tone-green"><svg class="ico"><use href="#i-drop"/></svg></span>
@@ -101,43 +101,63 @@
     <section class="plant-modal-panel" role="dialog" aria-modal="true" aria-labelledby="plantModalTitle">
         <div class="plant-modal-head">
             <div>
-                <p class="plant-modal-eyebrow">PLANT LIBRARY</p>
+                <p class="plant-modal-eyebrow">AREA · POT · PLANT HIERARCHY</p>
                 <h2 id="plantModalTitle">Add a plant</h2>
             </div>
             <button type="button" class="plant-modal-close" id="closePlantModal" aria-label="Close plant form">&times;</button>
         </div>
-        <p class="plant-modal-copy">Add a plant and assign it to one of your garden zones.</p>
+        <p class="plant-modal-copy">Configure Area (Khu vực), Pot (Chậu cây - 1 Pot = 1 Plant), Plant details, and flexible auto-watering moisture thresholds.</p>
         <div class="plant-form-error" id="plantFormError" role="alert" hidden></div>
         <form id="plantForm">
             <div class="plant-modal-fields">
+                <label class="plant-modal-field" for="newPlantArea">
+                    <span>Area (Khu vực)</span>
+                    <select id="newPlantArea" name="areaId" required></select>
+                </label>
+                <label class="plant-modal-field" for="newPlantZone">
+                    <span>Pot / Node (Chậu cây)</span>
+                    <select id="newPlantZone" name="zoneId" required></select>
+                </label>
+                <label class="plant-modal-field custom-category-field" id="newPotNameField" for="newPotNameInput" hidden>
+                    <span>New Pot Name (Tên chậu cây mới)</span>
+                    <input id="newPotNameInput" name="newPotName" type="text" maxlength="60" autocomplete="off" placeholder="e.g. Chậu Ban Công 2">
+                </label>
                 <label class="plant-modal-field" for="newPlantName">
-                    <span>Plant name</span>
-                    <input id="newPlantName" name="name" type="text" maxlength="40" autocomplete="off" required>
+                    <span>Plant name (Tên loại cây)</span>
+                    <input id="newPlantName" name="name" type="text" maxlength="60" autocomplete="off" required>
                 </label>
                 <label class="plant-modal-field" for="newPlantCategory">
-                    <span>Plant category</span>
+                    <span>Species / Category (Phân loại)</span>
                     <select id="newPlantCategory" name="category" required>
+                        <option value="Aloe vera">Aloe vera (Succulent)</option>
+                        <option value="Chrysanthemum">Chrysanthemum (Flower)</option>
+                        <option value="Phalaenopsis">Phalaenopsis (Orchid)</option>
+                        <option value="Epipremnum aureum">Epipremnum aureum (Herb/Indoor)</option>
                         <option value="Vegetable">Vegetable</option>
                         <option value="Herb">Herb</option>
                         <option value="Flower">Flower</option>
                         <option value="Fruit">Fruit</option>
-                        <option value="__custom__">Add custom category...</option>
+                        <option value="__custom__">Add custom species/category...</option>
                     </select>
                 </label>
                 <label class="plant-modal-field custom-category-field" id="customCategoryField" for="newPlantCustomCategory" hidden>
-                    <span>Custom category</span>
-                    <input id="newPlantCustomCategory" type="text" maxlength="30" autocomplete="off" placeholder="e.g. Succulent">
+                    <span>Custom species / category</span>
+                    <input id="newPlantCustomCategory" type="text" maxlength="40" autocomplete="off" placeholder="e.g. Succulent">
                 </label>
-                <label class="plant-modal-field" for="newPlantZone">
-                    <span>Garden</span>
-                    <select id="newPlantZone" name="zoneId" required></select>
+                <label class="plant-modal-field" for="newPlantTargetMin">
+                    <span>Min moisture % (Ngưỡng tưới tự động / Khô hạn)</span>
+                    <input id="newPlantTargetMin" name="targetMin" type="number" min="5" max="95" step="1" value="35" required>
+                </label>
+                <label class="plant-modal-field" for="newPlantTargetMax">
+                    <span>Max moisture % (Ngưỡng cảnh báo ngập úng)</span>
+                    <input id="newPlantTargetMax" name="targetMax" type="number" min="10" max="100" step="1" value="75" required>
                 </label>
                 <label class="plant-modal-field" for="newPlantWater">
-                    <span>Water per run (ml)</span>
+                    <span>Water per run (ml) (Lượng nước mỗi lần tưới)</span>
                     <input id="newPlantWater" name="waterAmountMl" type="number" min="50" max="5000" step="50" value="250" required>
                 </label>
             </div>
-            <p class="plant-modal-note">Soil moisture and node details are filled from the selected garden.</p>
+            <p class="plant-modal-note">Rule: 1 Pot has 1 Plant. Saving updates the Database, Web Dashboard, and ESP8266 auto-watering thresholds immediately.</p>
             <div class="plant-modal-actions">
                 <button type="button" class="plant-modal-button secondary" id="cancelPlantModal">Cancel</button>
                 <button type="submit" class="plant-modal-button primary" id="savePlantButton">Add plant</button>
@@ -147,9 +167,7 @@
 </div>
 
 <!--
-    MẪU 1 THẺ CÂY.
-    JS nhân bản mẫu này cho mỗi cây, rồi điền dữ liệu vào các chỗ có data-field="...".
-    Muốn đổi giao diện thẻ: sửa HTML ở đây (giữ nguyên các data-field).
+    MẪU 1 THẺ CÂY (AREA · POT · PLANT).
 -->
 <template id="plantCardTemplate">
     <article class="plant-card">
@@ -186,6 +204,7 @@
 
         <div class="plant-actions">
             <button class="water-btn" type="button" data-action="water"><svg class="ico"><use href="#i-drop"/></svg><span data-field="waterLabel"></span></button>
+            <button class="act-btn" type="button" data-action="bind-hw" title="Attach physical ESP8266 &amp; Water Pump to this pot"><span data-field="bindHwLabel">🔌 Gán Bơm</span></button>
             <button class="act-btn" type="button" data-action="edit"><svg class="ico"><use href="#i-edit"/></svg>Edit</button>
             <button class="act-btn danger" type="button" data-action="delete"><svg class="ico"><use href="#i-trash"/></svg>Delete</button>
         </div>
@@ -205,9 +224,9 @@
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="<%= request.getContextPath() %>/app-data.js"></script>
-<script src="js/zone-data.js?v=20261016a"></script>
+<script src="js/zone-data.js?v=20261028a"></script>
 <script src="js/alertCenter.js?v=20261016a"></script>
 <script src="js/siteNavigation.js?v=20261016a"></script>
-<script src="js/plantManagement.js?v=20261016a"></script>
+<script src="js/plantManagement.js?v=20261028a"></script>
 </body>
 </html>

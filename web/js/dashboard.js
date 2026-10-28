@@ -1,26 +1,24 @@
 /* =====================================================================
-   Smart Irrigation - Dashboard
-   - Dashboard lấy KPI từ JSP và telemetry từ /api/sensors.
-   - Các thao tác ghi dữ liệu vẫn đi qua các Servlet backend tương ứng.
+   Smart Irrigation - Dashboard (Đồng bộ Area · Pot · Plant & Ngưỡng tưới)
    ===================================================================== */
 (function () {
     'use strict';
 
     /* ===== CẤU HÌNH ===== */
     var CONFIG = {
-        DEMO_SPEED: 10,       // 1 giây thật = 10 giây mô phỏng khi bơm chạy (đặt 1 để chạy đúng thời gian thực)
-        TICK_MS: 3000,        // chu kỳ cập nhật cảm biến (ms)
-        FLOW_L_PER_MIN: 2,    // lưu lượng bơm (lít / phút)
-        GAIN_PER_MIN: 0.9,    // độ ẩm đất tăng (%) cho mỗi phút tưới
-        QUOTA_L: 160          // hạn mức nước mỗi ngày (lít)
+        DEMO_SPEED: 60,
+        TICK_MS: 2000,
+        FLOW_L_PER_MIN: 2,
+        GAIN_PER_MIN: 0.9,
+        QUOTA_L: 160
     };
 
-    var N = 288;                  // số điểm lịch sử (24h, mỗi 5 phút)
+    var N = 288;
     var STEP = 5 * 60 * 1000;
-    var CIRC = 2 * Math.PI * 70;  // chu vi vòng tròn bơm
+    var CIRC = 2 * Math.PI * 70;
 
     var METRICS = {
-        soil:        { label: 'Soil Moisture', unit: '%',  min: 30, max: 100, target: [60, 80], color: '#10b981', dec: 0 },
+        soil:        { label: 'Soil Moisture', unit: '%',  min: 10, max: 100, target: [30, 60], color: '#10b981', dec: 0 },
         temperature: { label: 'Temperature',   unit: '°C', min: 15, max: 40,  target: [20, 30], color: '#ef4444', dec: 1 },
         humidity:    { label: 'Humidity',      unit: '%',  min: 30, max: 100, target: [50, 80], color: '#3b82f6', dec: 0 }
     };
@@ -67,10 +65,11 @@
     var canSchedule = !Array.isArray(access.write) || access.write.indexOf('/api/schedules') !== -1;
     var canExport = !Array.isArray(access.read) || access.read.indexOf('/export-history') !== -1;
     var canReadSensors = !Array.isArray(access.read) || access.read.indexOf('/sensor-data') !== -1;
-    var defaultZoneId = (window.IrrigationZones.list[0] && window.IrrigationZones.list[0].id) || '1';
+    var defaultZoneObj = window.IrrigationZones.list[0] || { id: '1', targetMin: 30, targetMax: 60 };
+    var defaultZoneId = defaultZoneObj.id || '1';
     var state = {
         mode: load('mode', 'auto'),
-        threshold: load('threshold', 60),
+        threshold: Number.isFinite(Number(defaultZoneObj.targetMin)) ? Number(defaultZoneObj.targetMin) : 35,
         metric: 'soil',
         rangeHours: 24,
         temp: 27.4,
@@ -80,9 +79,14 @@
             return {
                 id: String(zone.id),
                 dbPotId: zone.dbPotId || zone.potId || Number(zone.id) || 1,
+                areaId: zone.areaId || 1,
+                areaName: zone.areaName || zone.location || 'Khu A - Ban công Tầng 2',
                 name: zone.name,
                 crop: zone.crop,
-                moisture: window.IrrigationZones.getSoilMoisture(zone.id)
+                hardwareBound: Boolean(zone.hardwareBound),
+                moisture: window.IrrigationZones.getSoilMoisture(zone.id),
+                targetMin: Number.isFinite(Number(zone.targetMin)) ? Number(zone.targetMin) : 35,
+                targetMax: Number.isFinite(Number(zone.targetMax)) ? Number(zone.targetMax) : 75
             };
         }),
         series: { soil: [], temperature: [], humidity: [] },
@@ -99,26 +103,34 @@
     };
 
     var requestedZone = new URLSearchParams(window.location.search).get('zone');
-    if (window.IrrigationZones.get(requestedZone)) { state.pump.zone = String(window.IrrigationZones.get(requestedZone).id); }
+    if (window.IrrigationZones.get(requestedZone)) {
+        state.pump.zone = String(window.IrrigationZones.get(requestedZone).id);
+    }
 
     var chartGeo = null;
     var drawQueued = false;
 
-    /* ===== DỮ LIỆU MÔ PHỎNG ===== */
+    /* ===== DỮ LIỆU MÔ PHỎNG & TRUY VẤN ZONE ===== */
     function zoneById(id) {
-        for (var i = 0; i < state.zones.length; i++) { if (String(state.zones[i].id) === String(id)) { return state.zones[i]; } }
-        return state.zones[0];
+        for (var i = 0; i < state.zones.length; i++) {
+            if (String(state.zones[i].id) === String(id)) { return state.zones[i]; }
+        }
+        return state.zones[0] || { id: '1', dbPotId: 1, areaName: 'Khu A', name: 'Chậu #1', crop: 'Cây trồng', moisture: 50, targetMin: 35, targetMax: 75 };
     }
     function avgSoil() {
+        if (!state.zones.length) return 0;
         var sum = 0;
         state.zones.forEach(function (z) { sum += z.moisture; });
         return sum / state.zones.length;
     }
     function driestZone() {
-        return state.zones.slice().sort(function (a, b) { return a.moisture - b.moisture; })[0];
+        return state.zones.slice().sort(function (a, b) {
+            return (a.moisture - a.targetMin) - (b.moisture - b.targetMin);
+        })[0];
     }
     function recMinutes(z) {
-        return clamp(Math.round((75 - z.moisture) / CONFIG.GAIN_PER_MIN / 5) * 5, 5, 20);
+        var targetMid = ((Number(z.targetMin) || 35) + (Number(z.targetMax) || 75)) / 2;
+        return clamp(Math.round((targetMid - z.moisture) / CONFIG.GAIN_PER_MIN / 5) * 5, 5, 20);
     }
     function lastAt(hour) {
         var d = new Date();
@@ -131,7 +143,7 @@
     function buildSeries() {
         var now = Date.now();
         var evs = state.events.map(function (e) { return e.ts; }).sort(function (a, b) { return a - b; });
-        var ptr = 0, boost = 0, soil = 77;
+        var ptr = 0, boost = 0, soil = avgSoil() || 50;
         var out = { soil: [], temperature: [], humidity: [] };
 
         for (var i = N - 1; i >= 0; i--) {
@@ -143,7 +155,7 @@
             if (ptr < evs.length && t >= evs[ptr]) { boost = 2; ptr++; }
             soil -= rand(0.03, 0.09);
             if (boost > 0) { soil += 3.6; boost--; }
-            soil = clamp(soil, 40, 95);
+            soil = clamp(soil, 25, 95);
 
             out.soil.push({ t: t, v: soil });
             out.temperature.push({ t: t, v: 26 + 4.5 * wave + rand(-0.25, 0.25) });
@@ -209,6 +221,11 @@
     }
 
     function renderKpis() {
+        var activeZ = zoneById(state.pump.zone);
+        var minT = Number.isFinite(Number(activeZ.targetMin)) ? Number(activeZ.targetMin) : 35;
+        var maxT = Number.isFinite(Number(activeZ.targetMax)) ? Number(activeZ.targetMax) : 75;
+        METRICS.soil.target = [Math.round(minT), Math.round(maxT)];
+
         var soil = avgSoil();
         var pct = state.water / CONFIG.QUOTA_L * 100;
 
@@ -226,16 +243,20 @@
         else if (state.hum > 85) { setBadge('#humBadge', 'Humid', 'warn'); }
         else { setBadge('#humBadge', 'Balanced', 'good'); }
 
-        if (soil < 45) { setBadge('#soilBadge', 'Dry', 'danger'); }
-        else if (soil < 60) { setBadge('#soilBadge', 'Low', 'warn'); }
-        else if (soil > 80) { setBadge('#soilBadge', 'Wet', 'info'); }
-        else { setBadge('#soilBadge', 'Optimal', 'good'); }
+        var anyNeedWater = state.zones.some(function (z) { return z.moisture < z.targetMin; });
+        var anyTooWet = state.zones.some(function (z) { return z.moisture > z.targetMax; });
+        if (anyNeedWater) { setBadge('#soilBadge', 'Needs water', 'warn'); }
+        else if (anyTooWet) { setBadge('#soilBadge', 'Too wet', 'info'); }
+        else { setBadge('#soilBadge', 'Healthy', 'good'); }
 
         if (pct >= 100) { setBadge('#waterBadge', 'Over quota', 'danger'); }
         else if (pct >= 90) { setBadge('#waterBadge', 'Near cap', 'warn'); }
         else { setBadge('#waterBadge', 'On track', 'good'); }
 
         $('#soilBar').style.width = clamp(soil, 0, 100) + '%';
+        if ($('#soilTargetFoot')) {
+            $('#soilTargetFoot').textContent = activeZ.name + ' (' + activeZ.crop + '): ' + Math.round(minT) + '–' + Math.round(maxT) + '%';
+        }
         $('#waterBar').style.width = clamp(pct, 0, 100) + '%';
         $('#waterQuotaText').textContent = pct.toFixed(1) + '% of ' + CONFIG.QUOTA_L + ' L quota';
 
@@ -271,7 +292,6 @@
                '<stop offset="0" stop-color="' + cfg.color + '" stop-opacity="0.28"/>' +
                '<stop offset="1" stop-color="' + cfg.color + '" stop-opacity="0"/></linearGradient></defs>');
 
-        // lưới + nhãn trục Y
         for (var g = 0; g <= 4; g++) {
             var gv = cfg.min + (cfg.max - cfg.min) * g / 4;
             var gy = Y(gv);
@@ -279,13 +299,11 @@
             s.push('<text class="axis" x="' + (m.l - 8) + '" y="' + (gy + 4).toFixed(1) + '" text-anchor="end">' + Math.round(gv) + '</text>');
         }
 
-        // vùng mục tiêu
         var by1 = Y(cfg.target[1]), by2 = Y(cfg.target[0]);
-        s.push('<rect class="band" x="' + m.l + '" y="' + by1.toFixed(1) + '" width="' + iw + '" height="' + (by2 - by1).toFixed(1) + '"/>');
+        s.push('<rect class="band" x="' + m.l + '" y="' + by1.toFixed(1) + '" width="' + iw + '" height="' + Math.max(0, by2 - by1).toFixed(1) + '"/>');
         s.push('<line class="band-line" x1="' + m.l + '" x2="' + (W - m.r) + '" y1="' + by1.toFixed(1) + '" y2="' + by1.toFixed(1) + '"/>');
         s.push('<line class="band-line" x1="' + m.l + '" x2="' + (W - m.r) + '" y1="' + by2.toFixed(1) + '" y2="' + by2.toFixed(1) + '"/>');
 
-        // đường + vùng tô
         var d = '';
         for (var i = 0; i < count; i++) {
             d += (i ? 'L' : 'M') + X(i).toFixed(1) + ',' + Y(pts[i].v).toFixed(1);
@@ -294,7 +312,6 @@
         s.push('<path d="' + area + '" fill="url(#tgrad)"/>');
         s.push('<path d="' + d + '" fill="none" stroke="' + cfg.color + '" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>');
 
-        // nhãn trục X
         for (var k = 0; k <= 4; k++) {
             var idx = Math.round((count - 1) * k / 4);
             var label = k === 4 ? 'Now' : hhmm(new Date(pts[idx].t));
@@ -302,7 +319,6 @@
             s.push('<text class="axis" x="' + X(idx).toFixed(1) + '" y="' + (H - 8) + '" text-anchor="' + anchor + '">' + label + '</text>');
         }
 
-        // các lần tưới (pulse)
         var t0 = pts[0].t, t1 = pts[count - 1].t;
         state.events.forEach(function (ev) {
             if (ev.ts < t0 || ev.ts > t1) { return; }
@@ -315,12 +331,10 @@
             s.push('<text class="ev-label" x="' + x.toFixed(1) + '" y="' + (m.t + 18) + '" text-anchor="' + anchorEv + '">' + hhmm(new Date(ev.ts)) + ' · ' + Math.round(ev.liters) + ' L</text>');
         });
 
-        // điểm hiện tại
         var lx = X(count - 1), ly = Y(pts[count - 1].v);
         s.push('<circle class="last-ring" cx="' + lx.toFixed(1) + '" cy="' + ly.toFixed(1) + '" r="9" fill="' + cfg.color + '"/>');
         s.push('<circle cx="' + lx.toFixed(1) + '" cy="' + ly.toFixed(1) + '" r="4.5" fill="#fff" stroke="' + cfg.color + '" stroke-width="2.5"/>');
 
-        // phần tử hover
         s.push('<line class="hover-line" id="hoverLine" x1="0" x2="0" y1="0" y2="0" style="display:none"/>');
         s.push('<circle id="hoverDot" r="5" fill="#fff" stroke="' + cfg.color + '" stroke-width="2.5" style="display:none"/>');
         s.push('</svg>');
@@ -427,12 +441,13 @@
         });
     }
 
-    /* ===== VÙNG TƯỚI ===== */
-    function zoneStatus(v) {
-        if (v < 45) { return { text: 'Dry', cls: 'danger' }; }
-        if (v < 60) { return { text: 'Low', cls: 'warn' }; }
-        if (v > 80) { return { text: 'Wet', cls: 'info' }; }
-        return { text: 'Optimal', cls: 'good' };
+    /* ===== VÙNG TƯỚI (AREA · POT · PLANT) ===== */
+    function zoneStatus(v, z) {
+        var minT = z && Number.isFinite(Number(z.targetMin)) ? Number(z.targetMin) : 35;
+        var maxT = z && Number.isFinite(Number(z.targetMax)) ? Number(z.targetMax) : 75;
+        if (v < minT) { return { text: 'Needs water', cls: 'warn' }; }
+        if (v > maxT) { return { text: 'Too wet', cls: 'info' }; }
+        return { text: 'Healthy', cls: 'good' };
     }
 
     function buildZones() {
@@ -440,28 +455,53 @@
             var titleHtml = canReadSensors
                 ? '<a class="zone-detail-link" href="' + ctx + '/sensor-data?zone=' + encodeURIComponent(z.id) + '"><strong>' + esc(z.name) + '</strong></a>'
                 : '<strong>' + esc(z.name) + '</strong>';
+            var bindBtnHtml = '<button type="button" class="zone-water" data-bind-zone="' + z.id + '" style="margin-right:6px;' + (z.hardwareBound ? 'background:#d1fae5;color:#065f46;border-color:#10b981;font-weight:700;' : '') + '">'
+                + (z.hardwareBound ? '🔌 Đang gắn Bơm' : '🔌 Gán Bơm') + '</button>';
             var waterBtnHtml = canWater
                 ? '<button type="button" class="zone-water" data-zone="' + z.id + '">' + icon('i-drop', 'icon-sm') + 'Water</button>'
                 : '';
+            var subText = (z.areaName ? z.areaName + ' · ' : '') + z.crop + ' (' + Math.round(z.targetMin) + '–' + Math.round(z.targetMax) + '%)';
             return '<div class="zone" data-id="' + z.id + '">' +
-                '<div class="zone-head"><div>' + titleHtml + '<span>' + esc(z.crop) + '</span></div>' +
-                '<span class="badge good" data-role="badge">Optimal</span></div>' +
+                '<div class="zone-head"><div>' + titleHtml + '<span data-role="sub">' + esc(subText) + '</span></div>' +
+                '<span class="badge good" data-role="badge">Healthy</span></div>' +
                 '<div class="zone-bar"><span data-role="bar"></span></div>' +
-                '<div class="zone-foot"><b data-role="val">0%</b>' + waterBtnHtml + '</div>' +
+                '<div class="zone-foot"><b data-role="val">0%</b><div>' + bindBtnHtml + waterBtnHtml + '</div></div>' +
                 '</div>';
         }).join('');
 
+        var prevZone = $('#zoneSelect') ? $('#zoneSelect').value : state.pump.zone;
         $('#zoneSelect').innerHTML = state.zones.map(function (z) {
-            return '<option value="' + z.id + '">' + esc(z.name) + ' · ' + esc(z.crop) + '</option>';
+            var label = (z.areaName ? z.areaName + ' · ' : '') + z.name + ' · ' + z.crop + ' (' + Math.round(z.targetMin) + '–' + Math.round(z.targetMax) + '%)';
+            return '<option value="' + z.id + '">' + esc(label) + '</option>';
         }).join('');
+        if (prevZone && zoneById(prevZone)) {
+            $('#zoneSelect').value = prevZone;
+        }
     }
 
     function updateZones() {
+        if ($$('#zoneList .zone').length !== state.zones.length) {
+            buildZones();
+        }
         state.zones.forEach(function (z) {
             var el = $('.zone[data-id="' + z.id + '"]');
             if (!el) { return; }
-            var st = zoneStatus(z.moisture);
+            var st = zoneStatus(z.moisture, z);
             var watering = state.pump.on && state.pump.zone === z.id;
+
+            var sub = $('[data-role="sub"]', el);
+            if (sub) {
+                sub.textContent = (z.areaName ? z.areaName + ' · ' : '') + z.crop + ' (' + Math.round(z.targetMin) + '–' + Math.round(z.targetMax) + '%)';
+            }
+
+            var bindBtn = $('[data-bind-zone]', el);
+            if (bindBtn) {
+                bindBtn.textContent = z.hardwareBound ? '🔌 Đang gắn Bơm' : '🔌 Gán Bơm';
+                bindBtn.style.background = z.hardwareBound ? '#d1fae5' : '';
+                bindBtn.style.color = z.hardwareBound ? '#065f46' : '';
+                bindBtn.style.borderColor = z.hardwareBound ? '#10b981' : '';
+                bindBtn.style.fontWeight = z.hardwareBound ? '700' : '';
+            }
 
             var badge = $('[data-role="badge"]', el);
             badge.textContent = watering ? 'Watering' : st.text;
@@ -472,17 +512,29 @@
             bar.className = watering ? 'info' : st.cls;
 
             $('[data-role="val"]', el).textContent = Math.round(z.moisture) + '%';
-            var zw = $('.zone-water', el);
+            var zw = $('.zone-water[data-zone]', el);
             if (zw) { zw.disabled = state.pump.on || !canWater; }
             el.classList.toggle('watering', watering);
+            el.classList.toggle('zone-warn', !watering && st.cls === 'warn');
+            el.classList.toggle('zone-info', !watering && st.cls === 'info');
         });
     }
 
     /* ===== BƠM ===== */
+    function syncThresholdSliderToZone(zoneId) {
+        var z = zoneById(zoneId || state.pump.zone);
+        if (!z) return;
+        var minT = Number.isFinite(Number(z.targetMin)) ? Math.round(Number(z.targetMin)) : 35;
+        state.threshold = minT;
+        if ($('#thresholdRange')) { $('#thresholdRange').value = minT; }
+        if ($('#thresholdValue')) { $('#thresholdValue').textContent = minT + '% (' + z.crop + ')'; }
+    }
+
     function renderPump() {
         var p = state.pump;
         var on = p.on;
         var prog = on && p.simTotal > 0 ? 1 - p.simLeft / p.simTotal : 0;
+        var z = zoneById(p.zone);
 
         var ring = $('#ringProgress');
         ring.style.strokeDasharray = CIRC;
@@ -499,8 +551,8 @@
 
         $('#pumpText').textContent = on ? 'Pump is Running' : (canWater ? 'Pump is Ready' : 'Pump Control Locked');
         $('#pumpSub').textContent = on
-            ? 'Watering ' + zoneById(p.zone).name + ' · ' + p.liters.toFixed(1) + ' L so far'
-            : (canWater ? 'Control your irrigation system manually.' : 'Your role does not include manual pump execution permission.');
+            ? 'Watering ' + z.name + ' (' + z.crop + ') · ' + p.liters.toFixed(1) + ' L so far'
+            : (canWater ? (z.areaName + ' · ' + z.name + ' · ' + z.crop + ' (Target ' + Math.round(z.targetMin) + '–' + Math.round(z.targetMax) + '%)') : 'Your role does not include manual pump execution permission.');
 
         var btn = $('#pumpButton');
         btn.classList.toggle('btn-danger', on);
@@ -529,7 +581,10 @@
         if (!canWater) { return; }
         var zone = zoneById(zoneId);
         var potId = (zone && zone.dbPotId) || Number(zoneId) || 1;
+        var hwSeconds = Math.max(1, Math.round(Number(minutes)));
         var body = 'potId=' + encodeURIComponent(potId)
+            + '&duration=' + encodeURIComponent(hwSeconds)
+            + '&minutes=' + encodeURIComponent(minutes)
             + '&volume=' + encodeURIComponent(minutes * CONFIG.FLOW_L_PER_MIN * 1000);
         fetch(ctx + '/manual-water', {
             method: 'POST',
@@ -554,12 +609,14 @@
         var z = zoneById(zoneId);
         persistManualWatering(zoneId, minutes);
         p.on = true;
+        p.startedMs = Date.now();
         p.zone = z.id;
         p.minutes = minutes;
         p.simTotal = minutes * 60;
         p.simLeft = p.simTotal;
         p.liters = 0;
         $('#zoneSelect').value = z.id;
+        syncThresholdSliderToZone(z.id);
         hideHover();
 
         p.timer = setInterval(pumpTick, 1000);
@@ -589,10 +646,10 @@
         renderPump();
         renderAll();
 
-        if (p.simLeft <= 0.001) { stopPump(true); }
+        if (p.simLeft <= 0.001) { stopPump(true, false); }
     }
 
-    function stopPump(completed) {
+    function stopPump(completed, fromDevice) {
         var p = state.pump;
         if (!p.on) { return; }
 
@@ -601,6 +658,17 @@
         p.on = false;
 
         var z = zoneById(p.zone);
+        if (!completed && !fromDevice) {
+            var potId = (z && z.dbPotId) || Number(p.zone) || 1;
+            fetch(ctx + '/api/watering/command', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-Requested-With': 'fetch'
+                },
+                body: 'potId=' + encodeURIComponent(potId) + '&command=STOP'
+            }).catch(function () {});
+        }
         var elapsed = Math.round((p.simTotal - p.simLeft) / 60 * 10) / 10;
         var used = Math.round(p.liters * 10) / 10;
 
@@ -648,23 +716,24 @@
         if (Date.now() - state.lastAuto < 20000) { return; }
 
         var z = driestZone();
-        if (z.moisture < state.threshold) {
+        if (z && z.moisture < z.targetMin) {
             state.lastAuto = Date.now();
-            startPump(z.id, recMinutes(z), 'Auto: soil ' + Math.round(z.moisture) + '% < ' + state.threshold + '%');
+            startPump(z.id, recMinutes(z), 'Auto: soil ' + Math.round(z.moisture) + '% < ' + Math.round(z.targetMin) + '% (' + z.crop + ')');
         }
     }
 
     /* ===== GỢI Ý AI ===== */
     function renderAI() {
         var z = driestZone();
+        if (!z) return;
         var mins = recMinutes(z);
         var water = mins * CONFIG.FLOW_L_PER_MIN;
         var after = Math.min(100, z.moisture + CONFIG.GAIN_PER_MIN * mins);
-        var conf = Math.round(clamp(94 - Math.abs(75 - avgSoil()) * 0.4, 70, 96));
+        var conf = Math.round(clamp(94 - Math.abs(z.targetMin - avgSoil()) * 0.3, 70, 96));
 
-        $('#aiText').textContent = z.moisture >= 70
-            ? 'All zones look healthy. A short top-up keeps ' + z.name + ' in the optimal range.'
-            : z.name + ' is the driest zone (' + Math.round(z.moisture) + '%). Irrigating now brings it back to the target band.';
+        $('#aiText').textContent = z.moisture >= z.targetMin
+            ? 'All pots are within target thresholds. A short top-up keeps ' + z.name + ' (' + z.crop + ') in the optimal range (' + Math.round(z.targetMin) + '–' + Math.round(z.targetMax) + '%).'
+            : z.name + ' (' + z.crop + ' · ' + z.areaName + ') is below its minimum threshold (' + Math.round(z.moisture) + '% < ' + Math.round(z.targetMin) + '%). Irrigating now brings it back to target.';
         $('#aiDuration').textContent = mins + ' min';
         $('#aiWater').textContent = water + ' L';
         $('#aiSoilAfter').textContent = Math.round(after) + '%';
@@ -813,20 +882,45 @@
             })
             .then(function (readings) {
                 if (readings.length) {
+                    if (window.IrrigationZones.syncFromReadings) {
+                        window.IrrigationZones.syncFromReadings(readings);
+                    }
                     state.zones = readings.map(function (reading) {
                         var id = String(reading.id || reading.potId);
                         var m = Number(reading.moisture !== undefined ? reading.moisture : reading.soilMoisture);
                         window.IrrigationZones.setSoilMoisture(id, m);
+                        if (reading.temperature !== null && reading.temperature !== undefined && Number.isFinite(Number(reading.temperature))) {
+                            state.temp = Number(reading.temperature);
+                        }
+                        if (reading.humidity !== null && reading.humidity !== undefined && Number.isFinite(Number(reading.humidity))) {
+                            state.hum = Number(reading.humidity);
+                        }
+                        if (state.pump.on && String(state.pump.zone) === id
+                                && (Date.now() - (state.pump.startedMs || 0) > 2000)
+                                && reading.pumpRunning === false) {
+                            stopPump(true, true);
+                        }
+                        var minT = Number.isFinite(Number(reading.targetMin)) ? Number(reading.targetMin) : 35;
+                        var maxT = Number.isFinite(Number(reading.targetMax)) ? Number(reading.targetMax) : 75;
                         return {
                             id: id,
                             dbPotId: reading.potId || Number(id),
+                            areaId: reading.areaId || 1,
+                            areaName: reading.areaName || reading.location || 'Khu A - Ban công Tầng 2',
                             name: reading.name || reading.potName || ('Pot #' + id),
                             crop: reading.crop || reading.plantName || '',
-                            moisture: m
+                            hardwareBound: Boolean(reading.hardwareBound),
+                            moisture: m,
+                            targetMin: minT,
+                            targetMax: maxT
                         };
                     });
+                    if (document.activeElement !== $('#thresholdRange')) {
+                        syncThresholdSliderToZone(state.pump.zone);
+                    }
                 }
                 pushLive();
+                renderPump();
                 renderAll();
             })
             .catch(function () {
@@ -878,14 +972,12 @@
             if ($('#schedFrequency')) { $('#schedFrequency').disabled = true; }
         }
 
-        // chế độ
         $('#modeToggle').addEventListener('click', function (e) {
             if (!canWater) { return; }
             var b = e.target.closest('.seg-btn');
             if (b && b.getAttribute('data-mode') !== state.mode) { setMode(b.getAttribute('data-mode')); }
         });
 
-        // đổi chỉ số / khoảng thời gian của biểu đồ
         $('#metricTabs').addEventListener('click', function (e) {
             var b = e.target.closest('.tab');
             if (!b) { return; }
@@ -903,7 +995,6 @@
             queueDraw();
         });
 
-        // tooltip biểu đồ
         var box = $('#telemetryChart');
         box.addEventListener('pointermove', function (e) {
             if (!chartGeo) { return; }
@@ -913,7 +1004,6 @@
         });
         box.addEventListener('pointerleave', hideHover);
 
-        // thời lượng tưới
         $('#durationChips').addEventListener('click', function (e) {
             if (!canWater) { return; }
             var c = e.target.closest('.chip');
@@ -923,15 +1013,58 @@
             renderPump();
         });
 
-        // ngưỡng tự động
-        $('#thresholdRange').addEventListener('input', function () {
-            if (!canWater) { return; }
-            state.threshold = Number(this.value);
-            save('threshold', state.threshold);
-            $('#thresholdValue').textContent = state.threshold + '%';
+        $('#zoneSelect').addEventListener('change', function () {
+            state.pump.zone = this.value;
+            var selected = zoneById(this.value);
+            state.zones.forEach(function (z) { z.hardwareBound = (String(z.id) === String(selected.id)); });
+            if (window.IrrigationZones.bindHardware) {
+                window.IrrigationZones.bindHardware(selected.dbPotId || selected.id);
+            }
+            syncThresholdSliderToZone(this.value);
+            renderPump();
+            renderAll();
+            toast('🔌 Đã gán Mạch ESP8266 & Máy bơm vật lý vào: ' + selected.name, 'good');
         });
 
-        // nút bơm
+        $('#thresholdRange').addEventListener('input', function () {
+            if (!canWater) { return; }
+            var z = zoneById(state.pump.zone);
+            state.threshold = Number(this.value);
+            $('#thresholdValue').textContent = state.threshold + '% (' + (z ? z.crop : 'Plant') + ')';
+        });
+
+        $('#thresholdRange').addEventListener('change', function () {
+            if (!canWater) { return; }
+            var z = zoneById(state.pump.zone);
+            if (!z) return;
+            var newMin = Number(this.value);
+            var newMax = Math.max(newMin + 10, Number(z.targetMax) || 75);
+            if (newMax > 100) {
+                newMax = 100;
+                newMin = Math.min(newMin, 90);
+            }
+            z.targetMin = newMin;
+            z.targetMax = newMax;
+            window.IrrigationZones.setThresholds(z.id, newMin, newMax);
+            fetch(ctx + '/api/plants', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-Requested-With': 'fetch'
+                },
+                body: 'action=updateThreshold&potId=' + encodeURIComponent(z.dbPotId || z.id)
+                    + '&targetMin=' + encodeURIComponent(newMin)
+                    + '&targetMax=' + encodeURIComponent(newMax)
+            }).then(function (res) {
+                if (res.ok) {
+                    toast('Synced threshold for ' + z.name + ' (' + z.crop + '): ' + newMin + '–' + newMax + '%', 'good');
+                    buildZones();
+                    renderPump();
+                    renderAll();
+                }
+            }).catch(function () {});
+        });
+
         $('#pumpButton').addEventListener('click', function () {
             if (!canWater) { return; }
             if (state.pump.on) {
@@ -941,14 +1074,28 @@
             }
         });
 
-        // tưới theo vùng
         $('#zoneList').addEventListener('click', function (e) {
+            var bindBtn = e.target.closest('[data-bind-zone]');
+            if (bindBtn) {
+                var targetId = bindBtn.getAttribute('data-bind-zone');
+                var selected = zoneById(targetId);
+                state.pump.zone = String(selected.id);
+                $('#zoneSelect').value = String(selected.id);
+                state.zones.forEach(function (z) { z.hardwareBound = (String(z.id) === String(selected.id)); });
+                if (window.IrrigationZones.bindHardware) {
+                    window.IrrigationZones.bindHardware(selected.dbPotId || selected.id);
+                }
+                syncThresholdSliderToZone(selected.id);
+                renderPump();
+                renderAll();
+                toast('🔌 Đã gán Mạch ESP8266 & Máy bơm vật lý vào: ' + selected.name + ' (' + selected.crop + ')', 'good');
+                return;
+            }
             if (!canWater) { return; }
-            var b = e.target.closest('.zone-water');
+            var b = e.target.closest('.zone-water[data-zone]');
             if (b && !state.pump.on) { startPump(b.getAttribute('data-zone'), state.pump.minutes, 'Zone quick-water'); }
         });
 
-        // gợi ý AI
         $('#aiApply').addEventListener('click', function () {
             if (!canWater) { return; }
             if (state.pump.on) { toast('Stop the pump before applying a recommendation', 'warn'); return; }
@@ -957,11 +1104,11 @@
             state.pump.zone = state.rec.zone;
             state.pump.minutes = state.rec.min;
             save('duration', state.rec.min);
+            syncThresholdSliderToZone(state.rec.zone);
             renderPump();
             toast('Applied: ' + zoneById(state.rec.zone).name + ' · ' + state.rec.min + ' min. Press Start Pump to run.', 'good');
         });
 
-        // lịch tưới
         $('#scheduleList').addEventListener('change', function (e) {
             if (!canSchedule) {
                 e.target.checked = !e.target.checked;
@@ -1005,10 +1152,8 @@
             toast('Schedule added: ' + t, 'good');
         });
 
-        // xuất CSV
         $('#exportBtn').addEventListener('click', exportCsv);
 
-        // vẽ lại biểu đồ khi đổi kích thước
         if (window.ResizeObserver) {
             var ro = new ResizeObserver(queueDraw);
             ro.observe($('#telemetryChart'));
@@ -1030,13 +1175,13 @@
         var now = Date.now();
         state.activity = [
             { type: 'water',  title: 'Irrigation completed',  text: '20 liters of water used',      ts: now - 10 * 60000 },
-            { type: 'sensor', title: 'Soil moisture updated', text: 'Moisture level: 74%',          ts: now - 25 * 60000 },
+            { type: 'sensor', title: 'Soil moisture updated', text: 'Moisture level synced',        ts: now - 25 * 60000 },
             { type: 'check',  title: 'System check',          text: 'All sensors are working',      ts: now - 60 * 60000 }
         ];
 
         buildZones();
         $('#schedZone').innerHTML = window.IrrigationZones.list.map(function (zone) {
-            return '<option value="' + zone.id + '">' + esc(zone.name + ' · ' + zone.crop) + '</option>';
+            return '<option value="' + zone.id + '">' + esc((zone.areaName ? zone.areaName + ' · ' : '') + zone.name + ' · ' + zone.crop) + '</option>';
         }).join('');
         bind();
         window.IrrigationSchedules.onChange(function (schedules) {
@@ -1044,9 +1189,8 @@
             renderSchedules();
         });
 
-        $('#thresholdRange').value = state.threshold;
-        $('#thresholdValue').textContent = state.threshold + '%';
         $('#zoneSelect').value = state.pump.zone;
+        syncThresholdSliderToZone(state.pump.zone);
 
         $$('#metricTabs .tab').forEach(function (t) { t.classList.toggle('active', t.getAttribute('data-metric') === state.metric); });
         $$('#rangeTabs .tab').forEach(function (t) { t.classList.toggle('active', Number(t.getAttribute('data-range')) === state.rangeHours); });

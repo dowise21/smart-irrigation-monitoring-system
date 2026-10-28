@@ -105,7 +105,7 @@
                     <span class="badge good" id="soilStatus">Optimal</span>
                 </div>
                 <h2 class="kpi-value"><span id="soil">74</span> <small>%</small></h2>
-                <div class="kpi-foot sensor-bar-foot"><div class="kpi-bar"><span id="soilBar"></span></div><span>Target range 60–80%</span></div>
+                <div class="kpi-foot sensor-bar-foot"><div class="kpi-bar"><span id="soilBar"></span></div><span id="soilTargetFoot">Target range 30–80%</span></div>
             </article>
 
             <article class="kpi-card sensor-kpi" data-sensor-card="light">
@@ -176,10 +176,10 @@
                         <tr><th>Sensor</th><th>Zone</th><th>Current reading</th><th>Recommended range</th><th>Signal</th><th>Updated</th></tr>
                     </thead>
                     <tbody>
-                        <tr data-row="temperature"><td><span class="table-sensor-icon tone-red"><svg class="icon icon-sm"><use href="#i-thermo"></use></svg></span><strong>Temperature</strong></td><td><a data-zone-link href="plantManagement.jsp?zone=alpha">Garden A</a></td><td data-reading>28.0 °C</td><td>24–32 °C</td><td><span class="table-signal"><i></i>Strong</span></td><td data-updated>Just now</td></tr>
-                        <tr data-row="humidity"><td><span class="table-sensor-icon tone-blue"><svg class="icon icon-sm"><use href="#i-humidity"></use></svg></span><strong>Air humidity</strong></td><td><a data-zone-link href="plantManagement.jsp?zone=alpha">Garden A</a></td><td data-reading>68 %</td><td>50–80 %</td><td><span class="table-signal"><i></i>Strong</span></td><td data-updated>Just now</td></tr>
-                        <tr data-row="soil"><td><span class="table-sensor-icon tone-emerald"><svg class="icon icon-sm"><use href="#i-sprout"></use></svg></span><strong>Soil moisture</strong></td><td><a data-zone-link href="plantManagement.jsp?zone=alpha">Garden A</a></td><td data-reading>74 %</td><td>60–80 %</td><td><span class="table-signal"><i></i>Strong</span></td><td data-updated>Just now</td></tr>
-                        <tr data-row="light"><td><span class="table-sensor-icon tone-amber"><svg class="icon icon-sm"><use href="#i-sun"></use></svg></span><strong>Light intensity</strong></td><td><a data-zone-link href="plantManagement.jsp?zone=alpha">Garden A</a></td><td data-reading>72 %</td><td>40–90 %</td><td><span class="table-signal"><i></i>Strong</span></td><td data-updated>Just now</td></tr>
+                        <tr data-row="temperature"><td><span class="table-sensor-icon tone-red"><svg class="icon icon-sm"><use href="#i-thermo"></use></svg></span><strong>Temperature</strong></td><td><a data-zone-link href="plantManagement.jsp?zone=1">All gardens</a></td><td data-reading>28.0 °C</td><td data-target-range>24–32 °C</td><td><span class="table-signal"><i></i>Strong</span></td><td data-updated>Just now</td></tr>
+                        <tr data-row="humidity"><td><span class="table-sensor-icon tone-blue"><svg class="icon icon-sm"><use href="#i-humidity"></use></svg></span><strong>Air humidity</strong></td><td><a data-zone-link href="plantManagement.jsp?zone=1">All gardens</a></td><td data-reading>68 %</td><td data-target-range>50–80 %</td><td><span class="table-signal"><i></i>Strong</span></td><td data-updated>Just now</td></tr>
+                        <tr data-row="soil"><td><span class="table-sensor-icon tone-emerald"><svg class="icon icon-sm"><use href="#i-sprout"></use></svg></span><strong>Soil moisture</strong></td><td><a data-zone-link href="plantManagement.jsp?zone=1">All gardens</a></td><td data-reading>74 %</td><td data-target-range>30–80 %</td><td><span class="table-signal"><i></i>Strong</span></td><td data-updated>Just now</td></tr>
+                        <tr data-row="light"><td><span class="table-sensor-icon tone-amber"><svg class="icon icon-sm"><use href="#i-sun"></use></svg></span><strong>Light intensity</strong></td><td><a data-zone-link href="plantManagement.jsp?zone=1">All gardens</a></td><td data-reading>72 %</td><td data-target-range>40–90 %</td><td><span class="table-signal"><i></i>Strong</span></td><td data-updated>Just now</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -213,12 +213,12 @@
             %>
             <form method="get" action="<%= request.getContextPath() %>/sensor-data" class="data-filter-bar">
                 <div class="filter-field filter-field-grow">
-                    <label class="filter-label" for="sensorZone">Zone</label>
+                    <label class="filter-label" for="sensorZone">Area · Pot · Plant</label>
                     <div class="filter-control-wrap">
                         <select id="sensorZone" name="potId" class="filter-control">
                             <option value="0">All zones</option>
                             <% if (_pots != null) { for (model.Pot p : _pots) { %>
-                            <option value="<%= p.getPotId() %>"<%= p.getPotId() == _sel ? " selected" : "" %>><%= h(p.getPotName()) %></option>
+                            <option value="<%= p.getPotId() %>"<%= p.getPotId() == _sel ? " selected" : "" %>><%= h((p.getAreaName() != null ? p.getAreaName() + " · " : "") + p.getPotName() + (p.getPlantName() != null ? " · " + p.getPlantName() : "")) %></option>
                             <% } } %>
                         </select>
                     </div>
@@ -283,10 +283,10 @@
 <div class="toast-box" id="toastBox" aria-live="polite"></div>
 
 <script src="<%= request.getContextPath() %>/app-data.js"></script>
-<script src="js/zone-data.js?v=20261016a"></script>
+<script src="js/zone-data.js?v=20261028a"></script>
 <script src="js/alertCenter.js?v=20261016a"></script>
 <script src="js/siteNavigation.js?v=20261016a"></script>
-<script src="js/sensors.js?v=20261016a"></script>
+<script src="js/sensors.js?v=20261028a"></script>
 
 </body>
 </html>

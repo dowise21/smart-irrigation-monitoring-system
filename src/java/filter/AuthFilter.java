@@ -116,15 +116,17 @@ public class AuthFilter implements Filter {
         read("/schedules", ADMIN, MANAGER);
         read("/api/schedules", ADMIN, MANAGER);
 
-        // 4. IoT / Sensors domain -> strictly ADMIN and TECHNICIAN
+        // 4. IoT / Sensors domain -> /sensor-data strictly ADMIN and TECHNICIAN; /api/sensors feeds live dashboard
         read("/sensor-data", ADMIN, TECHNICIAN);
-        read("/api/sensors", ADMIN, TECHNICIAN);
+        read("/api/sensors", ADMIN, MANAGER, TECHNICIAN, STAFF, VIEWER);
+        read("/api/sensor/readings", ADMIN, TECHNICIAN);
 
         // 5. Pump Calibration domain -> strictly ADMIN and TECHNICIAN
         read("/pump-calibration", ADMIN, TECHNICIAN);
 
         // 6. Irrigation / Watering domain -> strictly ADMIN, TECHNICIAN, STAFF
         read("/manual-water", ADMIN, TECHNICIAN, STAFF);
+        read("/api/watering/command", ADMIN, TECHNICIAN, STAFF);
 
         // 7. Alerts domain -> ADMIN, MANAGER, TECHNICIAN, STAFF (VIEWER has NO access)
         read("/alerts", ADMIN, MANAGER, TECHNICIAN, STAFF);
@@ -143,6 +145,7 @@ public class AuthFilter implements Filter {
         // WRITE access by route (POST / mutating action) - exact checklist matrix
         // WateringSession: ADMIN, TECHNICIAN (CRU), STAFF (CRU)
         write("/manual-water", ADMIN, TECHNICIAN, STAFF);
+        write("/api/watering/command", ADMIN, TECHNICIAN, STAFF);
         write("/api/history", ADMIN, TECHNICIAN, STAFF);
         write("/history", ADMIN, TECHNICIAN, STAFF);
         // Plant / Pot / WateringSchedule: ADMIN, MANAGER (CRUD)
@@ -157,6 +160,7 @@ public class AuthFilter implements Filter {
         // Sensor / SensorReading / PumpCalibration: ADMIN, TECHNICIAN (CRUD)
         write("/sensor-data", ADMIN, TECHNICIAN);
         write("/api/sensors", ADMIN, TECHNICIAN);
+        write("/api/sensor/readings", ADMIN, TECHNICIAN);
         write("/pump-calibration", ADMIN, TECHNICIAN);
         // Everything else: ADMIN only (and Manager for export)
         write("/dashboard", ADMIN);
@@ -258,8 +262,8 @@ public class AuthFilter implements Filter {
         String contextPath = req.getContextPath();
         String command = req.getRequestURI().substring(contextPath.length());
 
-        // 1. Public routes
-        if (isPublic(command)) {
+        // 1. Public routes & stateless IoT hardware device endpoints (ESP8266/ESP32)
+        if (isPublic(command) || isIotDeviceEndpoint(req, command)) {
             chain.doFilter(request, response);
             return;
         }
@@ -355,6 +359,33 @@ public class AuthFilter implements Filter {
         for (String prefix : PUBLIC_PREFIX) {
             if (command.startsWith(prefix)) {
                 return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Stateless IoT microcontroller endpoints (ESP8266/ESP32):
+     *   - POST /api/sensor/readings : pushes telemetry JSON to SensorReading
+     *   - GET  /api/watering/command: polls for pending relay/pump commands or reports status=OFF
+     *   - POST /api/watering/command: device acks (source=DEVICE)
+     */
+    private boolean isIotDeviceEndpoint(HttpServletRequest req, String command) {
+        String method = req.getMethod() == null ? "GET" : req.getMethod().toUpperCase(Locale.ROOT);
+        if (("/api/sensor/readings".equals(command) || "/api/sensors".equals(command)) && "POST".equals(method)) {
+            return true;
+        }
+        if ("/api/watering/command".equals(command)) {
+            if ("GET".equals(method)) {
+                return true;
+            }
+            if ("POST".equals(method)) {
+                String source = req.getParameter("source");
+                String ua = req.getHeader("User-Agent");
+                if ("DEVICE".equalsIgnoreCase(source)
+                        || (ua != null && (ua.contains("ESP8266") || ua.contains("ESP32") || ua.contains("Arduino")))) {
+                    return true;
+                }
             }
         }
         return false;

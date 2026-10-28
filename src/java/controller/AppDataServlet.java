@@ -20,8 +20,7 @@ import util.Json;
 /**
  * Serves /app-data.js: a tiny script every page loads BEFORE its own scripts.
  * It publishes the logged-in user, role permissions and the database snapshot
- * (zones, alerts, irrigation history, schedules) as window.SI_* globals, so the
- * front-end modules can stay synchronous while reading real data.
+ * (areas, zones, plants, alerts, irrigation history, schedules) as window.SI_* globals.
  */
 @WebServlet(name = "AppDataServlet", urlPatterns = {"/app-data.js"})
 public class AppDataServlet extends HttpServlet {
@@ -68,6 +67,7 @@ public class AppDataServlet extends HttpServlet {
             out.println("window.SI_DATA = {");
             out.println("  \"config\": {\"flowLitersPerMinute\":" + Json.number(AppConfig.PUMP_FLOW_LITERS_PER_MINUTE)
                     + ",\"dailyQuotaLiters\":" + Json.number(AppConfig.DAILY_QUOTA_LITERS) + "},");
+            out.println("  \"areas\": " + data.areasJson() + ",");
             out.println("  \"zones\": " + data.zonesJson() + ",");
             out.println("  \"plants\": " + data.plantsJson() + ",");
             out.println("  \"alerts\": " + data.alertsJson() + ",");
@@ -128,4 +128,3 @@ public class AppDataServlet extends HttpServlet {
         return sb.append(']').toString();
     }
 }
-

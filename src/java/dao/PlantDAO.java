@@ -17,11 +17,12 @@ public class PlantDAO {
     private static final Logger LOGGER = Logger.getLogger(PlantDAO.class.getName());
 
     private static final String SELECT_BASE =
-        "SELECT plant_id, plant_name, species, ideal_moisture_min, " +
-        "       ideal_moisture_max, description, created_at, water_amount_ml, default_pot_id " +
+        "SELECT plant_id, plant_name, species, water_requirement, " +
+        "       COALESCE(min_moisture_threshold, ideal_moisture_min, 35.0) AS min_moisture_threshold, " +
+        "       COALESCE(max_moisture_threshold, ideal_moisture_max, 75.0) AS max_moisture_threshold, " +
+        "       description, created_at, water_amount_ml, default_pot_id " +
         "FROM Plant ";
 
-    // Xây dựng câu điều kiện WHERE dùng chung cho cả search và count
     private String whereClause(String keyword) {
         StringBuilder sb = new StringBuilder(" WHERE 1 = 1 ");
         if (keyword != null && keyword.trim().length() > 0) {
@@ -30,7 +31,6 @@ public class PlantDAO {
         return sb.toString();
     }
 
-    // Đổ dữ liệu vào các dấu ? của tham số tìm kiếm
     private int bindFilters(PreparedStatement ps, String keyword, int start) throws SQLException {
         int i = start;
         if (keyword != null && keyword.trim().length() > 0) {
@@ -84,7 +84,7 @@ public class PlantDAO {
         return 0;
     }
 
-    /** Lấy chi tiết 1 loại cây theo ID (Dùng khi Edit) */
+    /** Lấy chi tiết 1 loại cây theo ID */
     public Plant findById(int id) {
         Connection cn = null; PreparedStatement ps = null; ResultSet rs = null;
         try {
@@ -103,8 +103,9 @@ public class PlantDAO {
 
     /** CREATE: Thêm cây mới */
     public int insert(Plant p) {
-        String sql = "INSERT INTO Plant(plant_name, species, ideal_moisture_min, ideal_moisture_max, description, water_amount_ml, default_pot_id) "
-                   + "VALUES (?,?,?,?,?,?,?)";
+        String sql = "INSERT INTO Plant(plant_name, species, water_requirement, min_moisture_threshold, max_moisture_threshold, "
+                   + "ideal_moisture_min, ideal_moisture_max, description, water_amount_ml, default_pot_id) "
+                   + "VALUES (?,?,?,?,?,?,?,?,?,?)";
         Connection cn = null; PreparedStatement ps = null; ResultSet rs = null;
         try {
             cn = DBContext.getConnection();
@@ -121,16 +122,18 @@ public class PlantDAO {
         return 0;
     }
 
-    /** UPDATE: Cập nhật thông tin cây */
+    /** UPDATE: Cập nhật thông tin cây và ngưỡng tưới tự động */
     public boolean update(Plant p) {
-        String sql = "UPDATE Plant SET plant_name = ?, species = ?, ideal_moisture_min = ?, "
-                   + "ideal_moisture_max = ?, description = ?, water_amount_ml = ?, default_pot_id = ? WHERE plant_id = ?";
+        String sql = "UPDATE Plant SET plant_name = ?, species = ?, water_requirement = ?, "
+                   + "min_moisture_threshold = ?, max_moisture_threshold = ?, "
+                   + "ideal_moisture_min = ?, ideal_moisture_max = ?, "
+                   + "description = ?, water_amount_ml = ?, default_pot_id = ? WHERE plant_id = ?";
         Connection cn = null; PreparedStatement ps = null;
         try {
             cn = DBContext.getConnection();
             ps = cn.prepareStatement(sql);
             bindWritable(ps, p);
-            ps.setInt(8, p.getPlantId());
+            ps.setInt(11, p.getPlantId());
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Lỗi tại update Plant: {0}", e.getMessage());
@@ -140,14 +143,66 @@ public class PlantDAO {
         return false;
     }
 
-    /** DELETE: Xóa cây (Tự động chuyển chậu đang trỏ tới cây này sang cây khác để không vướng khóa ngoại) */
+    /** Cập nhật nhanh ngưỡng độ ẩm tối thiểu/tối đa cho cây của 1 chậu */
+    public boolean updateThresholdsByPotOrPlant(Integer potId, Integer plantId, Double minThreshold, Double maxThreshold) {
+        String sql = "UPDATE Plant SET "
+                   + "min_moisture_threshold = COALESCE(?, min_moisture_threshold), "
+                   + "ideal_moisture_min = COALESCE(?, ideal_moisture_min), "
+                   + "max_moisture_threshold = COALESCE(?, max_moisture_threshold), "
+                   + "ideal_moisture_max = COALESCE(?, ideal_moisture_max) "
+                   + "WHERE plant_id = COALESCE(?, (SELECT plant_id FROM Pot WHERE pot_id = ?))";
+        Connection cn = null; PreparedStatement ps = null;
+        try {
+            cn = DBContext.getConnection();
+            ps = cn.prepareStatement(sql);
+            if (minThreshold != null) {
+                ps.setDouble(1, minThreshold);
+                ps.setDouble(2, minThreshold);
+            } else {
+                ps.setNull(1, java.sql.Types.DECIMAL);
+                ps.setNull(2, java.sql.Types.DECIMAL);
+            }
+            if (maxThreshold != null) {
+                ps.setDouble(3, maxThreshold);
+                ps.setDouble(4, maxThreshold);
+            } else {
+                ps.setNull(3, java.sql.Types.DECIMAL);
+                ps.setNull(4, java.sql.Types.DECIMAL);
+            }
+            if (plantId != null && plantId > 0) {
+                ps.setInt(5, plantId);
+            } else {
+                ps.setNull(5, java.sql.Types.INTEGER);
+            }
+            if (potId != null && potId > 0) {
+                ps.setInt(6, potId);
+            } else {
+                ps.setNull(6, java.sql.Types.INTEGER);
+            }
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Lỗi tại updateThresholdsByPotOrPlant: {0}", e.getMessage());
+        } finally {
+            close(null, ps, cn);
+        }
+        return false;
+    }
+
+    /** DELETE: Xóa cây và vô hiệu hóa chậu gắn với cây đó (nếu còn ít nhất 1 chậu khác đang hoạt động) */
     public boolean delete(int plantId) {
         Connection cn = null;
+        PreparedStatement psDeactivatePot = null;
         PreparedStatement psReassign = null;
         PreparedStatement psDelete = null;
         try {
             cn = DBContext.getConnection();
             cn.setAutoCommit(false);
+
+            String deactivateSql = "UPDATE Pot SET status = 0 WHERE plant_id = ? AND (SELECT COUNT(*) FROM Pot WHERE status = 1) > 1";
+            psDeactivatePot = cn.prepareStatement(deactivateSql);
+            psDeactivatePot.setInt(1, plantId);
+            psDeactivatePot.executeUpdate();
+
             String reassignSql = "UPDATE Pot SET plant_id = (SELECT TOP 1 plant_id FROM Plant WHERE plant_id <> ? ORDER BY plant_id ASC) "
                                + "WHERE plant_id = ? AND EXISTS (SELECT 1 FROM Plant WHERE plant_id <> ?)";
             psReassign = cn.prepareStatement(reassignSql);
@@ -165,13 +220,14 @@ public class PlantDAO {
             try { if (cn != null) cn.rollback(); } catch (SQLException ignored) {}
             LOGGER.log(Level.SEVERE, "Lỗi tại delete Plant: {0}", e.getMessage());
         } finally {
+            close(null, psDeactivatePot, null);
             close(null, psReassign, null);
             close(null, psDelete, cn);
         }
         return false;
     }
-    
-    /** Lấy TOÀN BỘ danh sách cây (Dùng để đổ vào thẻ <select> ở form tạo Chậu) */
+
+    /** Lấy TOÀN BỘ danh sách cây */
     public List<Plant> getAll() {
         List<Plant> out = new ArrayList<>();
         Connection cn = null; PreparedStatement ps = null; ResultSet rs = null;
@@ -188,41 +244,57 @@ public class PlantDAO {
         return out;
     }
 
-    // Gắn giá trị cho các lệnh Insert/Update
     private void bindWritable(PreparedStatement ps, Plant p) throws SQLException {
+        int waterMl = p.getWaterAmountMl() > 0 ? p.getWaterAmountMl() : 250;
+        String waterReq = p.getWaterRequirement();
+        if (waterReq == null || waterReq.trim().isEmpty()) {
+            waterReq = waterMl + " ml/lần";
+        }
         ps.setString(1, p.getPlantName());
         ps.setString(2, p.getSpecies());
-        
-        // Xử lý cẩn thận kiểu số thực (Double) có thể null
-        if (p.getIdealMoistureMin() != null) ps.setDouble(3, p.getIdealMoistureMin());
-        else ps.setNull(3, java.sql.Types.DECIMAL);
-        
-        if (p.getIdealMoistureMax() != null) ps.setDouble(4, p.getIdealMoistureMax());
-        else ps.setNull(4, java.sql.Types.DECIMAL);
-        
-        ps.setString(5, p.getDescription());
-        ps.setInt(6, p.getWaterAmountMl() > 0 ? p.getWaterAmountMl() : 250);
-        if (p.getDefaultPotId() != null && p.getDefaultPotId() > 0) {
-            ps.setInt(7, p.getDefaultPotId());
+        ps.setString(3, waterReq);
+
+        Double min = p.getMinMoistureThreshold();
+        Double max = p.getMaxMoistureThreshold();
+
+        if (min != null) {
+            ps.setDouble(4, min);
+            ps.setDouble(6, min);
         } else {
-            ps.setNull(7, java.sql.Types.INTEGER);
+            ps.setNull(4, java.sql.Types.DECIMAL);
+            ps.setNull(6, java.sql.Types.DECIMAL);
+        }
+
+        if (max != null) {
+            ps.setDouble(5, max);
+            ps.setDouble(7, max);
+        } else {
+            ps.setNull(5, java.sql.Types.DECIMAL);
+            ps.setNull(7, java.sql.Types.DECIMAL);
+        }
+
+        ps.setString(8, p.getDescription());
+        ps.setInt(9, waterMl);
+        if (p.getDefaultPotId() != null && p.getDefaultPotId() > 0) {
+            ps.setInt(10, p.getDefaultPotId());
+        } else {
+            ps.setNull(10, java.sql.Types.INTEGER);
         }
     }
 
-    // Đóng gói ResultSet thành Object Plant
     private Plant map(ResultSet rs) throws SQLException {
         Plant p = new Plant();
         p.setPlantId(rs.getInt("plant_id"));
         p.setPlantName(rs.getString("plant_name"));
         p.setSpecies(rs.getString("species"));
-        
-        // Tránh lỗi khi đọc số thực bị null trong CSDL
-        double min = rs.getDouble("ideal_moisture_min");
-        p.setIdealMoistureMin(rs.wasNull() ? null : min);
-        
-        double max = rs.getDouble("ideal_moisture_max");
-        p.setIdealMoistureMax(rs.wasNull() ? null : max);
-        
+        p.setWaterRequirement(rs.getString("water_requirement"));
+
+        double min = rs.getDouble("min_moisture_threshold");
+        p.setMinMoistureThreshold(rs.wasNull() ? null : min);
+
+        double max = rs.getDouble("max_moisture_threshold");
+        p.setMaxMoistureThreshold(rs.wasNull() ? null : max);
+
         p.setDescription(rs.getString("description"));
         p.setCreatedAt(rs.getTimestamp("created_at"));
         int water = rs.getInt("water_amount_ml");
@@ -232,7 +304,6 @@ public class PlantDAO {
         return p;
     }
 
-    // Đóng kết nối
     private void close(ResultSet rs, PreparedStatement ps, Connection cn) {
         try { if (rs != null) rs.close(); } catch (SQLException ignored) {}
         try { if (ps != null) ps.close(); } catch (SQLException ignored) {}

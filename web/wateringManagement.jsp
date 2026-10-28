@@ -49,7 +49,7 @@
             <div class="page-header-left">
                 <p class="section-label">Water control</p>
                 <h1>Irrigation</h1>
-                <p class="page-sub">Plan efficient watering by garden, soil condition and time of day.</p>
+                <p class="page-sub">Plan efficient watering by Area, Pot, Plant thresholds and time of day.</p>
             </div>
             <div class="page-actions">
                 <span class="system-online" id="systemStatus">Pump ready</span>
@@ -62,13 +62,13 @@
 
         <div class="status-strip irrigation-status-strip">
             <div class="strip-left">
-                <span class="strip-item"><strong id="activeGardenName">Garden A</strong></span>
+                <span class="strip-item"><strong id="activeGardenName">Chậu Ban Công 1</strong></span>
                 <span class="strip-item live"><span class="live-dot"></span><span id="pumpState">PUMP READY</span></span>
-                <span class="strip-item muted">Soil: <b id="activeSoil">82%</b></span>
+                <span class="strip-item muted">Soil: <b id="activeSoil">42%</b></span>
             </div>
             <div class="strip-right">
                 <span class="strip-item"><svg class="icon icon-sm"><use href="#i-clock"></use></svg><span id="nextSchedule">Next run: --</span></span>
-                <span class="strip-item sample-feed"><span class="sample-dot"></span>SIMULATED CONTROL</span>
+                <span class="strip-item sample-feed"><span class="sample-dot"></span>LIVE IOT CONTROL</span>
             </div>
         </div>
 
@@ -105,14 +105,14 @@
 
                 <div class="pump-readout" id="pumpReadout">
                     <div class="pump-symbol"><svg class="icon icon-lg"><use href="#i-drop"></use></svg></div>
-                    <div class="pump-readout-copy"><strong id="pumpHeadline">Ready to irrigate</strong><span id="pumpDetail">Choose a garden and watering duration.</span></div>
+                    <div class="pump-readout-copy"><strong id="pumpHeadline">Ready to irrigate</strong><span id="pumpDetail">Choose a pot and watering duration.</span></div>
                     <strong class="pump-timer" id="pumpTimer">--:--</strong>
                 </div>
                 <div class="run-progress"><span id="runProgress"></span></div>
 
                 <div class="pump-fields">
                     <div class="field">
-                        <label for="zoneSelect">Garden</label>
+                        <label for="zoneSelect">Area · Pot · Plant</label>
                         <select id="zoneSelect"></select>
                     </div>
                     <div class="field">
@@ -127,15 +127,15 @@
                 </div>
 
                 <div class="soil-context">
-                    <div class="soil-context-head"><span><svg class="icon icon-sm"><use href="#i-sprout"></use></svg>Current soil moisture</span><strong id="soilContextValue">82%</strong></div>
+                    <div class="soil-context-head"><span><svg class="icon icon-sm"><use href="#i-sprout"></use></svg>Current soil moisture</span><strong id="soilContextValue">42%</strong></div>
                     <div class="soil-track"><span id="soilContextBar"></span><i></i></div>
-                    <div class="soil-context-foot"><span>Target 60–80%</span><a id="sensorLink" href="sensors.jsp?zone=alpha">View sensor</a></div>
+                    <div class="soil-context-foot"><span id="soilTargetRange">Target 30–60%</span><a id="sensorLink" href="sensors.jsp?zone=1">View sensor</a></div>
                 </div>
 
                 <button type="button" class="btn btn-primary btn-block pump-button" id="pumpButton">
                     <svg class="icon icon-sm"><use href="#i-play"></use></svg>Start irrigation
                 </button>
-                <p class="pump-note" id="pumpNote">Manual runs use the selected duration. Auto mode prioritizes gardens below the soil threshold.</p>
+                <p class="pump-note" id="pumpNote">Manual runs use the selected duration. Auto mode prioritizes pots below their plant's min moisture threshold.</p>
             </section>
 
             <section class="card schedule-card" aria-labelledby="scheduleTitle">
@@ -143,7 +143,7 @@
                     <div><p class="card-eyebrow">Watering plan</p><h2 class="card-title" id="scheduleTitle">Schedule irrigation</h2></div>
                 </div>
                 <form class="schedule-form" id="scheduleForm">
-                    <div class="field"><label for="scheduleZone">Garden</label><select id="scheduleZone"></select></div>
+                    <div class="field"><label for="scheduleZone">Area · Pot · Plant</label><select id="scheduleZone"></select></div>
                     <div class="schedule-form-row">
                         <div class="field"><label for="scheduleTime">Start time</label><input type="time" id="scheduleTime" value="07:00" required></div>
                         <div class="field"><label for="scheduleDuration">Duration</label><select id="scheduleDuration"><option value="5">5 min</option><option value="10" selected>10 min</option><option value="15">15 min</option><option value="20">20 min</option></select></div>
@@ -159,7 +159,7 @@
 
         <section class="card gardens-card" aria-labelledby="gardensTitle">
             <div class="card-head gardens-head">
-                <div><p class="card-eyebrow">Garden overview</p><h2 class="card-title" id="gardensTitle">Soil readiness</h2></div>
+                <div><p class="card-eyebrow">Area · Pot · Plant overview</p><h2 class="card-title" id="gardensTitle">Soil readiness</h2></div>
                 <a class="btn-ghost" href="<%= request.getContextPath() %>/sensor-data">All sensors <svg class="icon icon-sm"><use href="#i-arrow"></use></svg></a>
             </div>
             <div class="garden-grid" id="gardenGrid"></div>
@@ -188,12 +188,12 @@
 
 <div class="toast-box" id="toastBox" aria-live="polite"></div>
 <script src="<%= request.getContextPath() %>/app-data.js"></script>
-<script src="js/zone-data.js?v=20261016a"></script>
+<script src="js/zone-data.js?v=20261028a"></script>
 <script src="js/alertCenter.js?v=20261016a"></script>
 <script src="js/siteNavigation.js?v=20261016a"></script>
 <script src="js/irrigationSchedules.js?v=20261016a"></script>
 <script src="js/irrigationHistory.js?v=20261016a"></script>
-<script src="js/wateringManagement.js?v=20261016a"></script>
+<script src="js/wateringManagement.js?v=20261028a"></script>
 
 </body>
 </html>

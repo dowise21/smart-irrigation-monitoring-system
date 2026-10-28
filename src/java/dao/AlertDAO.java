@@ -94,39 +94,53 @@ public class AlertDAO {
     }
 
     /**
-     * Hệ thống tự động Insert cảnh báo khi phát hiện bất thường
+     * Hệ thống tự động Insert cảnh báo khi phát hiện bất thường.
+     * Nếu trong vòng 60 giây gần nhất đã có cảnh báo cùng loại (chưa xử lý) của cùng chậu cây,
+     * cập nhật lại nội dung và thời gian mới nhất để tránh làm ngập bảng Alert khi cảm biến gửi mỗi 5 giây.
      */
     public boolean insertAlert(int potId, Integer sessionId, String alertType, String message) {
-        String sql = "INSERT INTO Alert(pot_id, session_id, alert_type, message, is_resolved) VALUES (?, ?, ?, ?, 0)";
-        try (Connection cn = DBContext.getConnection();
-             PreparedStatement ps = cn.prepareStatement(sql)) {
+        String checkRecentSql = "SELECT TOP 1 alert_id FROM Alert "
+                + "WHERE pot_id = ? AND alert_type = ? AND is_resolved = 0 "
+                + "AND created_at >= DATEADD(SECOND, -60, GETDATE()) ORDER BY alert_id DESC";
+        String updateRecentSql = "UPDATE Alert SET message = ?, created_at = GETDATE() WHERE alert_id = ?";
+        String insertSql = "INSERT INTO Alert(pot_id, session_id, alert_type, message, is_resolved) VALUES (?, ?, ?, ?, 0)";
 
-            ps.setInt(1, potId);
-            if (sessionId != null) {
-                ps.setInt(2, sessionId);
-            } else {
-                ps.setNull(2, java.sql.Types.INTEGER);
+        try (Connection cn = DBContext.getConnection()) {
+            try (PreparedStatement psCheck = cn.prepareStatement(checkRecentSql)) {
+                psCheck.setInt(1, potId);
+                psCheck.setString(2, alertType);
+                try (ResultSet rs = psCheck.executeQuery()) {
+                    if (rs.next()) {
+                        int existingId = rs.getInt("alert_id");
+                        try (PreparedStatement psUp = cn.prepareStatement(updateRecentSql)) {
+                            psUp.setString(1, message);
+                            psUp.setInt(2, existingId);
+                            return psUp.executeUpdate() > 0;
+                        }
+                    }
+                }
             }
-            ps.setString(3, alertType);
-            ps.setString(4, message);
-
-            return ps.executeUpdate() > 0;
+            try (PreparedStatement ps = cn.prepareStatement(insertSql)) {
+                ps.setInt(1, potId);
+                if (sessionId != null) {
+                    ps.setInt(2, sessionId);
+                } else {
+                    ps.setNull(2, java.sql.Types.INTEGER);
+                }
+                ps.setString(3, alertType);
+                ps.setString(4, message);
+                return ps.executeUpdate() > 0;
+            }
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Lỗi insert Alert: {0}", e.getMessage());
         }
         return false;
     }
 
-    /**
-     * Cập nhật trạng thái "Đã xử lý" (Backwards-compatible overload)
-     */
     public boolean resolveAlert(int alertId) {
         return resolveAlert(alertId, null, "Resolved via web console");
     }
 
-    /**
-     * Cập nhật trạng thái "Đã xử lý" và ghi vết vào bảng AlertConfirmation trong cùng 1 Transaction.
-     */
     public boolean resolveAlert(int alertId, Integer userId, String actionTaken) {
         String sqlUpdate = "UPDATE Alert SET is_resolved = 1 WHERE alert_id = ?";
         String sqlConfirm = "INSERT INTO AlertConfirmation (alert_id, user_id, action_taken, confirmed_at) "

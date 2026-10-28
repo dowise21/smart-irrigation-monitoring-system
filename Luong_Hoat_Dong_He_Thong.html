@@ -1,0 +1,1595 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Luồng Hoạt Động Hệ Thống — Smart Irrigation Project (ESP8266 + Java Web MVC)</title>
+  <!-- Google Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <style>
+    :root {
+      /* Light Theme Modern Palette (Consistent with Project Guide) */
+      --bg-main: #f8fafc;
+      --bg-surface: #ffffff;
+      --bg-subtle: #f1f5f9;
+      --bg-hover: #e2e8f0;
+
+      --text-primary: #0f172a;
+      --text-secondary: #334155;
+      --text-muted: #64748b;
+
+      --primary: #10b981;
+      --primary-dark: #059669;
+      --primary-light: #d1fae5;
+      --primary-subtle: #ecfdf5;
+
+      --accent-blue: #3b82f6;
+      --accent-blue-light: #dbeafe;
+      --accent-amber: #f59e0b;
+      --accent-amber-light: #fef3c7;
+      --accent-red: #ef4444;
+      --accent-red-light: #fee2e2;
+      --accent-purple: #8b5cf6;
+      --accent-purple-light: #ede9fe;
+
+      --border-color: #e2e8f0;
+      --border-strong: #cbd5e1;
+
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+
+      --sidebar-w: 335px;
+      --header-h: 68px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text-primary);
+      line-height: 1.65;
+      font-size: 15px;
+      overflow-x: hidden;
+    }
+
+    /* ================= LAYOUT ================= */
+    .app-container {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ================= SIDEBAR ================= */
+    #sidebar {
+      width: var(--sidebar-w);
+      background: var(--bg-surface);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.3s ease;
+    }
+
+    .sidebar-header {
+      padding: 20px 20px 16px;
+      border-bottom: 1px solid var(--border-color);
+      background: linear-gradient(135deg, var(--primary-subtle) 0%, #ffffff 100%);
+    }
+
+    .brand-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .brand-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+      flex-shrink: 0;
+    }
+
+    .brand-info h1 {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text-primary);
+      line-height: 1.25;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-info span {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--primary-dark);
+      display: inline-block;
+      margin-top: 2px;
+    }
+
+    .search-box {
+      position: relative;
+    }
+
+    .search-box i {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 9px 12px 9px 34px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      background: var(--bg-main);
+      font-family: inherit;
+      font-size: 13px;
+      color: var(--text-primary);
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .search-box input:focus {
+      border-color: var(--primary);
+      background: var(--bg-surface);
+      box-shadow: 0 0 0 3px var(--primary-light);
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 12px 24px;
+    }
+
+    .sidebar-nav::-webkit-scrollbar {
+      width: 5px;
+    }
+    .sidebar-nav::-webkit-scrollbar-thumb {
+      background: var(--border-strong);
+      border-radius: 99px;
+    }
+
+    .nav-group {
+      margin-bottom: 18px;
+    }
+
+    .nav-group-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      padding: 0 12px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .nav-group-list {
+      list-style: none;
+    }
+
+    .nav-item {
+      margin-bottom: 3px;
+    }
+
+    .nav-link {
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      border: none;
+      padding: 9px 12px;
+      border-radius: var(--radius-sm);
+      font-family: inherit;
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.15s ease;
+    }
+
+    .nav-link .item-num {
+      font-size: 11px;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      width: 24px;
+      height: 22px;
+      border-radius: 6px;
+      background: var(--bg-subtle);
+      color: var(--text-muted);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.15s;
+    }
+
+    .nav-link:hover {
+      background: var(--bg-subtle);
+      color: var(--text-primary);
+    }
+
+    .nav-link.active {
+      background: var(--primary-subtle);
+      color: var(--primary-dark);
+      font-weight: 700;
+    }
+
+    .nav-link.active .item-num {
+      background: var(--primary);
+      color: #ffffff;
+    }
+
+    /* ================= MAIN CONTENT ================= */
+    #main-wrapper {
+      flex: 1;
+      margin-left: var(--sidebar-w);
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .top-header {
+      height: var(--header-h);
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border-color);
+      position: sticky;
+      top: 0;
+      z-index: 90;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      gap: 16px;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .mobile-toggle {
+      display: none;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      width: 38px;
+      height: 38px;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--text-primary);
+    }
+
+    .breadcrumb-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .breadcrumb-bar .crumb-group {
+      font-weight: 600;
+      color: var(--primary-dark);
+      background: var(--primary-subtle);
+      padding: 4px 10px;
+      border-radius: 99px;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .nav-step-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-subtle);
+      padding: 4px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-color);
+    }
+
+    .btn-step {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      color: var(--text-secondary);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-step:hover:not(:disabled) {
+      border-color: var(--primary);
+      color: var(--primary-dark);
+      background: var(--primary-subtle);
+    }
+
+    .btn-step:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .step-counter {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      padding: 0 10px;
+    }
+
+    .progress-container {
+      height: 3px;
+      background: var(--border-color);
+      width: 100%;
+      position: sticky;
+      top: var(--header-h);
+      z-index: 89;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), var(--accent-blue));
+      width: 12.5%;
+      transition: width 0.3s ease;
+    }
+
+    .content-body {
+      max-width: 1080px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 36px 32px 80px;
+    }
+
+    .panel-card {
+      display: none;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 36px 40px;
+      box-shadow: var(--shadow-md);
+      animation: fadeIn 0.25s ease;
+    }
+
+    .panel-card.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .eyebrow-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--primary-dark);
+      background: var(--primary-light);
+      padding: 5px 12px;
+      border-radius: 99px;
+      margin-bottom: 14px;
+    }
+
+    h2.panel-title {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+      line-height: 1.3;
+      margin-bottom: 12px;
+    }
+
+    .lead-text {
+      font-size: 16px;
+      color: var(--text-secondary);
+      margin-bottom: 28px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    h3.section-subtitle {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 28px 0 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    h3.section-subtitle i {
+      color: var(--primary);
+      font-size: 18px;
+    }
+
+    p {
+      margin-bottom: 14px;
+      color: var(--text-secondary);
+    }
+
+    /* Visual Architecture Diagram Cards */
+    .arch-diagram {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      margin: 20px 0 28px;
+    }
+
+    .arch-layer {
+      background: var(--bg-surface);
+      border: 2px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 18px 22px;
+      box-shadow: var(--shadow-sm);
+      position: relative;
+    }
+
+    .arch-layer.iot { border-color: #10b981; }
+    .arch-layer.backend { border-color: #3b82f6; }
+    .arch-layer.frontend { border-color: #8b5cf6; }
+
+    .arch-layer-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .arch-layer-title {
+      font-size: 15.5px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .arch-nodes {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 10px;
+    }
+
+    .arch-node {
+      background: var(--bg-main);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      font-size: 13px;
+    }
+
+    .arch-node strong {
+      display: block;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+      font-size: 13.5px;
+    }
+
+    .arch-connector {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 4px 16px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .connector-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-surface);
+      border: 1px dashed var(--border-strong);
+      padding: 6px 14px;
+      border-radius: 99px;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Horizontal Pipeline Flow */
+    .pipeline-flow {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 14px;
+      margin: 20px 0;
+    }
+
+    .pipe-step {
+      background: var(--bg-main);
+      border: 1px solid var(--border-color);
+      border-top: 4px solid var(--primary);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      position: relative;
+    }
+
+    .pipe-step.blue { border-top-color: var(--accent-blue); }
+    .pipe-step.amber { border-top-color: var(--accent-amber); }
+    .pipe-step.purple { border-top-color: var(--accent-purple); }
+    .pipe-step.red { border-top-color: var(--accent-red); }
+
+    .pipe-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--primary-dark);
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .pipe-step h4 {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: var(--text-primary);
+    }
+
+    .pipe-step p {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      margin: 0;
+    }
+
+    /* Feature Grid & Cards */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin: 20px 0;
+    }
+
+    .card-item {
+      background: var(--bg-main);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      transition: all 0.2s ease;
+    }
+
+    .card-item:hover {
+      border-color: var(--primary);
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+
+    .card-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      margin-bottom: 12px;
+    }
+
+    .card-icon.green { background: var(--primary-light); color: var(--primary-dark); }
+    .card-icon.blue { background: var(--accent-blue-light); color: var(--accent-blue); }
+    .card-icon.amber { background: var(--accent-amber-light); color: var(--accent-amber); }
+    .card-icon.purple { background: var(--accent-purple-light); color: var(--accent-purple); }
+    .card-icon.red { background: var(--accent-red-light); color: var(--accent-red); }
+
+    .card-item h4 {
+      font-size: 15.5px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+
+    .card-item p {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      margin: 0;
+    }
+
+    /* Step List */
+    .step-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin: 20px 0;
+    }
+
+    .step-item {
+      display: flex;
+      gap: 16px;
+      background: var(--bg-main);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      align-items: flex-start;
+    }
+
+    .step-badge {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: white;
+      font-weight: 700;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .step-content h4 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .step-content p {
+      font-size: 14px;
+      margin: 0;
+    }
+
+    /* Callouts */
+    .callout {
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      margin: 20px 0;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      border-left: 4px solid;
+    }
+
+    .callout-icon {
+      font-size: 18px;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+
+    .callout-body {
+      flex: 1;
+      font-size: 14px;
+    }
+
+    .callout-body strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 14.5px;
+    }
+
+    .callout.info {
+      background: var(--primary-subtle);
+      border-left-color: var(--primary);
+      color: #065f46;
+    }
+    .callout.info .callout-icon { color: var(--primary); }
+
+    .callout.warn {
+      background: #fffbeb;
+      border-left-color: var(--accent-amber);
+      color: #92400e;
+    }
+    .callout.warn .callout-icon { color: var(--accent-amber); }
+
+    .callout.danger {
+      background: #fef2f2;
+      border-left-color: var(--accent-red);
+      color: #991b1b;
+    }
+    .callout.danger .callout-icon { color: var(--accent-red); }
+
+    /* Tables */
+    .table-wrapper {
+      overflow-x: auto;
+      margin: 20px 0;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    th {
+      background: var(--bg-subtle);
+      color: var(--text-primary);
+      font-weight: 700;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-strong);
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-color);
+      color: var(--text-secondary);
+      vertical-align: top;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover td {
+      background: var(--bg-main);
+    }
+
+    /* Code & Pre */
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      background: var(--bg-subtle);
+      color: #be123c;
+      padding: 2px 6px;
+      border-radius: 5px;
+      border: 1px solid var(--border-color);
+    }
+
+    pre {
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 18px 20px;
+      border-radius: var(--radius-md);
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      margin: 16px 0;
+      box-shadow: var(--shadow-md);
+    }
+
+    pre code {
+      background: transparent;
+      color: inherit;
+      border: none;
+      padding: 0;
+      font-size: inherit;
+    }
+
+    /* Badges */
+    .badge-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px;
+      border-radius: 99px;
+      font-size: 12px;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .badge-status.success { background: var(--primary-light); color: var(--primary-dark); }
+    .badge-status.warning { background: var(--accent-amber-light); color: #b45309; }
+    .badge-status.danger { background: var(--accent-red-light); color: #b91c1c; }
+    .badge-status.info { background: var(--accent-blue-light); color: #1d4ed8; }
+
+    /* Footer Navigation */
+    .footer-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 32px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border-color);
+      gap: 16px;
+    }
+
+    .footer-btn {
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      padding: 14px 20px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      min-width: 220px;
+      transition: all 0.2s;
+      text-align: left;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .footer-btn.next {
+      text-align: right;
+      align-items: flex-end;
+    }
+
+    .footer-btn:hover:not(:disabled) {
+      border-color: var(--primary);
+      box-shadow: var(--shadow-md);
+      background: var(--primary-subtle);
+    }
+
+    .footer-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .footer-btn span.dir {
+      font-size: 11.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .footer-btn span.label {
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--primary-dark);
+    }
+
+    @media (max-width: 960px) {
+      #sidebar {
+        transform: translateX(-100%);
+      }
+      #sidebar.open {
+        transform: translateX(0);
+      }
+      #main-wrapper {
+        margin-left: 0;
+      }
+      .mobile-toggle {
+        display: inline-flex;
+      }
+      .content-body {
+        padding: 24px 16px 60px;
+      }
+      .panel-card {
+        padding: 24px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  <!-- ================= SIDEBAR ================= -->
+  <aside id="sidebar">
+    <div class="sidebar-header">
+      <div class="brand-wrapper">
+        <div class="brand-icon">
+          <i class="fa-solid fa-diagram-project"></i>
+        </div>
+        <div class="brand-info">
+          <h1>Luồng Hoạt Động Dự Án</h1>
+          <span>Kiến trúc Khép kín IoT &amp; Java Web</span>
+        </div>
+      </div>
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="navSearch" placeholder="Tìm luồng, servlet, cảm biến, file..." />
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <!-- Group 1: Kiến trúc Tổng thể -->
+      <div class="nav-group" data-group="1. Kiến trúc Tổng thể & Bảo mật">
+        <div class="nav-group-title"><i class="fa-solid fa-layer-group"></i> 1. Kiến trúc &amp; Bảo mật</div>
+        <ul class="nav-group-list">
+          <li class="nav-item"><button class="nav-link active" data-i="0"><span class="item-num">01</span> Sơ đồ Tổng quan 3 Tầng Khép kín</button></li>
+          <li class="nav-item"><button class="nav-link" data-i="1"><span class="item-num">02</span> Luồng 1: Đăng nhập &amp; AuthFilter</button></li>
+        </ul>
+      </div>
+
+      <!-- Group 2: Các Luồng Dữ liệu & Điều khiển IoT -->
+      <div class="nav-group" data-group="2. Luồng Dữ liệu & Điều khiển IoT">
+        <div class="nav-group-title"><i class="fa-solid fa-arrows-up-down"></i> 2. Luồng Cảm biến &amp; Máy bơm</div>
+        <ul class="nav-group-list">
+          <li class="nav-item"><button class="nav-link" data-i="2"><span class="item-num">03</span> Luồng 2: Đồng bộ 4 Cảm biến (5s)</button></li>
+          <li class="nav-item"><button class="nav-link" data-i="3"><span class="item-num">04</span> Luồng 3: Bật Bơm Hẹn Giờ &amp; Tự Tắt</button></li>
+          <li class="nav-item"><button class="nav-link" data-i="4"><span class="item-num">05</span> Luồng 4: Ngắt Bơm Khẩn Cấp (&lt;1s)</button></li>
+        </ul>
+      </div>
+
+      <!-- Group 3: Cảnh báo, Phân tích & Bản đồ Code -->
+      <div class="nav-group" data-group="3. Cảnh báo, Phân tích & Bản đồ Code">
+        <div class="nav-group-title"><i class="fa-solid fa-chart-line"></i> 3. Cảnh báo &amp; Bản đồ Code</div>
+        <ul class="nav-group-list">
+          <li class="nav-item"><button class="nav-link" data-i="5"><span class="item-num">06</span> Luồng 5: Cảnh báo Web &amp; Email</button></li>
+          <li class="nav-item"><button class="nav-link" data-i="6"><span class="item-num">07</span> Luồng 6: Hiệu chuẩn Bơm &amp; Analytics</button></li>
+          <li class="nav-item"><button class="nav-link" data-i="7"><span class="item-num">08</span> Bản đồ Ánh xạ Toàn bộ File Code</button></li>
+        </ul>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- ================= MAIN WRAPPER ================= -->
+  <div id="main-wrapper">
+    <header class="top-header">
+      <div class="header-left">
+        <button class="mobile-toggle" id="mobileMenuBtn" title="Mở danh mục">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <div class="breadcrumb-bar">
+          <span class="crumb-group" id="headerCrumbGroup">1. Kiến trúc Tổng thể &amp; Bảo mật</span>
+          <i class="fa-solid fa-chevron-right" style="font-size: 10px;"></i>
+          <span id="headerCrumbTitle" style="font-weight: 600; color: var(--text-primary);">Sơ đồ Tổng quan 3 Tầng Khép kín</span>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <div class="nav-step-controls">
+          <button class="btn-step" id="btnPrev"><i class="fa-solid fa-arrow-left"></i> Trước</button>
+          <span class="step-counter" id="stepCounter">01 / 08</span>
+          <button class="btn-step" id="btnNext">Tiếp <i class="fa-solid fa-arrow-right"></i></button>
+        </div>
+      </div>
+    </header>
+
+    <div class="progress-container">
+      <div class="progress-bar-fill" id="progressBar"></div>
+    </div>
+
+    <main class="content-body">
+
+      <!-- ================================================================= -->
+      <!-- PANEL 01: SƠ ĐỒ TỔNG QUAN 3 TẦNG KHÉP KÍN                          -->
+      <!-- ================================================================= -->
+      <section class="panel-card active" data-title="Sơ đồ Tổng quan 3 Tầng Khép kín">
+        <div class="eyebrow-badge"><i class="fa-solid fa-sitemap"></i> Mục 01 &bull; Bức tranh Toàn cảnh (Big Picture)</div>
+        <h2 class="panel-title">Kiến trúc Tổng quan 3 Tầng Khép kín (Closed-Loop IoT &amp; Java Web MVC)</h2>
+        <p class="lead-text">
+          Hệ thống tưới cây thông minh hoạt động theo <strong>vòng lặp khép kín 2 chiều không chặn (Non-blocking Closed-Loop)</strong>: Mạch ESP8266 vừa đẩy dữ liệu 4 cảm biến lên Server mỗi 5 giây, vừa lắng nghe lệnh Bật/Tắt máy bơm từ giao diện Web mỗi 1 giây.
+        </p>
+
+        <!-- Visual 3-Tier Architecture Box -->
+        <div class="arch-diagram">
+          <!-- Tier 1: IoT Hardware -->
+          <div class="arch-layer iot">
+            <div class="arch-layer-header">
+              <div class="arch-layer-title" style="color: var(--primary-dark);">
+                <i class="fa-solid fa-microchip"></i> TẦNG 1: THIẾT BỊ NHÚNG IOT (ESP8266 NodeMCU &bull; Smart_Irrigation_Projec_IoT.cpp)
+              </div>
+              <span class="badge-status success">Non-Blocking millis()</span>
+            </div>
+            <div class="arch-nodes">
+              <div class="arch-node">
+                <strong><i class="fa-solid fa-droplet" style="color:#10b981;"></i> Cảm biến Độ ẩm đất (A0)</strong>
+                Đọc ADC <code>1023..400</code> &rarr; Quy đổi <code>0%..100%</code>.
+              </div>
+              <div class="arch-node">
+                <strong><i class="fa-solid fa-sun" style="color:#f59e0b;"></i> Ánh sáng LM393 (D1/GPIO5)</strong>
+                Digital: <code>0 = Trời Sáng</code>, <code>1 = Trời Tối</code>.
+              </div>
+              <div class="arch-node">
+                <strong><i class="fa-solid fa-temperature-half" style="color:#ef4444;"></i> Nhiệt/Ẩm DHT11 (D2/GPIO4)</strong>
+                Đo nhiệt độ (<code>&deg;C</code>) &amp; độ ẩm không khí (<code>%</code>).
+              </div>
+              <div class="arch-node">
+                <strong><i class="fa-solid fa-weight-hanging" style="color:#8b5cf6;"></i> Cân HX711 (D5/D6) &amp; Relay (D7)</strong>
+                Cân khối lượng chậu (<code>gram</code>) &amp; Đóng/Ngắt máy bơm.
+              </div>
+            </div>
+          </div>
+
+          <!-- Connectors between Tier 1 & Tier 2 -->
+          <div class="arch-connector">
+            <div class="connector-pill">
+              <i class="fa-solid fa-cloud-arrow-up" style="color: var(--primary);"></i>
+              <strong>Chiều lên (Mỗi 5s):</strong> <code>POST /api/sensor/readings</code> (JSON 4 cảm biến)
+            </div>
+            <div class="connector-pill">
+              <i class="fa-solid fa-cloud-arrow-down" style="color: var(--accent-blue);"></i>
+              <strong>Chiều xuống (Mỗi 1s):</strong> <code>GET /api/watering/command?potId=1</code> (Lệnh START / STOP)
+            </div>
+          </div>
+
+          <!-- Tier 2: Java Web Backend -->
+          <div class="arch-layer backend">
+            <div class="arch-layer-header">
+              <div class="arch-layer-title" style="color: var(--accent-blue);">
+                <i class="fa-solid fa-server"></i> TẦNG 2: BACKEND JAVA WEB MVC (Apache Tomcat 9 &bull; Servlet / Service / DAO / SQL Server)
+              </div>
+              <span class="badge-status info">Port 8080</span>
+            </div>
+            <div class="arch-nodes">
+              <div class="arch-node">
+                <strong>AuthFilter.java</strong>
+                Whitelist cho <code>/api/*</code> (IoT M2M), kiểm tra Session cho các trang Web.
+              </div>
+              <div class="arch-node">
+                <strong>SensorApiServlet.java</strong>
+                Nhận JSON từ ESP8266, lưu SQL Server (<code>SensorDataDAO</code>) &amp; cập nhật Cache.
+              </div>
+              <div class="arch-node">
+                <strong>WateringCommandServlet.java</strong>
+                Quản lý hàng đợi lệnh <code>COMMAND_QUEUE</code> &amp; trạng thái <code>PUMP_ACTIVE</code>.
+              </div>
+              <div class="arch-node">
+                <strong>AppDataService.java</strong>
+                Đánh giá sức khỏe cây, sinh cảnh báo &amp; tính hiệu chuẩn lưu lượng bơm (<code>ml/s</code>).
+              </div>
+            </div>
+          </div>
+
+          <!-- Connectors between Tier 2 & Tier 3 -->
+          <div class="arch-connector">
+            <div class="connector-pill">
+              <i class="fa-solid fa-rotate" style="color: var(--accent-purple);"></i>
+              <strong>AJAX Polling (Mỗi 3&ndash;5s):</strong> Tự động cập nhật số liệu cảm biến &amp; nút máy bơm không cần F5
+            </div>
+            <div class="connector-pill">
+              <i class="fa-solid fa-hand-pointer" style="color: var(--accent-amber);"></i>
+              <strong>Tương tác Người dùng:</strong> Bấm Bật bơm hẹn giờ / Tắt bơm khẩn cấp / Xác nhận cảnh báo
+            </div>
+          </div>
+
+          <!-- Tier 3: Frontend JSP + JS -->
+          <div class="arch-layer frontend">
+            <div class="arch-layer-header">
+              <div class="arch-layer-title" style="color: var(--accent-purple);">
+                <i class="fa-solid fa-desktop"></i> TẦNG 3: GIAO DIỆN NGƯỜI DÙNG THỜI GIAN THỰC (JSP Views + Fetch AJAX JavaScript)
+              </div>
+              <span class="badge-status warning">Realtime UI</span>
+            </div>
+            <div class="arch-nodes">
+              <div class="arch-node">
+                <strong>Dashboard (<code>/dashboard</code>)</strong>
+                Tổng quan KPI, danh sách chậu cây &amp; điều khiển tưới nhanh.
+              </div>
+              <div class="arch-node">
+                <strong>Cảm biến (<code>/sensors</code>)</strong>
+                Hiển thị trực tiếp 4 cảm biến từ ESP8266 &amp; biểu đồ xu hướng 24h.
+              </div>
+              <div class="arch-node">
+                <strong>Điều khiển tưới (<code>/watering-management</code>)</strong>
+                Bật bơm hẹn giờ (<code>5..120s</code>), Tắt khẩn cấp &amp; Lịch sử tưới.
+              </div>
+              <div class="arch-node">
+                <strong>Cảnh báo &amp; Phân tích (<code>/alerts</code>, <code>/analytics</code>)</strong>
+                Quản lý cảnh báo <code>DRY_STRESS</code> / <code>SENSOR_FAULT</code> &amp; lưu lượng bơm.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================= -->
+      <!-- PANEL 02: LUỒNG 1 - ĐĂNG NHẬP & BỘ LỌC BẢO MẬT AUTHFILTER         -->
+      <!-- ================================================================= -->
+      <section class="panel-card" data-title="Luồng 1: Đăng nhập & AuthFilter">
+        <div class="eyebrow-badge"><i class="fa-solid fa-user-shield"></i> Luồng 01 &bull; Xác thực &amp; Phân luồng Truy cập</div>
+        <h2 class="panel-title">Luồng 1: Đăng nhập Người dùng &amp; Cơ chế Whitelist cho Thiết bị IoT</h2>
+        <p class="lead-text">
+          Mọi HTTP Request gửi tới Server đều đi qua chốt chặn đầu tiên là <code>AuthFilter.java</code>. Bộ lọc này phân biệt rõ <strong>người dùng trình duyệt</strong> (cần đăng nhập Session) và <strong>vi điều khiển ESP8266</strong> (giao tiếp qua API Whitelist).
+        </p>
+
+        <div class="pipeline-flow">
+          <div class="pipe-step">
+            <span class="pipe-num">Bước 01</span>
+            <h4>Gửi Request tới Server</h4>
+            <p>Trình duyệt hoặc mạch ESP8266 gửi yêu cầu HTTP tới cổng <code>8080</code> của Tomcat.</p>
+          </div>
+          <div class="pipe-step blue">
+            <span class="pipe-num">Bước 02</span>
+            <h4>AuthFilter Kiểm tra Đường dẫn</h4>
+            <p>Kiểm tra URI có nằm trong danh sách công khai (<code>/login</code>, <code>/css/*</code>, <code>/js/*</code>, <code>/api/*</code>) hay không.</p>
+          </div>
+          <div class="pipe-step purple">
+            <span class="pipe-num">Bước 03 (Nhánh Web)</span>
+            <h4>Kiểm tra Session <code>user</code></h4>
+            <p>Nếu truy cập <code>/dashboard</code> mà chưa có Session, tự động chuyển hướng (Redirect) về trang <code>/login</code>.</p>
+          </div>
+          <div class="pipe-step amber">
+            <span class="pipe-num">Bước 04 (Nhánh IoT)</span>
+            <h4>Cho phép M2M <code>/api/*</code></h4>
+            <p>Các đường dẫn <code>/api/sensor/readings</code> và <code>/api/watering/command</code> được đi thẳng vào Servlet xử lý.</p>
+          </div>
+        </div>
+
+        <div class="callout info">
+          <div class="callout-icon"><i class="fa-solid fa-key"></i></div>
+          <div class="callout-body">
+            <strong>Tại sao phải mở Whitelist cho <code>/api/sensor/readings</code> và <code>/api/watering/command</code>?</strong>
+            Vi điều khiển ESP8266 dùng thư viện <code>ESP8266HTTPClient</code> không lưu trữ <code>JSESSIONID</code> Cookie như trình duyệt. Nếu không khai báo Whitelist trong <code>AuthFilter.java</code>, Server sẽ trả về mã <code>302 Redirect</code> về trang đăng nhập khiến ESP8266 không thể gửi dữ liệu cảm biến hay nhận lệnh bật bơm.
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================= -->
+      <!-- PANEL 03: LUỒNG 2 - THU THẬP & ĐỒNG BỘ 4 CẢM BIẾN (CHU KỲ 5 GIÂY) -->
+      <!-- ================================================================= -->
+      <section class="panel-card" data-title="Luồng 2: Đồng bộ 4 Cảm biến (5s)">
+        <div class="eyebrow-badge"><i class="fa-solid fa-satellite-dish"></i> Luồng 02 &bull; Chiều từ Thiết bị IoT lên Giao diện Web</div>
+        <h2 class="panel-title">Luồng 2: Thu thập &amp; Đồng bộ 4 Cảm biến Thời gian thực (Mỗi 5 Giây)</h2>
+        <p class="lead-text">
+          Chu trình khép kín đưa thông số vật lý từ chậu cây thật ngoài đời lên cơ sở dữ liệu SQL Server và hiển thị tức thời trên màn hình người dùng mà không cần tải lại trang.
+        </p>
+
+        <div class="step-list">
+          <div class="step-item">
+            <div class="step-badge">1</div>
+            <div class="step-content">
+              <h4>ESP8266 đọc 4 cảm biến mỗi 5000ms (<code>Smart_Irrigation_Projec_IoT.cpp</code>)</h4>
+              <p>Khi <code>currentMillis - previousMillis &gt;= 5000</code>, vi điều khiển đọc đồng thời: Độ ẩm đất (<code>A0</code>), Ánh sáng LM393 (<code>D1</code>), Nhiệt độ &amp; Độ ẩm không khí DHT11 (<code>D2</code>), và Khối lượng chậu cây từ cân Loadcell HX711 (<code>D5/D6</code>).</p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-badge">2</div>
+            <div class="step-content">
+              <h4>ESP8266 đóng gói JSON gửi <code>POST /api/sensor/readings</code></h4>
+              <p>Hàm <code>sendDataToWebApp(moisture, light, t, h, weight)</code> dùng thư viện <code>ArduinoJson</code> tạo chuỗi JSON và gửi HTTP POST lên địa chỉ IP của máy chủ Java Web.</p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-badge">3</div>
+            <div class="step-content">
+              <h4><code>SensorApiServlet.doPost()</code> bóc tách JSON &amp; Lưu trữ</h4>
+              <p>
+                &bull; Gọi <code>SensorDataDAO.insertReading(potId, moisture, light)</code> để ghi bản ghi lịch sử vào bảng <code>SensorReadings</code> trong SQL Server.<br/>
+                &bull; Lưu đồng thời Nhiệt độ (<code>temp</code>), Độ ẩm không khí (<code>hum</code>) và Cân nặng (<code>weight</code>) vào bộ nhớ đệm thời gian thực (<code>LATEST_TELEMETRY</code>).<br/>
+                &bull; Gọi <code>AppDataService.recordLiveTelemetry(...)</code> để cập nhật trạng thái chậu cây và kiểm tra ngưỡng cảnh báo.
+              </p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-badge">4</div>
+            <div class="step-content">
+              <h4>Giao diện Web tự động kéo dữ liệu mới (AJAX Polling)</h4>
+              <p>Các trang <code>dashboard.jsp</code> (qua <code>dashboard.js</code>) và <code>sensors.jsp</code> (qua <code>sensors.js</code>) chạy bộ đếm <code>setInterval</code> mỗi 4&ndash;5 giây gọi <code>GET /api/sensor/readings?potId=1</code> để cập nhật trực tiếp các con số trên giao diện.</p>
+            </div>
+          </div>
+        </div>
+
+        <h3 class="section-subtitle"><i class="fa-solid fa-code"></i> Cấu trúc JSON trao đổi tại <code>/api/sensor/readings</code></h3>
+        <pre><code>// 1. Gói tin ESP8266 gửi lên (POST /api/sensor/readings):
+{
+  "potId": 1,
+  "moisture": 58,
+  "light": 0,
+  "temp": 29.2,
+  "hum": 73.5,
+  "weight": 385.0
+}
+
+// 2. Gói tin Server trả về cho Giao diện Web (GET /api/sensor/readings?potId=1):
+{
+  "status": "success",
+  "potId": 1,
+  "soilMoisture": 58.0,
+  "lightStatus": "SUNNY",
+  "temperature": 29.2,
+  "airHumidity": 73.5,
+  "weightGrams": 385.0,
+  "pumpActive": false
+}</code></pre>
+      </section>
+
+      <!-- ================================================================= -->
+      <!-- PANEL 04: LUỒNG 3 - BẬT BƠM HẸN GIỜ & TỰ ĐỘNG TẮT KHÉP KÍN         -->
+      <!-- ================================================================= -->
+      <section class="panel-card" data-title="Luồng 3: Bật Bơm Hẹn Giờ & Tự Tắt">
+        <div class="eyebrow-badge"><i class="fa-solid fa-faucet-drip"></i> Luồng 03 &bull; Chiều từ Giao diện Web xuống Thiết bị IoT &amp; Báo ngược về Web</div>
+        <h2 class="panel-title">Luồng 3: Điều khiển Bật Máy Bơm Hẹn Giờ &amp; Tự Động Tắt Khép Kín</h2>
+        <p class="lead-text">
+          Giải quyết bài toán đồng bộ trạng thái giữa phần mềm và phần cứng: Người dùng bấm nút trên Web &rarr; ESP8266 bật bơm đúng số giây yêu cầu &rarr; Tự ngắt Relay &rarr; Báo ngược về Web để nút bấm tự trở lại trạng thái nghỉ.
+        </p>
+
+        <div class="step-list">
+          <div class="step-item">
+            <div class="step-badge">1</div>
+            <div class="step-content">
+              <h4>Người dùng chọn thời lượng tưới và bấm "Bật Bơm Ngay" trên Web</h4>
+              <p>Tại trang <code>wateringManagement.jsp</code> (hoặc <code>dashboard.jsp</code>), người dùng kéo thanh trượt chọn thời gian (ví dụ <code>10 giây</code>) và nhấn nút. File <code>wateringManagement.js</code> gửi <code>POST /api/watering/command</code> với tham số <code>potId=1&amp;action=START&amp;duration=10</code>.</p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-badge">2</div>
+            <div class="step-content">
+              <h4><code>WateringCommandServlet</code> xếp lệnh vào Hàng đợi (Command Queue)</h4>
+              <p>Hàm <code>queueCommand(1, "START", 10)</code> lưu lệnh vào <code>ConcurrentHashMap</code>, đặt cờ <code>PUMP_ACTIVE = true</code>, tính thời điểm kết thúc dự kiến (<code>PUMP_END_TIME_MS</code>) và ghi nhật ký tưới vào bảng <code>WateringEvents</code> qua <code>WateringDAO</code>.</p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-badge">3</div>
+            <div class="step-content">
+              <h4>ESP8266 hỏi lệnh mỗi 1 giây &amp; Cơ chế "Đọc 1 Lần Xóa Luôn" (Consume-on-Read)</h4>
+              <p>Hàm <code>checkCommandFromWebApp()</code> trên ESP8266 gọi <code>GET /api/watering/command?potId=1</code>. Server trả về <code>{"command":"START","duration":10}</code> và <strong>lập tức đặt lại lệnh trong hàng đợi về <code>"NONE"</code></strong> để ở giây tiếp theo ESP8266 không bị kích bật lại lần nữa.</p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-badge">4</div>
+            <div class="step-content">
+              <h4>ESP8266 đóng Relay bật bơm &amp; Đếm giờ Non-blocking bằng <code>millis()</code></h4>
+              <p>Vi điều khiển xuất mức <code>HIGH</code> ra chân <code>D7 (GPIO13)</code>, gán <code>isPumpRunning = true</code>, <code>pumpStartTime = millis()</code> và <code>pumpDurationMs = dur * 1000</code>.</p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-badge">5</div>
+            <div class="step-content">
+              <h4>Hết giờ hẹn: Tự động ngắt Relay &amp; Gọi API báo <code>OFF</code> về Java Web</h4>
+              <p>Ngay khi <code>currentMillis - pumpStartTime &gt;= pumpDurationMs</code>, ESP8266 hạ chân <code>D7</code> xuống <code>LOW</code> để tắt máy bơm, đồng thời gọi <code>notifyPumpStoppedToWebApp()</code> gửi <code>POST action=OFF</code> về <code>/api/watering/command</code>. Giao diện Web lập tức đổi trạng thái từ <em>"Đang tưới..."</em> sang <em>"Đang Tắt"</em>.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout info">
+          <div class="callout-icon"><i class="fa-solid fa-eye"></i></div>
+          <div class="callout-body">
+            <strong>Sự khác biệt giữa tham số <code>?potId=1</code> (ESP8266 gọi) và <code>?potId=1&amp;peek=1</code> (Web UI gọi)</strong>
+            Khi ESP8266 gọi <code>GET /api/watering/command?potId=1</code>, Server sẽ lấy lệnh ra và xóa hàng đợi về <code>NONE</code>. Ngược lại, khi trình duyệt Web gọi kèm <code>&amp;peek=1</code>, Server chỉ trả về trạng thái hiện tại để hiển thị lên màn hình mà <strong>không làm mất lệnh</strong> đang chờ ESP8266 tới lấy.
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================= -->
+      <!-- PANEL 05: LUỒNG 4 - NGẮT BƠM KHẨN CẤP TỨC THÌ (< 1 GIÂY)           -->
+      <!-- ================================================================= -->
+      <section class="panel-card" data-title="Luồng 4: Ngắt Bơm Khẩn Cấp (<1s)">
+        <div class="eyebrow-badge"><i class="fa-solid fa-bolt"></i> Luồng 04 &bull; Cơ chế Ưu tiên Ngắt Khẩn cấp (Instant Stop Override)</div>
+        <h2 class="panel-title">Luồng 4: Ngắt Máy Bơm Khẩn Cấp Tức Thì trong vòng &lt; 1 Giây</h2>
+        <p class="lead-text">
+          Nếu người dùng lỡ hẹn giờ tưới quá lâu (ví dụ 60 giây) hoặc thấy nước trong chậu sắp tràn, họ có thể bấm nút <strong>"Tắt Bơm Khẩn Cấp"</strong> trên Web để ngắt máy bơm ngoài đời thực ngay lập tức.
+        </p>
+
+        <div class="pipeline-flow">
+          <div class="pipe-step red">
+            <span class="pipe-num">Bước 01 &bull; Trên Web</span>
+            <h4>Bấm "Tắt Bơm Khẩn Cấp"</h4>
+            <p>JS gửi ngay <code>POST /api/watering/command</code> với <code>potId=1&amp;action=STOP</code>.</p>
+          </div>
+          <div class="pipe-step amber">
+            <span class="pipe-num">Bước 02 &bull; Tại Backend</span>
+            <h4>Ghi đè Hàng đợi Lệnh</h4>
+            <p><code>WateringCommandServlet</code> đặt lệnh <code>"STOP"</code> vào hàng đợi và hạ cờ <code>PUMP_ACTIVE = false</code>.</p>
+          </div>
+          <div class="pipe-step blue">
+            <span class="pipe-num">Bước 03 &bull; Sau &le; 1000ms</span>
+            <h4>ESP8266 Đọc Lệnh STOP</h4>
+            <p>Nhờ không dùng <code>delay()</code>, dù đang bơm, mỗi 1 giây ESP8266 vẫn gọi <code>checkCommandFromWebApp()</code>.</p>
+          </div>
+          <div class="pipe-step">
+            <span class="pipe-num">Bước 04 &bull; Tại Relay D7</span>
+            <h4>Ngắt Bơm Lập Tức</h4>
+            <p>Thực thi <code>digitalWrite(RELAY_PUMP_PIN, LOW)</code> và đặt <code>isPumpRunning = false</code>.</p>
+          </div>
+        </div>
+
+        <pre><code>// Đoạn code xử lý lệnh STOP tức thì trong Smart_Irrigation_Projec_IoT.cpp:
+else if (cmd == "STOP" || cmd == "OFF") {
+  // Bất kể đang hẹn giờ bao nhiêu, có lệnh STOP là tắt lập tức
+  if (isPumpRunning) {
+    Serial.println("\n>>> WEB RA LENH: Tat bom ngay lap tuc!");
+    digitalWrite(RELAY_PUMP_PIN, LOW); // Ngắt Relay -> Tắt bơm
+    isPumpRunning = false;
+  }
+}</code></pre>
+      </section>
+
+      <!-- ================================================================= -->
+      <!-- PANEL 06: LUỒNG 5 - CẢNH BÁO TỰ ĐỘNG KÉP (WEB + EMAIL)             -->
+      <!-- ================================================================= -->
+      <section class="panel-card" data-title="Luồng 5: Cảnh báo Web & Email">
+        <div class="eyebrow-badge"><i class="fa-solid fa-triangle-exclamation"></i> Luồng 05 &bull; Phát hiện Sự cố &amp; Cảnh báo Đa kênh</div>
+        <h2 class="panel-title">Luồng 5: Cảnh báo Tự động Kép trên Giao diện Web &amp; Email Google Apps Script</h2>
+        <p class="lead-text">
+          Khi phát hiện cây bị khô hạn hoặc đứt dây cảm biến, hệ thống kích hoạt đồng thời <strong>2 kênh cảnh báo độc lập</strong>: Hiển thị thẻ cảnh báo trên trang <code>/alerts</code> và bắn Email trực tiếp tới điện thoại người trồng.
+        </p>
+
+        <div class="feature-grid">
+          <div class="card-item">
+            <div class="card-icon amber"><i class="fa-solid fa-sun-plant-wilt"></i></div>
+            <h4>Trường hợp 1: Cây Thiếu Nước Động theo Loài Cây (<code>DRY_STRESS</code>)</h4>
+            <p>Ngưỡng độ ẩm tối thiểu <strong>không bị fix cứng 30%</strong> mà được truy vấn trực tiếp từ loài cây đang trồng trong chậu (<code>SELECT pl.plant_name, pl.ideal_moisture_min FROM Pot p JOIN Plant pl ...</code>) và đồng bộ xuống biến <code>minMoistureThreshold</code> của ESP8266. Khi <code>moisture &lt; minMoistureThreshold</code>, cả Web và Email đều phát cảnh báo theo đúng tên loài cây đó.</p>
+          </div>
+          <div class="card-item">
+            <div class="card-icon red"><i class="fa-solid fa-plug-circle-xmark"></i></div>
+            <h4>Trường hợp 2: Lỗi Phần Cứng (<code>SENSOR_FAULT</code>)</h4>
+            <p>Khi tuột dây DHT11 (<code>isnan(t) || isnan(h)</code>) hoặc lỗi mạch cân HX711 (<code>weight &lt; -500</code>): Hệ thống lập tức phát cảnh báo kỹ thuật <code>SENSOR_FAULT</code> nhắc người dùng kiểm tra lại dây cắm.</p>
+          </div>
+        </div>
+
+        <h3 class="section-subtitle"><i class="fa-solid fa-seedling"></i> Cơ chế Đồng bộ Ngưỡng Độ ẩm Động theo Loài Cây &amp; Chống Spam Email (5 Phút)</h3>
+        <p>
+          Mỗi khi ESP8266 gửi dữ liệu cảm biến (<code>POST /api/sensor/readings</code>) hoặc hỏi lệnh bơm (<code>GET /api/watering/command?potId=1</code>), Server Java trả kèm <code>"plantName"</code>, <code>"minMoisture"</code> (từ cột <code>ideal_moisture_min</code> của bảng <code>Plant</code>) và <code>"maxMoisture"</code>. Nhờ đó, nếu người dùng đổi cây trồng trong chậu trên Web (ví dụ từ <em>Xương rồng 20%</em> sang <em>Rau cải 50%</em>), mạch ESP8266 tự động cập nhật ngưỡng cảnh báo mới mà không cần nạp lại code:
+        </p>
+        <pre><code>// JSON Server trả về cho ESP8266:
+{"ok":true, "potId":1, "command":"NONE", "duration":0, "plantName":"Tomato", "minMoisture":45.0, "maxMoisture":75.0}
+
+// Kiểm tra cảnh báo theo ngưỡng động của loài cây trên ESP8266 (Smart_Irrigation_Projec_IoT.ino):
+if (currentMillis - lastEmailTime &gt;= emailCooldown || lastEmailTime == 0) {
+  if (isnan(t) || isnan(h) || weight &lt; -500) {
+    sendEmailViaGoogleScript("SENSOR_FAULT", "Mất tín hiệu từ cảm biến DHT11 hoặc Loadcell...");
+    lastEmailTime = currentMillis;
+  }
+  else if (moisture &lt; minMoistureThreshold) {
+    sendEmailViaGoogleScript("DRY_STRESS", "Độ ẩm đất của chậu cây [" + currentPlantName + "] rớt xuống "
+      + String(moisture) + "% (thấp hơn ngưỡng tối thiểu " + String(minMoistureThreshold, 1) + "% của loài cây này)!");
+    lastEmailTime = currentMillis;
+  }
+}</code></pre>
+      </section>
+
+      <!-- ================================================================= -->
+      <!-- PANEL 07: LUỒNG 6 - HIỆU CHUẨN LƯU LƯỢNG BƠM & ANALYTICS           -->
+      <!-- ================================================================= -->
+      <section class="panel-card" data-title="Luồng 6: Hiệu chuẩn Bơm & Analytics">
+        <div class="eyebrow-badge"><i class="fa-solid fa-scale-balanced"></i> Luồng 06 &bull; Ứng dụng Cân điện tử Loadcell HX711</div>
+        <h2 class="panel-title">Luồng 6: Hiệu chuẩn Lưu lượng Máy bơm Thực tế (<code>ml/s</code>) &amp; Phân tích Dữ liệu</h2>
+        <p class="lead-text">
+          Điểm sáng tạo nổi bật của đồ án: Sử dụng <strong>cân điện tử Loadcell HX711</strong> đặt dưới đáy chậu cây để đo chính xác lượng nước thực tế đã bơm vào chậu, từ đó tự động hiệu chuẩn tốc độ dòng chảy của máy bơm.
+        </p>
+
+        <div class="step-list">
+          <div class="step-item">
+            <div class="step-badge">1</div>
+            <div class="step-content">
+              <h4>Ghi nhận khối lượng chậu cây trước khi tưới (<code>Weight_Before</code>)</h4>
+              <p>Trước khi máy bơm chạy, <code>AppDataService</code> lưu lại khối lượng hiện tại của chậu cây từ cảm biến Loadcell (ví dụ <code>300.0 g</code>).</p>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-badge">2</div>
+            <div class="step-content">
+              <h4>Ghi nhận khối lượng sau khi tưới (<code>Weight_After</code>) &amp; Tính lượng nước thực tế</h4>
+              <p>Sau khi bơm chạy <code>10 giây</code> và dừng lại, gói tin Telemetry tiếp theo báo cân nặng mới là <code>425.0 g</code>. Vì khối lượng riêng của nước là $1\text{ g} \approx 1\text{ ml}$, lượng nước thực tế đã vào chậu là $\Delta W = 425 - 300 = 125\text{ ml}$.</p>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-badge">3</div>
+            <div class="step-content">
+              <h4>Cập nhật Hệ số Lưu lượng Bơm (<code>Flow Rate ml/s</code>) trên trang <code>/analytics</code></h4>
+              <p>Hệ thống chia $\Delta W$ cho thời gian bơm ($\text{FlowRate} = 125\text{ ml} / 10\text{ s} = 12.5\text{ ml/s}$) và hiển thị trực quan trên trang Phân tích &amp; Hiệu chuẩn (<code>analytics.jsp</code>).</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================= -->
+      <!-- PANEL 08: BẢN ĐỒ ÁNH XẠ TOÀN BỘ FILE CODE TRONG DỰ ÁN             -->
+      <!-- ================================================================= -->
+      <section class="panel-card" data-title="Bản đồ Ánh xạ Toàn bộ File Code">
+        <div class="eyebrow-badge"><i class="fa-solid fa-folder-tree"></i> Mục 08 &bull; Tra cứu Nhanh Cấu trúc Mã nguồn</div>
+        <h2 class="panel-title">Bản đồ Ánh xạ Toàn bộ File Code theo Từng Chức Năng</h2>
+        <p class="lead-text">
+          Bảng tra cứu nhanh giúp bạn nắm vững file nào chịu trách nhiệm cho chức năng nào khi giảng viên yêu cầu mở code giải thích trực tiếp trên IDE.
+        </p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Phân lớp (Layer)</th>
+                <th>Tên File Mã Nguồn</th>
+                <th>Vai trò &amp; Trách nhiệm Chính</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="badge-status success">1. Nhúng IoT</span></td>
+                <td><code>Smart_Irrigation_Projec_IoT.cpp</code></td>
+                <td>Code chính nạp vào ESP8266: đọc 4 cảm biến mỗi 5s, hỏi lệnh bơm mỗi 1s, tự ngắt bơm bằng <code>millis()</code> và gửi Email cảnh báo.</td>
+              </tr>
+              <tr>
+                <td><span class="badge-status success">1. Nhúng IoT</span></td>
+                <td><code>ESP8266_Hardware_Test.ino</code></td>
+                <td>File kiểm tra độc lập 5 thiết bị phần cứng qua Serial Monitor trước khi chạy thật (chống treo Watchdog HX711).</td>
+              </tr>
+              <tr>
+                <td><span class="badge-status info">2. Security Filter</span></td>
+                <td><code>src/java/filter/AuthFilter.java</code></td>
+                <td>Kiểm tra đăng nhập người dùng và mở Whitelist cho <code>/api/sensor/readings</code>, <code>/api/watering/command</code>.</td>
+              </tr>
+              <tr>
+                <td><span class="badge-status info">3. API Controller</span></td>
+                <td><code>src/java/controller/SensorApiServlet.java</code></td>
+                <td>Xử lý <code>POST</code> (nhận dữ liệu từ ESP8266) và <code>GET</code> (trả JSON realtime cho trình duyệt).</td>
+              </tr>
+              <tr>
+                <td><span class="badge-status info">3. API Controller</span></td>
+                <td><code>src/java/controller/WateringCommandServlet.java</code></td>
+                <td>Quản lý hàng đợi lệnh Bật/Tắt bơm (<code>START</code>, <code>STOP</code>, <code>OFF</code>) giữa giao diện Web và ESP8266.</td>
+              </tr>
+              <tr>
+                <td><span class="badge-status info">3. Web Controller</span></td>
+                <td><code>DashboardServlet.java</code>, <code>SensorsServlet.java</code>, <code>ManualWateringServlet.java</code>, <code>AlertsServlet.java</code>, <code>AnalyticsServlet.java</code></td>
+                <td>Điều phối dữ liệu từ tầng Service/DAO sang các trang JSP tương ứng.</td>
+              </tr>
+              <tr>
+                <td><span class="badge-status warning">4. Service &amp; DAO</span></td>
+                <td><code>src/java/service/AppDataService.java</code><br/><code>src/java/dao/SensorDataDAO.java</code><br/><code>src/java/dao/WateringDAO.java</code></td>
+                <td>Xử lý nghiệp vụ đánh giá sức khỏe cây, lưu trữ SQL Server và bộ nhớ đệm thông số thời gian thực.</td>
+              </tr>
+              <tr>
+                <td><span class="badge-status danger">5. Frontend View &amp; JS</span></td>
+                <td><code>web/dashboard.jsp</code> + <code>web/js/dashboard.js</code><br/><code>web/sensors.jsp</code> + <code>web/js/sensors.js</code><br/><code>web/wateringManagement.jsp</code> + <code>web/js/wateringManagement.js</code></td>
+                <td>Giao diện người dùng và các kịch bản AJAX Polling tự động đồng bộ cảm biến / trạng thái máy bơm.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Bottom Navigation Buttons -->
+      <div class="footer-nav">
+        <button class="footer-btn prev" id="footerPrev">
+          <span class="dir"><i class="fa-solid fa-arrow-left"></i> Mục trước</span>
+          <span class="label" id="prevLabel">---</span>
+        </button>
+        <button class="footer-btn next" id="footerNext">
+          <span class="dir">Mục tiếp theo <i class="fa-solid fa-arrow-right"></i></span>
+          <span class="label" id="nextLabel">---</span>
+        </button>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const navButtons = Array.from(document.querySelectorAll('.nav-link'));
+    const panels = Array.from(document.querySelectorAll('.panel-card'));
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    const footerPrev = document.getElementById('footerPrev');
+    const footerNext = document.getElementById('footerNext');
+    const prevLabel = document.getElementById('prevLabel');
+    const nextLabel = document.getElementById('nextLabel');
+    const stepCounter = document.getElementById('stepCounter');
+    const progressBar = document.getElementById('progressBar');
+    const headerCrumbGroup = document.getElementById('headerCrumbGroup');
+    const headerCrumbTitle = document.getElementById('headerCrumbTitle');
+    const navSearch = document.getElementById('navSearch');
+    const sidebar = document.getElementById('sidebar');
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+
+    let currentIndex = 0;
+    const total = panels.length;
+
+    function pad2(n) {
+      return n < 10 ? '0' + n : '' + n;
+    }
+
+    function showPanel(index) {
+      if (index < 0 || index >= total) return;
+      currentIndex = index;
+
+      panels.forEach((p, idx) => {
+        p.classList.toggle('active', idx === currentIndex);
+      });
+
+      navButtons.forEach((btn, idx) => {
+        btn.classList.toggle('active', idx === currentIndex);
+        if (idx === currentIndex) {
+          btn.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }
+      });
+
+      const activeBtn = navButtons[currentIndex];
+      const groupEl = activeBtn.closest('.nav-group');
+      const groupName = groupEl ? groupEl.getAttribute('data-group') : '';
+      const panelTitle = panels[currentIndex].getAttribute('data-title') || '';
+
+      headerCrumbGroup.textContent = groupName;
+      headerCrumbTitle.textContent = panelTitle;
+      stepCounter.textContent = pad2(currentIndex + 1) + ' / ' + pad2(total);
+      progressBar.style.width = (((currentIndex + 1) / total) * 100).toFixed(1) + '%';
+
+      const hasPrev = currentIndex > 0;
+      const hasNext = currentIndex < total - 1;
+
+      btnPrev.disabled = !hasPrev;
+      footerPrev.disabled = !hasPrev;
+      btnNext.disabled = !hasNext;
+      footerNext.disabled = !hasNext;
+
+      prevLabel.textContent = hasPrev ? panels[currentIndex - 1].getAttribute('data-title') : 'Đầu tài liệu';
+      nextLabel.textContent = hasNext ? panels[currentIndex + 1].getAttribute('data-title') : 'Hoàn thành';
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      sidebar.classList.remove('open');
+    }
+
+    navButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.getAttribute('data-i'), 10);
+        showPanel(idx);
+      });
+    });
+
+    btnPrev.addEventListener('click', () => showPanel(currentIndex - 1));
+    btnNext.addEventListener('click', () => showPanel(currentIndex + 1));
+    footerPrev.addEventListener('click', () => showPanel(currentIndex - 1));
+    footerNext.addEventListener('click', () => showPanel(currentIndex + 1));
+
+    document.addEventListener('keydown', (e) => {
+      if (document.activeElement === navSearch || document.activeElement.tagName === 'INPUT') return;
+      if (e.key === 'ArrowRight') showPanel(currentIndex + 1);
+      if (e.key === 'ArrowLeft') showPanel(currentIndex - 1);
+    });
+
+    navSearch.addEventListener('input', () => {
+      const q = navSearch.value.trim().toLowerCase();
+      document.querySelectorAll('.nav-group').forEach((group) => {
+        let anyVisible = false;
+        group.querySelectorAll('.nav-item').forEach((item) => {
+          const btn = item.querySelector('.nav-link');
+          const idx = parseInt(btn.getAttribute('data-i'), 10);
+          const titleText = btn.textContent.toLowerCase();
+          const bodyText = panels[idx].textContent.toLowerCase();
+          const match = !q || titleText.includes(q) || bodyText.includes(q);
+          item.style.display = match ? '' : 'none';
+          if (match) anyVisible = true;
+        });
+        group.style.display = anyVisible ? '' : 'none';
+      });
+    });
+
+    mobileMenuBtn.addEventListener('click', () => {
+      sidebar.classList.toggle('open');
+    });
+
+    showPanel(0);
+  })();
+</script>
+</body>
+</html>
+

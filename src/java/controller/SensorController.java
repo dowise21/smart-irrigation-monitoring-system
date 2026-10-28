@@ -53,43 +53,11 @@ public class SensorController extends HttpServlet {
         request.getRequestDispatcher("/sensors.jsp").forward(request, response);
     }
 
-    /** IoT device (ESP32/ESP8266) or simulator pushes a reading. Requires an authenticated ADMIN/TECHNICIAN session. */
+    /** IoT device (ESP32/ESP8266) or simulator pushes a reading. Supports both JSON and form parameters. */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
-        try {
-            int potId = Integer.parseInt(request.getParameter("potId").trim());
-            double moisture = Double.parseDouble(request.getParameter("moisture").trim());
-            Double weightKg = optionalDouble(request.getParameter("weightKg"));
-            Integer lightLux = optionalInt(request.getParameter("lightLux"));
-
-            if (potId <= 0) {
-                throw new IllegalArgumentException("potId must be positive.");
-            }
-            if (Double.isNaN(moisture) || moisture < 0 || moisture > 100) {
-                throw new IllegalArgumentException("moisture must be between 0 and 100.");
-            }
-            if (weightKg != null && (weightKg.isNaN() || weightKg < 0 || weightKg > 1000)) {
-                throw new IllegalArgumentException("weightKg must be between 0 and 1000.");
-            }
-            if (lightLux != null && (lightLux < 0 || lightLux > 200000)) {
-                throw new IllegalArgumentException("lightLux must be between 0 and 200000.");
-            }
-
-            boolean success = sensorDAO.insert(potId, moisture, weightKg, lightLux);
-            if (success) {
-                response.getWriter().write("OK");
-            } else {
-                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error while saving sensor reading.");
-            }
-        } catch (NullPointerException | IllegalArgumentException ex) {
-            LOGGER.log(Level.WARNING, "Rejected sensor reading: {0}", ex.getMessage());
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid sensor data.");
-        } catch (Exception ex) {
-            LOGGER.log(Level.SEVERE, "Error receiving sensor reading: {0}", ex.getMessage());
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not save sensor reading.");
-        }
+        SensorApiServlet.handleTelemetryPost(request, response, sensorDAO, false);
     }
 
     private static int parseInt(String raw, int fallback) {

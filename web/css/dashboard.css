@@ -1911,3 +1911,177 @@ input[type="range"] {
     }
 
 }
+
+/* ===== 21. STREAMLINED EXECUTIVE DASHBOARD (DATA-FIRST REFINEMENTS) ===== */
+.header-meta-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px 16px;
+    margin-bottom: 8px;
+    font-size: 13px;
+}
+
+.header-meta-row .section-label {
+    margin-bottom: 0;
+}
+
+.kpi-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.kpi-card.kpi-hero {
+    border-top: 3px solid #10b981;
+    background: linear-gradient(180deg, rgba(236, 253, 245, 0.55) 0%, #ffffff 48%);
+}
+
+.kpi-value {
+    font-variant-numeric: tabular-nums;
+    font-size: 40px;
+}
+
+.chart-stat-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 999px;
+    background-color: #f8fafc;
+    font-size: 13px;
+    font-weight: 600;
+    color: #334155;
+    font-variant-numeric: tabular-nums;
+}
+
+.chart-stat-pill b {
+    font-size: 14px;
+    font-weight: 800;
+    color: #047857;
+}
+
+.zones-card .zone-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.zones-card .zone {
+    padding: 16px 18px;
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid #10b981;
+    border-radius: 16px;
+    background-color: #ffffff;
+    box-shadow: 0 2px 10px -2px rgba(15, 23, 42, 0.04);
+}
+
+.zones-card .zone.zone-warn {
+    border-left-color: #f59e0b;
+    background: linear-gradient(90deg, rgba(255, 251, 235, 0.55) 0%, #ffffff 35%);
+}
+
+.zones-card .zone.zone-info {
+    border-left-color: #0ea5e9;
+    background: linear-gradient(90deg, rgba(240, 249, 255, 0.55) 0%, #ffffff 35%);
+}
+
+.zones-card .zone:hover {
+    border-color: #a7f3d0;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 22px -8px rgba(15, 23, 42, 0.1);
+}
+
+.zones-card .zone-head strong {
+    font-size: 15px;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.zones-card .zone-bar {
+    height: 8px;
+}
+
+.zones-card .zone-foot b {
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+}
+
+.pump-display-compact {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    text-align: left;
+    padding: 14px 16px;
+    border: 1px solid #eef2f6;
+    border-radius: 16px;
+    background-color: #f8fafc;
+}
+
+.pump-display-compact .pump-ring {
+    width: 112px;
+    height: 112px;
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.pump-display-compact .pump-circle {
+    inset: 14px;
+}
+
+.pump-display-compact .pump-circle strong {
+    font-size: 14px;
+}
+
+.pump-display-compact .pump-circle small {
+    font-size: 10px;
+}
+
+.pump-summary-text {
+    min-width: 0;
+    flex: 1;
+}
+
+.pump-summary-text h3 {
+    font-size: 17px;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.pump-summary-text p {
+    margin-top: 4px;
+    font-size: 13px;
+    line-height: 1.45;
+    color: #64748b;
+}
+
+.pump-schedule-foot {
+    justify-content: space-between;
+    margin-top: 14px;
+    margin-bottom: 0;
+    padding: 10px 14px;
+    font-size: 13px;
+}
+
+.schedule-manage-link {
+    margin-left: auto;
+    font-weight: 700;
+    color: #047857;
+    white-space: nowrap;
+}
+
+.schedule-manage-link:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 640px) {
+    .zones-card .zone-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .pump-display-compact {
+        flex-direction: column;
+        text-align: center;
+    }
+}

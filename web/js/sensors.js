@@ -1,4 +1,4 @@
-/* Connected to /api/sensors for live soil moisture readings across zones. */
+/* Connected to /api/sensors for live soil moisture readings and dynamic Area · Pot · Plant thresholds. */
 (function () {
     var ctx = window.SI_CTX || "";
     var access = window.SI_ACCESS || {};
@@ -7,20 +7,25 @@
     var sensorConfig = {
         temperature: { value: 27.4, min: 15, max: 40, low: 24, high: 32, unit: "°C", decimals: 1, label: "Temperature", target: "24–32 °C", good: "Normal" },
         humidity: { value: 69, min: 0, max: 100, low: 50, high: 80, unit: "%", decimals: 0, label: "Air humidity", target: "50–80%", good: "Balanced" },
-        soil: { value: window.IrrigationZones.averageSoil(), min: 0, max: 100, low: 60, high: 80, unit: "%", decimals: 0, label: "Soil moisture", target: "60–80%", good: "Optimal" },
+        soil: { value: window.IrrigationZones.averageSoil(), min: 0, max: 100, low: 35, high: 75, unit: "%", decimals: 0, label: "Soil moisture", target: "35–75%", good: "Healthy" },
         light: { value: 72, min: 0, max: 100, low: 40, high: 90, unit: "%", decimals: 0, label: "Light intensity", target: "40–90%", good: "Suitable" }
     };
-    var zoneNames = { all: "All gardens" };
+    var zoneNames = { all: "All gardens (All Areas · Pots · Plants)" };
     var zoneOffsets = { all: { temperature: 0, humidity: 0, soil: 0, light: 0 } };
-    window.IrrigationZones.list.forEach(function (zone) {
-        zoneNames[zone.id] = zone.name;
-        zoneOffsets[zone.id] = {
-            temperature: 0,
-            humidity: 0,
-            soil: window.IrrigationZones.getSoilMoisture(zone.id) - window.IrrigationZones.averageSoil(),
-            light: 0
-        };
-    });
+
+    function rebuildZoneMeta() {
+        window.IrrigationZones.list.forEach(function (zone) {
+            zoneNames[zone.id] = (zone.areaName ? zone.areaName + " · " : "") + zone.name + " · " + zone.crop;
+            zoneOffsets[zone.id] = {
+                temperature: 0,
+                humidity: 0,
+                soil: window.IrrigationZones.getSoilMoisture(zone.id) - window.IrrigationZones.averageSoil(),
+                light: 0
+            };
+        });
+    }
+    rebuildZoneMeta();
+
     var metric = "soil";
     var rangeHours = 1;
     var requestedZone = new URLSearchParams(window.location.search).get("zone");
@@ -48,12 +53,31 @@
         return document.getElementById(id);
     }
 
+    function syncSoilThresholdForZone() {
+        var zone = selectedZone === "all" ? null : window.IrrigationZones.get(selectedZone);
+        if (zone) {
+            var minT = Number.isFinite(Number(zone.targetMin)) ? Math.round(Number(zone.targetMin)) : 35;
+            var maxT = Number.isFinite(Number(zone.targetMax)) ? Math.round(Number(zone.targetMax)) : 75;
+            sensorConfig.soil.low = minT;
+            sensorConfig.soil.high = maxT;
+            sensorConfig.soil.target = minT + "–" + maxT + "% (" + zone.crop + ")";
+        } else {
+            var list = window.IrrigationZones.list;
+            var avgMin = list.length ? Math.round(list.reduce(function (s, z) { return s + (Number(z.targetMin) || 35); }, 0) / list.length) : 35;
+            var avgMax = list.length ? Math.round(list.reduce(function (s, z) { return s + (Number(z.targetMax) || 75); }, 0) / list.length) : 75;
+            sensorConfig.soil.low = avgMin;
+            sensorConfig.soil.high = avgMax;
+            sensorConfig.soil.target = avgMin + "–" + avgMax + "%";
+        }
+    }
+
     function populateZoneFilter() {
         var filter = byId("zoneFilter");
         if (!filter) return;
-        var html = '<option value="all">All zones</option>';
+        var html = '<option value="all">All zones (All Areas · Pots · Plants)</option>';
         window.IrrigationZones.list.forEach(function (zone) {
-            html += '<option value="' + zone.id + '">' + zone.name + '</option>';
+            var label = (zone.areaName ? zone.areaName + " · " : "") + zone.name + " · " + zone.crop + " (" + Math.round(zone.targetMin || 35) + "–" + Math.round(zone.targetMax || 75) + "%)";
+            html += '<option value="' + zone.id + '">' + label + '</option>';
         });
         filter.innerHTML = html;
         filter.value = selectedZone;
@@ -73,8 +97,8 @@
 
     function stateFor(key, value) {
         var config = sensorConfig[key];
-        if (value < config.low) return { label: "Low", className: "warning" };
-        if (value > config.high) return { label: "High", className: "warning" };
+        if (value < config.low) return { label: key === "soil" ? "Needs water" : "Low", className: "warning" };
+        if (value > config.high) return { label: key === "soil" ? "Too wet" : "High", className: "warning" };
         return { label: config.good, className: "good" };
     }
 
@@ -100,6 +124,7 @@
     }
 
     function drawChart() {
+        syncSoilThresholdForZone();
         var svg = byId("sensorChart");
         var config = sensorConfig[metric];
         var values = history[metric].slice(-rangeSteps[rangeHours]);
@@ -142,6 +167,10 @@
     }
 
     function updatePage() {
+        syncSoilThresholdForZone();
+        if (byId("soilTargetFoot")) {
+            byId("soilTargetFoot").textContent = "Target range " + sensorConfig.soil.target;
+        }
         Object.keys(sensorConfig).forEach(function (key) {
             var config = sensorConfig[key];
             var value = currentValue(key);
@@ -162,6 +191,10 @@
                     zoneLink.style.textDecoration = "none";
                 }
                 row.querySelector("[data-reading]").textContent = formatValue(key, value) + " " + config.unit;
+                var targetCell = row.querySelector("[data-target-range]");
+                if (targetCell) {
+                    targetCell.textContent = config.target;
+                }
             }
             drawSparkline(key);
         });
@@ -174,6 +207,9 @@
     }
 
     function addSample() {
+        var hasLiveTemp = false;
+        var hasLiveHum = false;
+        var hasLiveLight = false;
         fetch(ctx + "/api/sensors", {
             cache: "no-store",
             headers: { "X-Requested-With": "fetch" }
@@ -181,22 +217,32 @@
             .then(function (res) { return res.ok ? res.json() : []; })
             .then(function (readings) {
                 if (Array.isArray(readings) && readings.length) {
+                    if (window.IrrigationZones.syncFromReadings) {
+                        window.IrrigationZones.syncFromReadings(readings);
+                    }
                     readings.forEach(function (reading) {
                         var id = String(reading.id || reading.potId);
                         var m = Number(reading.moisture !== undefined ? reading.moisture : reading.soilMoisture);
                         if (Number.isFinite(m)) {
                             window.IrrigationZones.setSoilMoisture(id, m);
                         }
+                        if (reading.temperature !== null && reading.temperature !== undefined && Number.isFinite(Number(reading.temperature))) {
+                            sensorConfig.temperature.value = Number(reading.temperature);
+                            hasLiveTemp = true;
+                        }
+                        if (reading.humidity !== null && reading.humidity !== undefined && Number.isFinite(Number(reading.humidity))) {
+                            sensorConfig.humidity.value = Number(reading.humidity);
+                            hasLiveHum = true;
+                        }
+                        if (reading.lightLux !== null && reading.lightLux !== undefined && Number.isFinite(Number(reading.lightLux))) {
+                            var lux = Number(reading.lightLux);
+                            sensorConfig.light.value = lux <= 100 ? lux : Math.max(0, Math.min(100, Math.round(lux / 10)));
+                            hasLiveLight = true;
+                        }
                     });
                     sensorConfig.soil.value = window.IrrigationZones.averageSoil();
-                    window.IrrigationZones.list.forEach(function (zone) {
-                        zoneOffsets[zone.id] = {
-                            temperature: 0,
-                            humidity: 0,
-                            soil: window.IrrigationZones.getSoilMoisture(zone.id) - sensorConfig.soil.value,
-                            light: 0
-                        };
-                    });
+                    rebuildZoneMeta();
+                    populateZoneFilter();
                 }
             })
             .catch(function () {
@@ -205,7 +251,11 @@
             .then(function () {
                 Object.keys(sensorConfig).forEach(function (key) {
                     var config = sensorConfig[key];
-                    if (key !== "soil") {
+                    var isLive = (key === "soil")
+                        || (key === "temperature" && hasLiveTemp)
+                        || (key === "humidity" && hasLiveHum)
+                        || (key === "light" && hasLiveLight);
+                    if (!isLive) {
                         var step = key === "temperature" ? 0.45 : 1.8;
                         config.value = Math.max(config.min, Math.min(config.max, config.value + (Math.random() - 0.5) * step));
                     }

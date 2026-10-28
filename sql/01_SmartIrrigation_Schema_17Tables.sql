@@ -32,6 +32,7 @@ DROP TABLE IF EXISTS SensorReading;
 DROP TABLE IF EXISTS Sensor;
 DROP TABLE IF EXISTS Pot;
 DROP TABLE IF EXISTS Plant;
+DROP TABLE IF EXISTS Area;
 DROP TABLE IF EXISTS RolePermission;
 DROP TABLE IF EXISTS Permission;
 DROP TABLE IF EXISTS AppUser;
@@ -73,14 +74,26 @@ CREATE TABLE AppUser (
 GO
 
 -- =========================================================================
--- II. NHÓM BẢNG THỰC THỂ CỐT LÕI (CORE)
+-- II. NHÓM BẢNG THỰC THỂ CỐT LÕI (CORE: AREA - PLANT - POT)
+-- Quy tắc bắt buộc: Một chậu cây (Pot) thuộc 1 Khu vực (Area) và chỉ trồng
+-- duy nhất 1 loại cây (Plant).
 -- =========================================================================
+CREATE TABLE Area (
+    area_id INT IDENTITY(1,1) PRIMARY KEY,
+    area_name NVARCHAR(100) NOT NULL,
+    description NVARCHAR(500),
+    created_at DATETIME DEFAULT GETDATE()
+);
+
 CREATE TABLE Plant (
     plant_id INT IDENTITY(1,1) PRIMARY KEY,
     plant_name NVARCHAR(100) NOT NULL,
     species NVARCHAR(100),
-    ideal_moisture_min FLOAT,
-    ideal_moisture_max FLOAT,
+    water_requirement NVARCHAR(100) DEFAULT N'Trung bình (250ml/lần)',
+    min_moisture_threshold FLOAT DEFAULT 35.0, -- Ngưỡng kích hoạt tưới tự động & cảnh báo DRY_STRESS
+    max_moisture_threshold FLOAT DEFAULT 75.0, -- Ngưỡng cảnh báo ngập úng OVERWATER
+    ideal_moisture_min FLOAT DEFAULT 35.0,     -- Đồng bộ tương thích ngược với giao diện cũ
+    ideal_moisture_max FLOAT DEFAULT 75.0,     -- Đồng bộ tương thích ngược với giao diện cũ
     description NVARCHAR(MAX),
     water_amount_ml INT DEFAULT 250,
     default_pot_id INT NULL,
@@ -90,9 +103,12 @@ CREATE TABLE Plant (
 CREATE TABLE Pot (
     pot_id INT IDENTITY(1,1) PRIMARY KEY,
     pot_name NVARCHAR(100) NOT NULL,
+    area_id INT NULL,
     location NVARCHAR(200),
-    plant_id INT NOT NULL,
+    plant_id INT NOT NULL, -- Bắt buộc: 1 chậu cây chỉ trồng duy nhất 1 loại cây
+    auto_watering_enabled BIT DEFAULT 1,
     status BIT DEFAULT 1,
+    CONSTRAINT FK_Pot_Area FOREIGN KEY (area_id) REFERENCES Area(area_id),
     CONSTRAINT FK_Pot_Plant FOREIGN KEY (plant_id) REFERENCES Plant(plant_id)
 );
 GO

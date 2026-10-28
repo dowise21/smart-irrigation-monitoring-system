@@ -142,28 +142,40 @@ public class SensorDataDAO {
      * Lưu dữ liệu cảm biến (Moisture, Weight, Light) và tự động kích hoạt AlertService.
      */
     public boolean insert(int potId, double moisture, Double weightKg, Integer lightLux) {
+        String ensureSensorSql = "IF NOT EXISTS (SELECT 1 FROM Sensor WHERE pot_id = ?) "
+                + "AND EXISTS (SELECT 1 FROM Pot WHERE pot_id = ?) "
+                + "INSERT INTO Sensor (pot_id, sensor_type, status) VALUES (?, 'Moisture', 1)";
         String sql = "INSERT INTO SensorReading(sensor_id, moisture_level, weight_kg, light_lux, source) "
-                   + "VALUES ((SELECT TOP 1 sensor_id FROM Sensor WHERE pot_id = ?), ?, ?, ?, 'DEVICE')";
+                   + "VALUES (COALESCE((SELECT TOP 1 sensor_id FROM Sensor WHERE pot_id = ?), "
+                   + "(SELECT TOP 1 sensor_id FROM Sensor ORDER BY sensor_id ASC)), ?, ?, ?, 'DEVICE')";
 
-        try (Connection cn = DBContext.getConnection();
-             PreparedStatement ps = cn.prepareStatement(sql)) {
-            ps.setInt(1, potId);
-            ps.setDouble(2, moisture);
-            if (weightKg != null) {
-                ps.setDouble(3, weightKg);
-            } else {
-                ps.setNull(3, java.sql.Types.FLOAT);
+        try (Connection cn = DBContext.getConnection()) {
+            try (PreparedStatement psEnsure = cn.prepareStatement(ensureSensorSql)) {
+                psEnsure.setInt(1, potId);
+                psEnsure.setInt(2, potId);
+                psEnsure.setInt(3, potId);
+                psEnsure.executeUpdate();
+            } catch (Exception ignored) {
             }
-            if (lightLux != null) {
-                ps.setInt(4, lightLux);
-            } else {
-                ps.setNull(4, java.sql.Types.INTEGER);
+            try (PreparedStatement ps = cn.prepareStatement(sql)) {
+                ps.setInt(1, potId);
+                ps.setDouble(2, moisture);
+                if (weightKg != null) {
+                    ps.setDouble(3, weightKg);
+                } else {
+                    ps.setNull(3, java.sql.Types.FLOAT);
+                }
+                if (lightLux != null) {
+                    ps.setInt(4, lightLux);
+                } else {
+                    ps.setNull(4, java.sql.Types.INTEGER);
+                }
+                boolean ok = ps.executeUpdate() > 0;
+                if (ok) {
+                    new AlertService().evaluateIncomingTelemetry(potId, moisture, weightKg);
+                }
+                return ok;
             }
-            boolean ok = ps.executeUpdate() > 0;
-            if (ok) {
-                new AlertService().evaluateIncomingTelemetry(potId, moisture, weightKg);
-            }
-            return ok;
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Lỗi tại insert SensorData: {0}", e.getMessage());
         }
