@@ -104,14 +104,14 @@ Chạy lần lượt các file SQL trong thư mục [`sql/`](file:///d:/Study/FA
 2.  Build & Deploy dự án lên **Apache Tomcat 9.0**.
 3.  Truy cập hệ thống tại: `http://localhost:8080/PRJ301_Smart_Irrigation_System/login`
 
-### 4. Tài khoản Đăng nhập Demo
-| Vai trò (Role) | Email đăng nhập | Mật khẩu | Quyền hạn chính |
-| :--- | :--- | :--- | :--- |
-| **👑 ADMIN** | `admin1@demo.com` | `admin123` | Toàn quyền hệ thống, quản lý cây/chậu, điều khiển bơm, xuất báo cáo |
-| **👨‍🌾 MANAGER** | `manager1@demo.com` | `manager123` | Quản lý Khu vực, Chậu, Cây trồng, Ngưỡng độ ẩm & Lịch tưới |
-| **🔧 TECHNICIAN** | `tech1@demo.com` | `tech123` | Giám sát Node cảm biến, hiệu chuẩn bơm & kiểm tra phần cứng |
-| **👷 STAFF** | `staff1@demo.com` | `staff123` | Vận hành tưới thủ công, theo dõi Telemetry & xử lý Cảnh báo |
-| **👀 VIEWER** | `viewer1@demo.com` | `viewer123` | Chỉ xem Dashboard & thông số thời gian thực |
+### 4. Tài khoản Đăng nhập Demo (Mật khẩu chung: `123456`)
+| Vai trò (Role) | Username | Email đăng nhập | Mật khẩu | Quyền hạn chính |
+| :--- | :--- | :--- | :--- | :--- |
+| **👑 ADMIN** | `admin` | `admin1@demo.com` | `123456` | Toàn quyền hệ thống, quản lý cây/chậu, điều khiển bơm, xuất báo cáo |
+| **👨‍🌾 MANAGER** | `manager` | `manager@demo.com` | `123456` | Quản lý Khu vực, Chậu, Cây trồng, Ngưỡng độ ẩm & Lịch tưới |
+| **🔧 TECHNICIAN** | `tech` | `tech@demo.com` | `123456` | Giám sát Node cảm biến, hiệu chuẩn bơm & kiểm tra phần cứng |
+| **👷 STAFF** | `staff` | `staff@demo.com` | `123456` | Vận hành tưới thủ công, theo dõi Telemetry & xử lý Cảnh báo |
+| **👀 VIEWER** | `viewer` | `viewer@demo.com` | `123456` | Chỉ xem Dashboard & thông số thời gian thực |
 
 ### 5. Kiểm tra & Nạp Code Mạch ESP8266
 1.  **Bước 1 (Test phần cứng độc lập):** Mở và nạp file [`Test_Thiet_Bi_Cam_Bien/Test_Thiet_Bi_Cam_Bien.ino`](file:///d:/Study/FALL2026/PRJ301/Projects/PRJ301_Smart_Irrigation_Project/Test_Thiet_Bi_Cam_Bien/Test_Thiet_Bi_Cam_Bien.ino) để kiểm tra từng cảm biến và Relay máy bơm qua Serial Monitor (`115200 baud`).
